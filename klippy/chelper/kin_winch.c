@@ -10,6 +10,7 @@
 #include <string.h> // memset
 #include "compiler.h" // __visible
 #include "itersolve.h" // struct stepper_kinematics
+#include "kinematics.h"
 
 struct winch_stepper {
     struct stepper_kinematics sk;

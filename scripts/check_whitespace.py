@@ -4,7 +4,7 @@
 # Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import sys, os.path, unicodedata
+import sys, os.path, unicodedata, re
 
 HaveError = False
 
@@ -16,6 +16,12 @@ def report_error(filename, lineno, msg):
     sys.stderr.write("%s:%d: %s\n" % (filename, lineno + 1, msg))
 
 def check_file(filename):
+    # These are generated
+    if re.match('.*.generated.c\Z', filename):
+        return
+    if re.match('.*/_chelper.c\Z', filename):
+        return
+
     # Open and read file
     try:
         f = open(filename, 'rb')

@@ -4,11 +4,11 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import os, logging
-import cffi
+import cffi, sys
 
 
 ######################################################################
-# c_helper.so compiling
+# _chelper.so compiling
 ######################################################################
 
 COMPILE_CMD = ("gcc -Wall -g -O2 -shared -fPIC"
@@ -17,11 +17,15 @@ COMPILE_CMD = ("gcc -Wall -g -O2 -shared -fPIC"
 SOURCE_FILES = [
     'pyhelper.c', 'serialqueue.c', 'stepcompress.c', 'itersolve.c',
     'kin_cartesian.c', 'kin_corexy.c', 'kin_delta.c', 'kin_polar.c',
-    'kin_winch.c', 'kin_extruder.c',
+    'kin_winch.c', 'kin_extruder.c'
 ]
-DEST_LIB = "c_helper.so"
+if hasattr(sys, 'gettotalrefcount'):
+    DEST_LIB = "_chelper_d.so"
+else:
+    DEST_LIB = "_chelper.so"
 OTHER_FILES = [
-    'list.h', 'serialqueue.h', 'stepcompress.h', 'itersolve.h', 'pyhelper.h'
+    'list.h', 'serialqueue.h', 'stepcompress.h', 'itersolve.h', 'pyhelper.h',
+    'kinematics.h', '__init__.py'
 ]
 
 defs_stepcompress = """
@@ -117,7 +121,7 @@ defs_serialqueue = """
 """
 
 defs_pyhelper = """
-    void set_python_logging_callback(void (*func)(const char *));
+    extern "Python+C" void python_logging_callback(const char* msg);
     double get_monotonic(void);
 """
 
@@ -132,6 +136,14 @@ defs_all = [
     defs_kin_winch, defs_kin_extruder
 ]
 
+ffi_source = """
+#include "stepcompress.h"
+#include "itersolve.h"
+#include "kinematics.h"
+#include "serialqueue.h"
+#include "pyhelper.h"
+"""
+
 # Return the list of file modification times
 def get_mtimes(srcdir, filelist):
     out = []
@@ -145,36 +157,41 @@ def get_mtimes(srcdir, filelist):
     return out
 
 # Check if the code needs to be compiled
-def check_build_code(srcdir, target, sources, cmd, other_files=[]):
+def check_build_code(srcdir, target, sources, builder, other_files=[]):
     src_times = get_mtimes(srcdir, sources + other_files)
     obj_times = get_mtimes(srcdir, [target])
     if not obj_times or max(src_times) > min(obj_times):
         logging.info("Building C code module %s", target)
-        srcfiles = [os.path.join(srcdir, fname) for fname in sources]
-        destlib = os.path.join(srcdir, target)
-        os.system(cmd % (destlib, ' '.join(srcfiles)))
+        builder(srcdir, target, sources)
 
 FFI_main = None
 FFI_lib = None
-pyhelper_logging_callback = None
+
+def build_extension(srcdir, target, sources):
+    ffi = cffi.FFI()
+    for d in defs_all:
+        ffi.cdef(d)
+    libdir = os.path.dirname(os.path.abspath(__file__))
+    ffi.set_source("_chelper", ffi_source, sources = SOURCE_FILES
+                   , extra_compile_args = [ "-Werror" ])
+    ffi.compile(tmpdir = libdir)
 
 # Return the Foreign Function Interface api to the caller
 def get_ffi():
-    global FFI_main, FFI_lib, pyhelper_logging_callback
+    global FFI_main, FFI_lib
     if FFI_lib is None:
         srcdir = os.path.dirname(os.path.realpath(__file__))
-        check_build_code(srcdir, DEST_LIB, SOURCE_FILES, COMPILE_CMD
+        check_build_code(srcdir, DEST_LIB, SOURCE_FILES, build_extension
                          , OTHER_FILES)
-        FFI_main = cffi.FFI()
-        for d in defs_all:
-            FFI_main.cdef(d)
-        FFI_lib = FFI_main.dlopen(os.path.join(srcdir, DEST_LIB))
+        from _chelper import ffi, lib
+        FFI_main = ffi
+        FFI_lib = lib
+        #FFI_lib = FFI_main.dlopen(os.path.join(srcdir, DEST_LIB))
+
         # Setup error logging
-        def logging_callback(msg):
+        @ffi.def_extern()
+        def python_logging_callback(msg):
             logging.error(FFI_main.string(msg))
-        pyhelper_logging_callback = FFI_main.callback(
-            "void(const char *)", logging_callback)
-        FFI_lib.set_python_logging_callback(pyhelper_logging_callback)
     return FFI_main, FFI_lib
 
 
@@ -188,12 +205,16 @@ HC_SOURCE_DIR = '../../lib/hub-ctrl'
 HC_TARGET = "hub-ctrl"
 HC_CMD = "sudo %s/hub-ctrl -h 0 -P 2 -p %d"
 
+def build_hub_ctrl(srcdir, target, sources):
+    srcfiles = [os.path.join(srcdir, fname) for fname in sources]
+    destlib = os.path.join(srcdir, target)
+    os.system(HC_COMPILE_CMD % (destlib, ' '.join(srcfiles)))
+
 def run_hub_ctrl(enable_power):
     srcdir = os.path.dirname(os.path.realpath(__file__))
     hubdir = os.path.join(srcdir, HC_SOURCE_DIR)
-    check_build_code(hubdir, HC_TARGET, HC_SOURCE_FILES, HC_COMPILE_CMD)
+    check_build_code(hubdir, HC_TARGET, HC_SOURCE_FILES, build_hub_ctrl)
     os.system(HC_CMD % (hubdir, enable_power))
-
 
 if __name__ == '__main__':
     get_ffi()

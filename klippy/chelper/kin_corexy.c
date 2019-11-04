@@ -8,6 +8,7 @@
 #include <string.h> // memset
 #include "compiler.h" // __visible
 #include "itersolve.h" // struct stepper_kinematics
+#include "kinematics.h"
 
 static double
 corexy_stepper_plus_calc_position(struct stepper_kinematics *sk, struct move *m

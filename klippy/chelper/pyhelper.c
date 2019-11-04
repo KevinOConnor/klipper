@@ -34,20 +34,6 @@ fill_time(double time)
     return (struct timespec) {t, (time - t)*1000000000. };
 }
 
-static void
-default_logger(const char *msg)
-{
-    fprintf(stderr, "%s\n", msg);
-}
-
-static void (*python_logging_callback)(const char *msg) = default_logger;
-
-void __visible
-set_python_logging_callback(void (*func)(const char *))
-{
-    python_logging_callback = func;
-}
-
 // Log an error message
 void
 errorf(const char *fmt, ...)
