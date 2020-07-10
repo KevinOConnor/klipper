@@ -2032,7 +2032,7 @@ sensor_pin:
 #   name in the above list.
 ```
 
-## BME280 temperature sensor
+## bme280 temperature sensor
 
 BME280 two wire interface (I2C) environmental sensor. Note that this
 sensor is not intended for use with extruders and heater beds, but
@@ -2043,7 +2043,7 @@ that may be used to report pressure and humidity in addition to
 temperature.
 
 ```
-sensor_type: BME280
+sensor_type: bme280
 #i2c_address:
 #   Default is 118 (0x76). Some BME280 sensors have an address of 119
 #   (0x77).
@@ -3056,8 +3056,8 @@ lcd_type:
 #   in "RepRapDiscount 2004 Smart Controller" type displays), "st7920"
 #   (which is used in "RepRapDiscount 12864 Full Graphic Smart
 #   Controller" type displays), "uc1701" (which is used in "MKS Mini
-#   12864" type displays), "ssd1306", or "sh1106". This parameter must
-#   be provided.
+#   12864" type displays), "ssd1306", "sh1106" or "st7789v". This 
+#   parameter must be provided.
 #hd44780_protocol_init: True
 #    Perform 8-bit/4-bit protocol initialization on an hd44780 display.
 #    This is necessary on real hd44780 devices.  However, one may
@@ -3116,6 +3116,46 @@ lcd_type:
 #   A reset pin may be specified on ssd1306 displays. If it is not
 #   specified then the hardware must have a pull-up on the
 #   corresponding lcd line.
+#resx_pin:
+#csx_pin:
+#dcx_pin:
+#wrx_pin:
+#rdx_pin:
+#d15_pin:
+#d14_pin:
+#d13_pin:
+#d12_pin:
+#d11_pin:
+#d10_pin:
+#d9_pin:
+#d8_pin:
+#   The pins connected to an st7789v type lcd. The resx-, csx- and
+#   rdx pins are optional and need to be pulled up when not connected.
+#   The other pins must be provided, and must be connected to a single
+#   mcu.
+#fgcolor:
+#   Foreground color (RGB components range 0-255, separated by commas)
+#   when using an st7789v display. The display uses 16-bit colors in
+#   RGB565 format internally. The update rate of the display depends on
+#   the chosen colors; for maximum speed it is best to pick colors where
+#   both bytes of the RGB565 color are identical.
+#bgcolor:
+#   Background color, when using an st7789v display.
+#rect:
+#   size and location of the menu window, when using an st7789v display.
+#   4 integers, separated by commas: left, top, right, bottom
+#button<0-999>_rect:
+#button<0-999>_fgcolor:
+#button<0-999>_bgcolor:
+#   Definition for an on-screen button, when using an st7789v display.
+#   Format corresponds to the rect, fgcolor and bgcolor properties above.
+#   Multiple buttons are supported, but must have incremental numbers.
+#   Must all be provided for each defined on-screen button.
+#button<0-999>_glyph:
+#   Glyph to be drawn on the button, when using an st7789v display. Glyph
+#   data is stored as lines, where '.' is a background pixel and '*' is a
+#   foreground pixel. The glyph is centered on the button. Must be provided
+#   for each defined on-screen button.
 #display_group:
 #   The name of the display_data group to show on the display. This
 #   controls the content of the screen (see the "display_data" section
