@@ -712,7 +712,7 @@ The following commands are available when an
   accelerometer does not have a name in its config section (simply
   `[adxl345]`) <chip> part of the name is not generated.
 - `ACCELEROMETER_QUERY [CHIP=<config_name>] [RATE=<value>]`: queries
-  accelerometer for the current value. If CHIP is not specified it
+  accelerometer fo  r the current value. If CHIP is not specified it
   defaults to "default". If RATE is not specified, the default value
   is used. This command is useful to test the connection to the
   ADXL345 accelerometer: one of the returned values should be a
@@ -760,3 +760,11 @@ is enabled (also see the
   defaults to the current time in "YYYYMMDD_HHMMSS" format. Note that
   the suggested input shaper parameters can be persisted in the config
   by issuing `SAVE_CONFIG` command.
+
+### XPT 2046 touch screen controller commands
+The following command is available when a
+[xpt_2046 config section](Config_Reference.md#xpt_2046)
+is enabled.
+- `XPT_DEBUG [ENABLE=[1|0]]`: Enables or disables debug reporting. When
+  enabled, all touch events and the associated coordinates are printed to the
+  terminal.

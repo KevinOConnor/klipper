@@ -3223,6 +3223,62 @@ lcd_type:
 #   button.
 ```
 
+## [xpt2046]
+
+Support for an XPT 2046 resistive touch screen controller, controlled
+over SPI. Multiple 'soft buttons' are supported; a button is defined
+as a polygon in a two-dimensional coordinate space (which is unrelated
+to the coordinate space of the display the XPT 2046 is attached to).
+
+Buttons must be numbered sequentially, starting from 0. Buttons can be
+mapped to a menu key, or can trigger a gcode command template.
+
+To determine the boundaries of a button, enable debugging using
+`XPT_DEBUG enable=1`. Touch all corners of the button using a stylus in
+a consistent order (clockwise or counter-clockwise) and write down the
+reported coordinates.
+```
+[xpt2046]
+#spi_speed:
+#spi_bus:
+#spi_software_sclk_pin:
+#spi_software_mosi_pin:
+#spi_software_miso_pin:
+#   See the "common SPI settings" section for a description of the
+#   above parameters.
+#cs_pin:
+#penirq_pin:
+#   The pins connected to the XPT 2046 resistive display controller. These
+#   must be be provided.
+#button<0-999>_points:
+#   Polygon describing the button. Must be a simple (non-intersecting) polygon,
+#   defined as comma-separated coordinate values. One line per vertex.
+#button<0-999>_function:
+#   menu function tiggered when the button is pressed. Can be any of
+#   'up', 'fast_up', 'down', 'fast_down', 'click', 'long_click' or 'back'.
+#   The default is not to execute any menu function.
+#button<0-999>_gcode:
+#   A list of G-Code commands to execute when the button is pressed. See
+#   docs/Command_Templated.md for G-Code format.
+#   The default is not to execute any G-Code.
+#button<0-999>_repeat_function:
+#   menu function (see above) triggered repeatedly when the button is being
+#   pressed and held. Cannot be combined with longpress.
+#   The default is not to execute any menu function.
+#button<0-999>_repeat_gcode:
+#   A list of G-Code commands to execute repeatedly when the button is being
+#   pressed and held. Cannot be combined with longpress.
+#   The default is not to execute any G-Code.
+#button<0-999>_longpress_function:
+#   menu function (see above) triggered repeatedly when the button is being
+#   pressed and held. Cannot be combined with repeat.
+#   The default is not to execute any menu function.
+#button<0-999>_longpress_gcode:
+#   A list of G-Code commands to execute repeatedly when the button is being
+#   pressed and held. Cannot be combined with repeat.
+#   The default is not to execute any G-Code.
+```
+
 ## [display_data]
 
 Support for displaying custom data on an lcd screen. One may create
