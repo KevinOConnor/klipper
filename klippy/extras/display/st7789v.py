@@ -10,9 +10,6 @@ from .. import bus
 
 BACKGROUND_PRIORITY_CLOCK = 0x7fffffff00000000
 
-# Spec says 66ns, keeping this at a higher value for debugging purposes
-ST7789_WRITE_DELAY = .000010
-
 # Spec says > 10 us
 ST7789_RESET_PULSE_LENGTH = .0050
 # Recovery time after reset
@@ -454,11 +451,11 @@ class ST7789V(object):
         self.mcu.add_config_cmd(
             "config_st7789v oid=%u dcx_pin=%s wrx_pin=%s d8_pin=%s"
             " d9_pin=%s d10_pin=%s d11_pin=%s d12_pin=%s d13_pin=%s"
-            " d14_pin=%s d15_pin=%s delay_ticks=%u" % (
+            " d14_pin=%s d15_pin=%s" % (
                 self.oid, self.pins['dcx'], self.pins['wrx'], self.pins['d8'],
                 self.pins['d9'], self.pins['d10'], self.pins['d11'],
                 self.pins['d12'], self.pins['d13'], self.pins['d14'],
-                self.pins['d15'], self.mcu.seconds_to_clock(ST7789_WRITE_DELAY)
+                self.pins['d15']
                 )
             )
 

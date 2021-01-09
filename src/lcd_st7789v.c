@@ -15,7 +15,6 @@
 #include "sched.h" // DECL_SHUTDOWN
 
 struct st7789v {
-    uint32_t last_write_time, write_wait_ticks;
     uint8_t last_dcx;
     uint8_t last_data;
     struct gpio_out dcx, wrx, databits[8];
@@ -57,30 +56,17 @@ st7789v_xmit_byte(struct st7789v *h, uint8_t data, uint8_t dcx )
 static void
 st7789v_xmit(struct st7789v *h, uint8_t len, uint8_t *data)
 {
-    uint32_t last_write_time=h->last_write_time,
-             write_wait_ticks=h->write_wait_ticks;
-
     for (uint8_t i = 0; i < len; ++i) {
         uint8_t b = *data++;
-        while (timer_read_time() - last_write_time < write_wait_ticks)
-            irq_poll();
         st7789v_xmit_byte(h, b, (i != 0) );
-        last_write_time = timer_read_time();
     }
-    h->last_write_time = last_write_time;
-}
+ }
 
 // Flood-fill bitmap data. This assumes 16bpp pixel format
 static void
 st7789v_floodfill(struct st7789v *h, uint8_t continuation,
                   uint32_t len, uint16_t data)
 {
-    uint32_t last_write_time=h->last_write_time,
-             write_wait_ticks=h->write_wait_ticks;
-
-    while (timer_read_time() - last_write_time < write_wait_ticks)
-        irq_poll();
-
     // RAMWR or WRMEMC/RAMWRC command
     st7789v_xmit_byte(h, continuation ? 0x3c : 0x2c, 0);
 
@@ -90,8 +76,6 @@ st7789v_floodfill(struct st7789v *h, uint8_t continuation,
         st7789v_xmit_byte(h, hiByte, 1 );
         st7789v_xmit_byte(h, loByte, 1 );
     }
-
-    h->last_write_time = timer_read_time();
 }
 
 // Send 1bpp bitmap as 16bpp image data
@@ -99,12 +83,6 @@ static void
 st7789v_bitmap(struct st7789v *h, uint8_t continuation, uint16_t fgcolor,
                uint16_t bgcolor, uint8_t len, uint8_t *data)
 {
-    uint32_t last_write_time=h->last_write_time,
-             write_wait_ticks=h->write_wait_ticks;
-
-    while (timer_read_time() - last_write_time < write_wait_ticks)
-        irq_poll();
-
     // RAMWR or WRMEMC/RAMWRC command
     st7789v_xmit_byte(h, continuation ? 0x3c : 0x2c, 0);
 
@@ -131,8 +109,6 @@ st7789v_bitmap(struct st7789v *h, uint8_t continuation, uint16_t fgcolor,
             }
         }
     }
-
-    h->last_write_time = timer_read_time();
 }
 /****************************************************************
  * Interface
@@ -152,26 +128,11 @@ command_config_st7789v(uint32_t *args)
 
     h->last_dcx = 1;
     h->last_data = 0xff;
-
-    if (!CONFIG_HAVE_STRICT_TIMING) {
-        h->write_wait_ticks = args[11];
-        return;
-    }
-
-    // Calibrate write_wait_ticks
-    irq_disable();
-    uint32_t start = timer_read_time();
-    st7789v_xmit_byte(h, 0, 0); // NOP command
-    uint32_t end = timer_read_time();
-    irq_enable();
-    uint32_t diff = end - start, delay_ticks = args[11];
-    if (delay_ticks > diff)
-        h->write_wait_ticks = delay_ticks - diff;
 }
 DECL_COMMAND(command_config_st7789v,
              "config_st7789v oid=%c dcx_pin=%u wrx_pin=%u"
              " d8_pin=%u d9_pin=%u d10_pin=%u d11_pin=%u"
-             " d12_pin=%u d13_pin=%u d14_pin=%u d15_pin=%u delay_ticks=%u");
+             " d12_pin=%u d13_pin=%u d14_pin=%u d15_pin=%u");
 
 void
 command_st7789v_send_cmd(uint32_t *args)
