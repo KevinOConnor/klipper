@@ -10,11 +10,9 @@ from .. import bus
 
 BACKGROUND_PRIORITY_CLOCK = 0x7fffffff00000000
 
-# Spec says > 10 us
-ST7789_RESET_PULSE_LENGTH = .0050
 # Recovery time after reset
-ST7789_RESET_DELAY = .150
-ST7789_MINIMAL_DELAY = 0.001
+ST7789_RESET_DELAY = 0.200 # min. 150 ms according to manual
+ST7789_MINIMAL_DELAY = 0.100 # min. 5 ms according to manual
 
 TEXTGLYPHS = {
     'right_arrow': '\x1a',
@@ -128,32 +126,21 @@ class ResetHelper(object):
         curtime = self.mcu.get_printer().get_reactor().monotonic()
 
         print_time = self.mcu.estimated_print_time(curtime)
-        print_time += ST7789_RESET_PULSE_LENGTH
+        print_time += ST7789_MINIMAL_DELAY
 
         minclock = self.mcu.print_time_to_clock(print_time)
         self.mcu_resx.update_digital_out(0, minclock=minclock)
 
-        if self.mcu_rdx is not None:
+        if self.mcu_rdx is not None or self.mcu_csx is not None:
             print_time = print_time + ST7789_MINIMAL_DELAY
             minclock = self.mcu.print_time_to_clock(print_time)
-            self.mcu_rdx.update_digital_out(1, minclock=minclock)
+            if self.mcu_rdx is not None:
+                self.mcu_rdx.update_digital_out(1, minclock=minclock)
+                self.mcu_csx.update_digital_out(0, minclock=minclock)
 
-        if self.mcu_csx is not None:
-            print_time = print_time + ST7789_MINIMAL_DELAY
-            minclock = self.mcu.print_time_to_clock(print_time)
-            self.mcu_csx.update_digital_out(0, minclock=minclock)
-
-        print_time = print_time + ST7789_RESET_DELAY
+        print_time = print_time + ST7789_MINIMAL_DELAY
         minclock = self.mcu.print_time_to_clock(print_time)
         self.mcu_resx.update_digital_out(1, minclock=minclock)
-
-        # Force a delay on the command queue before transmitting
-        # the software reset
-        print_time = print_time + ST7789_RESET_DELAY
-        minclock = self.mcu.print_time_to_clock(print_time)
-        self.mcu_resx.update_digital_out(1, minclock=minclock)
-
-        self.display.send([[0x01]]) # Software reset
 
         # Force a delay on the command queue before transmitting
         # the sleep out command
@@ -164,8 +151,8 @@ class ResetHelper(object):
         self.display.send([[0x11]]) # Sleep out
 
         # Force a delay on the command queue before transmitting
-        # any subsequent commands
-        print_time = print_time + ST7789_RESET_DELAY
+        # any subsequent commands.
+        print_time = print_time + ST7789_MINIMAL_DELAY
         minclock = self.mcu.print_time_to_clock(print_time)
         self.mcu_resx.update_digital_out(1, minclock=minclock)
 
@@ -255,7 +242,7 @@ class Framebuffer(object):
 
     def write_glyph(self, _x, _y, glyph_name):
         icon = self.icons.get(glyph_name)
-        if icon is not None and _x < 19:
+        if icon is not None and _x < self.nr_columns - 1:
             # Draw icon in graphics mode
             for icondata in icon:
                 self.write_graphics(_x, _y, icondata)
@@ -401,7 +388,6 @@ class ST7789V(object):
         self.mcu.register_config_callback(self.build_config)
         self.cmd_queue = self.mcu.alloc_command_queue()
         self.send_cmd = None
-        self.floodfill_cmd = None
         self.bitmap_cmd = None
 
         self.reset = ResetHelper(
@@ -461,9 +447,6 @@ class ST7789V(object):
 
         self.send_cmd = self.mcu.lookup_command(
             "st7789v_send_cmd oid=%c cmds=%*s", cq=self.cmd_queue)
-        self.floodfill_cmd = self.mcu.lookup_command(
-            "st7789v_floodfill oid=%c cont=%c len=%u data=%hu",
-            cq=self.cmd_queue)
         self.bitmap_cmd = self.mcu.lookup_command(
             "st7789v_bitmap oid=%c cont=%c fg=%hu bg=%hu data=%*s",
             cq=self.cmd_queue)
@@ -496,14 +479,10 @@ class ST7789V(object):
                      [0x13]] # Normal display mode
 
         self.send(init_cmds)
-        self.send([[0x2A, 0, 0, 0x1, 0x3F],  # CASET 0-319
-                   [0x2B, 0, 0, 0x0, 0xFE] # RASET 0-239
-                  ])
 
         # Fill screen in black
-        self.floodfill_cmd.send([self.oid, 0, 10*320, 0])
-        for _i in range(23):
-            self.floodfill_cmd.send([self.oid, 1, 10*320, 0])
+        intermediate_buffer = Framebuffer(self, 0, 0, 320, 240, 0, 0)
+        intermediate_buffer.flush()
 
         self.menu_framebuffer.flush()
 

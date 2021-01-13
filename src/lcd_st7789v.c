@@ -62,22 +62,6 @@ st7789v_xmit(struct st7789v *h, uint8_t len, uint8_t *data)
     }
  }
 
-// Flood-fill bitmap data. This assumes 16bpp pixel format
-static void
-st7789v_floodfill(struct st7789v *h, uint8_t continuation,
-                  uint32_t len, uint16_t data)
-{
-    // RAMWR or WRMEMC/RAMWRC command
-    st7789v_xmit_byte(h, continuation ? 0x3c : 0x2c, 0);
-
-    const uint8_t loByte = data & 0xff;
-    const uint8_t hiByte = data >> 8;
-    for (uint32_t i = 0; i < len; ++i) {
-        st7789v_xmit_byte(h, hiByte, 1 );
-        st7789v_xmit_byte(h, loByte, 1 );
-    }
-}
-
 // Send 1bpp bitmap as 16bpp image data
 static void
 st7789v_bitmap(struct st7789v *h, uint8_t continuation, uint16_t fgcolor,
@@ -142,19 +126,6 @@ command_st7789v_send_cmd(uint32_t *args)
     st7789v_xmit(h, len, cmds);
 }
 DECL_COMMAND(command_st7789v_send_cmd, "st7789v_send_cmd oid=%c cmds=%*s");
-
-void
-command_st7789v_floodfill_cmd(uint32_t *args)
-{
-    struct st7789v *h = oid_lookup(args[0], command_config_st7789v);
-    uint8_t continuation = args[1];
-    uint32_t len = args[2];
-    uint16_t data = args[3];
-
-    st7789v_floodfill(h, continuation, len, data);
-}
-DECL_COMMAND(command_st7789v_floodfill_cmd,
-             "st7789v_floodfill oid=%c cont=%c len=%u data=%hu");
 
 void
 command_st7789v_bitmap_cmd(uint32_t *args)
