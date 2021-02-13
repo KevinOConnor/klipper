@@ -13,9 +13,9 @@ class PolarKinematics:
                                              units_in_radians=True)
         rail_arm = stepper.PrinterRail(config.getsection('stepper_arm'))
         rail_z = stepper.LookupMultiRail(config.getsection('stepper_z'))
-        stepper_bed.setup_itersolve('polar_stepper_alloc', 'a')
-        rail_arm.setup_itersolve('polar_stepper_alloc', 'r')
-        rail_z.setup_itersolve('cartesian_stepper_alloc', 'z')
+        stepper_bed.setup_itersolve('polar_stepper_alloc', b'a')
+        rail_arm.setup_itersolve('polar_stepper_alloc', b'r')
+        rail_z.setup_itersolve('cartesian_stepper_alloc', b'z')
         self.rails = [rail_arm, rail_z]
         self.steppers = [stepper_bed] + [ s for r in self.rails
                                           for s in r.get_steppers() ]

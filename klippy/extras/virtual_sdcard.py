@@ -150,7 +150,7 @@ class VirtualSD:
         try:
             fname = files_by_lower[filename.lower()]
             fname = os.path.join(self.sdcard_dirname, fname)
-            f = open(fname, 'rb')
+            f = open(fname, 'r')
             f.seek(0, os.SEEK_END)
             fsize = f.tell()
             f.seek(0)

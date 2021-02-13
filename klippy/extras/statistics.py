@@ -7,7 +7,8 @@ import os, time, logging
 
 def get_os_stats(eventtime):
     # Get core usage stats
-    msg = "sysload=%.2f cputime=%.3f" % (os.getloadavg()[0], time.clock())
+    msg = "sysload=%.2f cputime=%.3f" % (os.getloadavg()[0],
+                                         time.process_time())
     # Get available system memory
     try:
         f = open("/proc/meminfo", "rb")

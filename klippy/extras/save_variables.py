@@ -4,7 +4,7 @@
 # Copyright (C) 2016-2020  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import os, logging, ast, ConfigParser as configparser
+import os, logging, ast, configparser
 
 class SaveVariables:
     def __init__(self, config):

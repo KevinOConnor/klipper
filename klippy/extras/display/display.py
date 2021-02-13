@@ -221,7 +221,7 @@ class PrinterLCD:
         for i, text in enumerate(mixed_text.split('~')):
             if i & 1 == 0:
                 # write text
-                self.lcd_chip.write_text(pos, row, text)
+                self.lcd_chip.write_text(pos, row, text.encode())
                 pos += len(text)
             else:
                 # write glyph

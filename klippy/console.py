@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Script to implement a test console with firmware over serial port
 #
 # Copyright (C) 2016,2017  Kevin O'Connor <kevin@koconnor.net>
@@ -175,7 +175,7 @@ class KeyboardReader:
                 return None
         return line
     def process_kbd(self, eventtime):
-        self.data += os.read(self.fd, 4096)
+        self.data += os.read(self.fd, 4096).decode()
 
         kbdlines = self.data.split('\n')
         for line in kbdlines[:-1]:

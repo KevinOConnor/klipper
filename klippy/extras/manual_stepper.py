@@ -29,7 +29,7 @@ class ManualStepper:
         self.trapq = ffi_main.gc(ffi_lib.trapq_alloc(), ffi_lib.trapq_free)
         self.trapq_append = ffi_lib.trapq_append
         self.trapq_free_moves = ffi_lib.trapq_free_moves
-        self.rail.setup_itersolve('cartesian_stepper_alloc', 'x')
+        self.rail.setup_itersolve('cartesian_stepper_alloc', b'x')
         self.rail.set_trapq(self.trapq)
         self.rail.set_max_jerk(9999999.9, 9999999.9)
         # Register commands

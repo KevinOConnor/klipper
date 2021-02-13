@@ -12,7 +12,7 @@ BACKGROUND_PRIORITY_CLOCK = 0x7fffffff00000000
 ST7920_CMD_DELAY  = .000020
 ST7920_SYNC_DELAY = .000045
 
-TextGlyphs = { 'right_arrow': '\x1a' }
+TextGlyphs = { 'right_arrow': b'\x1a' }
 CharGlyphs = { 'degrees': bytearray(font8x14.VGA_FONT[0xf8]) }
 
 class ST7920:
@@ -34,16 +34,16 @@ class ST7920:
         self.send_data_cmd = self.send_cmds_cmd = None
         self.is_extended = False
         # framebuffers
-        self.text_framebuffer = bytearray(' '*64)
+        self.text_framebuffer = bytearray(b' '*64)
         self.glyph_framebuffer = bytearray(128)
         self.graphics_framebuffers = [bytearray(32) for i in range(32)]
         self.all_framebuffers = [
             # Text framebuffer
-            (self.text_framebuffer, bytearray('~'*64), 0x80),
+            (self.text_framebuffer, bytearray(b'~'*64), 0x80),
             # Glyph framebuffer
-            (self.glyph_framebuffer, bytearray('~'*128), 0x40),
+            (self.glyph_framebuffer, bytearray(b'~'*128), 0x40),
             # Graphics framebuffers
-            ] + [(self.graphics_framebuffers[i], bytearray('~'*32), i)
+            ] + [(self.graphics_framebuffers[i], bytearray(b'~'*32), i)
                  for i in range(32)]
         self.cached_glyphs = {}
         self.icons = {}
@@ -168,7 +168,7 @@ class ST7920:
             return 1
         return 0
     def clear(self):
-        self.text_framebuffer[:] = ' '*64
+        self.text_framebuffer[:] = b' '*64
         zeros = bytearray(32)
         for gfb in self.graphics_framebuffers:
             gfb[:] = zeros
