@@ -273,6 +273,13 @@ itersolve_set_position(struct stepper_kinematics *sk
     sk->commanded_pos = itersolve_calc_position_from_coord(sk, x, y, z);
 }
 
+void __visible
+itersolve_set_commanded_pos(struct stepper_kinematics *sk
+                       , double pos)
+{
+    sk->commanded_pos = pos;
+}
+
 double __visible
 itersolve_get_commanded_pos(struct stepper_kinematics *sk)
 {

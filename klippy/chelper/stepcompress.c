@@ -36,6 +36,8 @@ struct stepcompress {
     // Message generation
     uint64_t last_step_clock;
     struct list_head msg_queue;
+    int track_steps;
+    struct list_head sent_moves;
     uint32_t queue_step_msgid, set_next_step_dir_msgid, oid;
     int sdir, invert_sdir;
     // Step+dir+step filter
@@ -87,6 +89,13 @@ struct step_move {
     uint32_t interval;
     uint16_t count;
     int16_t add;
+};
+
+struct sent_move {
+    uint64_t clock;
+    int sdir;
+    struct step_move move;
+    struct list_node node;
 };
 
 // Find a 'step_move' that covers a series of step times
@@ -236,6 +245,7 @@ stepcompress_alloc(uint32_t oid)
     struct stepcompress *sc = malloc(sizeof(*sc));
     memset(sc, 0, sizeof(*sc));
     list_init(&sc->msg_queue);
+    list_init(&sc->sent_moves);
     sc->oid = oid;
     sc->sdir = -1;
     return sc;
@@ -261,7 +271,53 @@ stepcompress_free(struct stepcompress *sc)
         return;
     free(sc->queue);
     message_queue_free(&sc->msg_queue);
+    stepcompress_enable_step_tracking(sc, 0);
     free(sc);
+}
+
+void __visible
+stepcompress_enable_step_tracking(struct stepcompress *sc, int enable)
+{
+    sc->track_steps = enable;
+    if (!enable) {
+        while (!list_empty(&sc->sent_moves)) {
+            struct sent_move *sm = list_first_entry(
+                &sc->sent_moves, struct sent_move, node);
+            list_del(&sm->node);
+            free(sm);
+        }
+    }
+}
+
+int __visible
+stepcompress_count_steps_after(struct stepcompress *sc, uint64_t clock)
+{
+    if (!sc->track_steps || list_empty(&sc->sent_moves))
+        return 0;
+    int stepcount = 0;
+    struct sent_move *first = list_first_entry(
+        &sc->sent_moves, struct sent_move, node);
+    struct sent_move *sm = list_last_entry(
+        &sc->sent_moves, struct sent_move, node);
+    while (sm != first && sm->clock > clock) {
+        // entire move was after 'clock' so count all its steps
+        stepcount += sm->sdir ? sm->move.count : -sm->move.count;
+        sm = list_prev_entry(sm, node);
+    }
+    if (sm == first && sm->clock > clock)
+        return -1; // error
+    uint64_t stepclock = sm->clock;
+    int interval = sm->move.interval;
+    int count = sm->move.count;
+    int add = sm->move.add;
+    while (count > 0 && stepclock < clock) {
+        // this step was before requested time so skip over it
+        stepclock += interval;
+        interval += add;
+        count -= 1;
+    }
+    stepcount += sm->sdir ? count : -count;
+    return stepcount;
 }
 
 uint32_t
@@ -305,6 +361,16 @@ queue_flush(struct stepcompress *sc, uint64_t move_clock)
         int ret = check_line(sc, move);
         if (ret)
             return ret;
+
+        if (sc->track_steps) {
+            // record sent moves so we can figure out
+            // where we were at a given point in time
+            struct sent_move *sm = malloc(sizeof(*sm));
+            sm->move = move;
+            sm->clock = sc->last_step_clock;
+            sm->sdir = sc->sdir ^ sc->invert_sdir;
+            list_add_tail(&sm->node, &sc->sent_moves);
+        }
 
         uint32_t msg[5] = {
             sc->queue_step_msgid, sc->oid, move.interval, move.count, move.add

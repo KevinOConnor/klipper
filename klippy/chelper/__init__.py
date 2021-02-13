@@ -38,6 +38,9 @@ defs_stepcompress = """
     int stepcompress_queue_msg(struct stepcompress *sc
         , uint32_t *data, int len);
 
+    void stepcompress_enable_step_tracking(struct stepcompress *sc, int enable);
+    int stepcompress_count_steps_after(struct stepcompress *sc, uint64_t clock);
+
     struct steppersync *steppersync_alloc(struct serialqueue *sq
         , struct stepcompress **sc_list, int sc_num, int move_num);
     void steppersync_free(struct steppersync *ss);
@@ -59,6 +62,8 @@ defs_itersolve = """
         , double x, double y, double z);
     void itersolve_set_position(struct stepper_kinematics *sk
         , double x, double y, double z);
+    void itersolve_set_commanded_pos(struct stepper_kinematics *sk
+        , double position);
     double itersolve_get_commanded_pos(struct stepper_kinematics *sk);
 """
 

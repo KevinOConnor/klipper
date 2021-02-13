@@ -116,16 +116,23 @@ class PrinterProbe:
         pos = toolhead.get_position()
         pos[2] = self.z_position
         endstops = [(self.mcu_probe, "probe")]
+        # TODO - make sure probe is not triggered before blind move and
+        #        retract a safe distance first?
+        max_blind_travel = min(5.0, self.z_offset)
+        if self.mcu_probe.has_remote_steppers() and self.z_offset < 0.1:
+            raise self.printer.command_error("Not safe to probe with "
+                "z_offset less than 0.1 and probe on a separate MCU"
+                "to Z steppers")
         verify = self.printer.get_start_args().get('debugoutput') is None
         try:
-            homing_state.homing_move(pos, endstops, speed,
+            homing_state.homing_move(pos, endstops, speed, max_blind_travel,
                                      probe_pos=True, verify_movement=verify)
         except self.printer.command_error as e:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
                 reason += HINT_TIMEOUT
             raise self.printer.command_error(reason)
-        pos = toolhead.get_position()
+        pos = homing_state.probe_position
         self.gcode.respond_info("probe at %.3f,%.3f is z=%.6f"
                                 % (pos[0], pos[1], pos[2]))
         return pos[:3]
@@ -279,7 +286,6 @@ class ProbeEndstopWrapper:
         pin = config.get('pin')
         pin_params = ppins.lookup_pin(pin, can_invert=True, can_pullup=True)
         mcu = pin_params['chip']
-        mcu.register_config_callback(self._build_config)
         self.mcu_endstop = mcu.setup_pin('endstop', pin_params)
         # Wrappers
         self.get_mcu = self.mcu_endstop.get_mcu
@@ -288,8 +294,16 @@ class ProbeEndstopWrapper:
         self.home_start = self.mcu_endstop.home_start
         self.home_wait = self.mcu_endstop.home_wait
         self.query_endstop = self.mcu_endstop.query_endstop
-    def _build_config(self):
-        kin = self.printer.lookup_object('toolhead').get_kinematics()
+        self.has_remote_steppers = self.mcu_endstop.has_remote_steppers
+        self.has_triggered = self.mcu_endstop.has_triggered
+        self.get_last_report_time = self.mcu_endstop.get_last_report_time
+        self.get_next_expected_report_time = \
+            self.mcu_endstop.get_next_expected_report_time
+        self.printer.register_event_handler("toolhead:ready",
+                                    self._add_steppers)
+
+    def _add_steppers(self, toolhead):
+        kin = toolhead.get_kinematics()
         for stepper in kin.get_steppers():
             if stepper.is_active_axis('z'):
                 self.add_stepper(stepper)

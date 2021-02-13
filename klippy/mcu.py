@@ -9,11 +9,40 @@ import serialhdl, pins, chelper, clocksync
 class error(Exception):
     pass
 
+class MCU_stepper_group:
+    def __init__(self, mcu):
+        self._mcu = mcu
+        self._steppers = []
+        self._mcu.register_config_callback(self._build_config)
+
+    def add_stepper(self, stepper):
+        self._steppers.append(stepper)
+
+    def _build_config(self):
+        self._oid = self._mcu.create_oid()
+        self._mcu.add_config_cmd(
+            "config_stepper_group oid=%d stepper_count=%d" % (
+                self._oid, len(self._steppers)))
+        for i, s in enumerate(self._steppers):
+            self._mcu.add_config_cmd(
+                "stepper_group_set_stepper oid=%d pos=%d stepper_oid=%d" % (
+                    self._oid, i, s.get_oid()), is_init=True)
+        self._stop_cmd = self._mcu.lookup_command(
+            "stepper_group_stop oid=%c")
+
+    def stop(self):
+         self._stop_cmd.send([self._oid])
+         logging.info("Stopping steppers %s on MCU %s",
+            ','.join([s.get_name() for s in self._steppers]),
+            self._mcu.get_name())
+
 class MCU_endstop:
     RETRY_QUERY = 1.000
     def __init__(self, mcu, pin_params):
         self._mcu = mcu
         self._steppers = []
+        self._local_steppers = []
+        self._remote_steppers = {}
         self._pin = pin_params['pin']
         self._pullup = pin_params['pullup']
         self._invert = pin_params['invert']
@@ -26,49 +55,68 @@ class MCU_endstop:
     def get_mcu(self):
         return self._mcu
     def add_stepper(self, stepper):
-        if stepper.get_mcu() is not self._mcu:
-            raise pins.error("Endstop and stepper must be on the same mcu")
         if stepper in self._steppers:
             return
         self._steppers.append(stepper)
+        mcu = stepper.get_mcu()
+        if mcu is self._mcu:
+            self._local_steppers.append(stepper)
+        else:
+            if mcu not in self._remote_steppers:
+                self._remote_steppers[mcu] = MCU_stepper_group(mcu)
+            self._remote_steppers[mcu].add_stepper(stepper)
+    def has_remote_steppers(self):
+        return len(self._remote_steppers) > 0
     def get_steppers(self):
         return list(self._steppers)
     def _build_config(self):
         self._oid = self._mcu.create_oid()
         self._mcu.add_config_cmd(
             "config_endstop oid=%d pin=%s pull_up=%d stepper_count=%d" % (
-                self._oid, self._pin, self._pullup, len(self._steppers)))
+                self._oid, self._pin, self._pullup, len(self._local_steppers)))
         self._mcu.add_config_cmd(
             "endstop_home oid=%d clock=0 sample_ticks=0 sample_count=0"
-            " rest_ticks=0 pin_value=0" % (self._oid,), on_restart=True)
-        for i, s in enumerate(self._steppers):
+            " rest_ticks=0 report_ticks=0 pin_value=0" % (self._oid,),
+            on_restart=True)
+        for i, s in enumerate(self._local_steppers):
             self._mcu.add_config_cmd(
                 "endstop_set_stepper oid=%d pos=%d stepper_oid=%d" % (
                     self._oid, i, s.get_oid()), is_init=True)
         cmd_queue = self._mcu.alloc_command_queue()
         self._home_cmd = self._mcu.lookup_command(
             "endstop_home oid=%c clock=%u sample_ticks=%u sample_count=%c"
-            " rest_ticks=%u pin_value=%c", cq=cmd_queue)
+            " rest_ticks=%u report_ticks=%u pin_value=%c", cq=cmd_queue)
         self._requery_cmd = self._mcu.lookup_command(
             "endstop_query_state oid=%c", cq=cmd_queue)
         self._query_cmd = self._mcu.lookup_query_command(
             "endstop_query_state oid=%c",
-            "endstop_state oid=%c homing=%c pin_value=%c", oid=self._oid,
-            cq=cmd_queue)
+            "endstop_state oid=%c homing=%c pin_value=%c triggered_time=%u",
+            oid=self._oid, cq=cmd_queue)
     def home_start(self, print_time, sample_time, sample_count, rest_time,
-                   triggered=True):
+                   report_interval=0.0, triggered=True):
         clock = self._mcu.print_time_to_clock(print_time)
         rest_ticks = self._mcu.print_time_to_clock(print_time+rest_time) - clock
+        report_ticks = 0
+        if report_interval:
+            report_ticks = self._mcu.print_time_to_clock(
+                print_time + report_interval) - clock
+            logging.info("Report interval = %f ticks = %d",
+                report_interval, report_ticks)
         self._next_query_print_time = print_time + self.RETRY_QUERY
         self._min_query_time = self._reactor.monotonic()
         self._last_sent_time = 0.
+        self._triggered_time = 0.
+        self._last_report_time = print_time
+        self._report_interval = report_interval
+        self._last_report_trip_time = 0.
         self._home_end_time = self._reactor.NEVER
         self._trigger_completion = self._reactor.completion()
+        #self._report_completion = self._reactor.completion()
         self._mcu.register_response(self._handle_endstop_state,
                                     "endstop_state", self._oid)
         self._home_cmd.send(
             [self._oid, clock, self._mcu.seconds_to_clock(sample_time),
-             sample_count, rest_ticks, triggered ^ self._invert],
+             sample_count, rest_ticks, report_ticks, triggered ^ self._invert],
             reqclock=clock)
         self._home_completion = self._reactor.register_callback(
             self._home_retry)
@@ -76,9 +124,16 @@ class MCU_endstop:
     def _handle_endstop_state(self, params):
         logging.debug("endstop_state %s", params)
         if params['#sent_time'] >= self._min_query_time:
+            t = self._mcu.clock_to_print_time(
+                    self._mcu.clock32_to_clock64(params['triggered_time']))
             if params['homing']:
                 self._last_sent_time = params['#sent_time']
+                self._last_report_time = t
+                self._last_report_trip_time = self._mcu.estimated_print_time(
+                    self._reactor.monotonic()) - t
+                #self._reactor.async_complete(self._report_completion, True)
             else:
+                self._triggered_time = t
                 self._min_query_time = self._reactor.NEVER
                 self._reactor.async_complete(self._trigger_completion, True)
     def _home_retry(self, eventtime):
@@ -87,6 +142,8 @@ class MCU_endstop:
         while 1:
             did_trigger = self._trigger_completion.wait(eventtime + 0.100)
             if did_trigger is not None:
+                for remote in self._remote_steppers.values():
+                    remote.stop()
                 # Homing completed successfully
                 return True
             # Check for timeout
@@ -103,9 +160,10 @@ class MCU_endstop:
         self._home_end_time = home_end_time
         did_trigger = self._home_completion.wait()
         self._mcu.register_response(None, "endstop_state", self._oid)
-        self._home_cmd.send([self._oid, 0, 0, 0, 0, 0])
+        self._home_cmd.send([self._oid, 0, 0, 0, 0, 0, 0])
         for s in self._steppers:
-            s.note_homing_end(did_trigger=did_trigger)
+            s.note_homing_end(did_trigger=did_trigger,
+                triggered_time=self._triggered_time)
         if not self._trigger_completion.test():
             self._trigger_completion.complete(False)
         return did_trigger
@@ -115,6 +173,17 @@ class MCU_endstop:
             return 0
         params = self._query_cmd.send([self._oid], minclock=clock)
         return params['pin_value'] ^ self._invert
+    def get_last_report_time(self):
+        return self._last_report_time
+    def get_next_expected_report_time(self):
+        return self._last_report_time + self._report_interval
+    def get_last_report_trip_time(self):
+        # purely for debugging/monitoring purposes
+        return self._last_report_trip_time
+    def has_triggered(self):
+        return self._triggered_time > 0.
+    #def wait_for_report(self, time):
+    #    self._report_completion.wait(time)
 
 class MCU_digital_out:
     def __init__(self, mcu, pin_params):

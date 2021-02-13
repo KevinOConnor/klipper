@@ -195,10 +195,11 @@ class BLTouchEndstopWrapper:
         for s, mcu_pos in self.start_mcu_pos:
             if s.get_mcu_position() == mcu_pos:
                 raise self.printer.command_error("BLTouch failed to deploy")
-    def home_start(self, print_time, sample_time, sample_count, rest_time):
+    def home_start(self, print_time, sample_time, sample_count,
+                   rest_time, report_time):
         rest_time = min(rest_time, ENDSTOP_REST_TIME)
         return self.mcu_endstop.home_start(print_time, sample_time,
-                                           sample_count, rest_time)
+                                    sample_count, rest_time, report_time)
     def get_position_endstop(self):
         return self.position_endstop
     def set_output_mode(self, mode):

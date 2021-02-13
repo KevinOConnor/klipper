@@ -18,6 +18,9 @@ int stepcompress_commit(struct stepcompress *sc);
 int stepcompress_reset(struct stepcompress *sc, uint64_t last_step_clock);
 int stepcompress_queue_msg(struct stepcompress *sc, uint32_t *data, int len);
 
+void stepcompress_enable_step_tracking(struct stepcompress *sc, int enable);
+int stepcompress_count_steps_after(struct stepcompress *sc, uint64_t clock);
+
 struct serialqueue;
 struct steppersync *steppersync_alloc(
     struct serialqueue *sq, struct stepcompress **sc_list, int sc_num

@@ -43,6 +43,7 @@ class MCU_stepper:
         self._itersolve_generate_steps = self._ffi_lib.itersolve_generate_steps
         self._itersolve_check_active = self._ffi_lib.itersolve_check_active
         self._trapq = ffi_main.NULL
+        self._homing_overshoot = 0.0
     def get_mcu(self):
         return self._mcu
     def get_name(self, short=False):
@@ -86,7 +87,7 @@ class MCU_stepper:
             "reset_step_clock oid=%c clock=%u")
         self._get_position_cmd = self._mcu.lookup_query_command(
             "stepper_get_position oid=%c",
-            "stepper_position oid=%c pos=%i", oid=self._oid)
+            "stepper_position oid=%c pos=%i stopped_time=%i", oid=self._oid)
         self._ffi_lib.stepcompress_fill(
             self._stepqueue, self._mcu.seconds_to_clock(max_error),
             self._invert_dir, step_cmd_id, dir_cmd_id)
@@ -103,9 +104,11 @@ class MCU_stepper:
         return self._ffi_lib.itersolve_calc_position_from_coord(
             self._stepper_kinematics, coord[0], coord[1], coord[2])
     def set_position(self, coord):
+        # Used during homing to reset the coordinate system
         opos = self.get_commanded_position()
         sk = self._stepper_kinematics
         self._ffi_lib.itersolve_set_position(sk, coord[0], coord[1], coord[2])
+        # keep MCU position in sync
         self._mcu_position_offset += opos - self.get_commanded_position()
     def get_commanded_position(self):
         sk = self._stepper_kinematics
@@ -116,6 +119,12 @@ class MCU_stepper:
         if mcu_pos >= 0.:
             return int(mcu_pos + 0.5)
         return int(mcu_pos - 0.5)
+    def set_mcu_position(self, pos):
+        sk = self._stepper_kinematics
+        self._ffi_lib.itersolve_set_commanded_pos(sk,
+            pos * self._step_dist - self._mcu_position_offset)
+    def get_homing_overshoot(self):
+        return self._homing_overshoot
     def get_tag_position(self):
         return self._tag_position
     def set_tag_position(self, position):
@@ -128,7 +137,11 @@ class MCU_stepper:
                                                      self._step_dist)
             self.set_trapq(self._trapq)
         return old_sk
-    def note_homing_end(self, did_trigger=False):
+    def start_homing_step_tracking(self):
+        self._ffi_lib.stepcompress_enable_step_tracking(self._stepqueue, 1)
+    def stop_homing_step_tracking(self):
+        self._ffi_lib.stepcompress_enable_step_tracking(self._stepqueue, 0)
+    def note_homing_end(self, did_trigger=False, triggered_time=0):
         ret = self._ffi_lib.stepcompress_reset(self._stepqueue, 0)
         if ret:
             raise error("Internal error in stepcompress")
@@ -139,11 +152,28 @@ class MCU_stepper:
             raise error("Internal error in stepcompress")
         if not did_trigger or self._mcu.is_fileoutput():
             return
+        # Note where the MCU stopped the motor
         params = self._get_position_cmd.send([self._oid])
-        mcu_pos_dist = params['pos'] * self._step_dist
+        pos = params['pos']
         if self._invert_dir:
-            mcu_pos_dist = -mcu_pos_dist
-        self._mcu_position_offset = mcu_pos_dist - self.get_commanded_position()
+            pos = -pos
+        self.set_mcu_position(pos)
+        # Note any steps that occurred after the end stop triggered
+        # but before the steppers were stopped (for remote end stops)
+        trigger_mcu_clock = self._mcu.print_time_to_clock(triggered_time)
+        stopped_time = params['stopped_time']
+        stopped_mcu_clock = self._mcu.clock32_to_clock64(stopped_time)
+        def count_steps_after(clock):
+            return self._ffi_lib.stepcompress_count_steps_after(
+                self._stepqueue, clock)
+        overshoot_steps = (count_steps_after(trigger_mcu_clock) -
+                           count_steps_after(stopped_mcu_clock - 1))
+        if self._invert_dir:
+            overshoot_steps = -overshoot_steps
+        self._homing_overshoot = overshoot_steps * self._step_dist
+        if overshoot_steps != 0:
+            logging.info("%s overshot homing trigger point by %f (%i steps)",
+                self.get_name(), self._homing_overshoot, overshoot_steps)
     def set_trapq(self, tq):
         if tq is None:
             ffi_main, self._ffi_lib = chelper.get_ffi()
@@ -304,15 +334,34 @@ class PrinterRail:
             raise config.error(
                 "Invalid homing_positive_dir / position_endstop in '%s'"
                 % (config.get_name(),))
+        self.homing_max_blind_travel = 0
+        config.get_printer().register_event_handler("toolhead:ready",
+                                    self._check_endstops)
+    def _check_endstops(self, toolhead):
+        if not any(endstop.has_remote_steppers()
+                   for endstop, _ in self.endstops):
+            return
+        self.homing_max_blind_travel = min(
+            self.position_max - self.position_endstop,
+            self.position_endstop - self.position_min)
+        MIN_ENDSTOP_DIST = 0.2
+        if self.homing_max_blind_travel < MIN_ENDSTOP_DIST:
+            raise config.error(
+                "Endstop '%s' on different MCU to stepper "
+                "must be at least %f from the end of the rail" % (
+                    self.endstops[0][1], min_overshoot))
+        BLIND_TRAVEL_SAFETY_MARGIN = 0.1
+        self.homing_max_blind_travel -= BLIND_TRAVEL_SAFETY_MARGIN
     def get_range(self):
         return self.position_min, self.position_max
     def get_homing_info(self):
         homing_info = collections.namedtuple('homing_info', [
             'speed', 'position_endstop', 'retract_speed', 'retract_dist',
-            'positive_dir', 'second_homing_speed'])(
+            'positive_dir', 'second_homing_speed', 'max_blind_travel'])(
                 self.homing_speed, self.position_endstop,
                 self.homing_retract_speed, self.homing_retract_dist,
-                self.homing_positive_dir, self.second_homing_speed)
+                self.homing_positive_dir, self.second_homing_speed,
+                self.homing_max_blind_travel)
         return homing_info
     def get_steppers(self):
         return list(self.steppers)

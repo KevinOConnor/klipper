@@ -256,9 +256,9 @@ Stepper commands
   generated with dir=0.
 
 * `endstop_home oid=%c clock=%u sample_ticks=%u sample_count=%c
-  rest_ticks=%u pin_value=%c` : This command is used during stepper
-  "homing" operations. To use this command a 'config_endstop' command
-  with the same 'oid' parameter must have been issued during
+  rest_ticks=%u report_ticks=%u pin_value=%c` : This command is used
+  during stepper "homing" operations. To use this command a 'config_endstop'
+  command with the same 'oid' parameter must have been issued during
   micro-controller configuration. When this command is invoked, the
   micro-controller will sample the endstop pin every 'rest_ticks'
   clock ticks and check if it has a value equal to 'pin_value'. If the
