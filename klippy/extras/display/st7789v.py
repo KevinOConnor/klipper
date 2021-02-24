@@ -7,12 +7,19 @@
 import math
 from . import font8x14
 from .. import bus
+import logging
 
 BACKGROUND_PRIORITY_CLOCK = 0x7fffffff00000000
 
 # Recovery time after reset
 ST7789_RESET_DELAY = 0.200 # min. 150 ms according to manual
 ST7789_MINIMAL_DELAY = 0.100 # min. 5 ms according to manual
+
+MAX_BYTES_IN_REQUEST = 48      # max payload to encode in a single request.
+MAX_BYTES_TO_KEEP_PENDING = 45 # max payload to keep pending.
+
+MAX_ROW = 240
+MAX_COLUMN = 320
 
 TEXTGLYPHS = {
     'right_arrow': '\x1a',
@@ -36,6 +43,12 @@ def _parse_rect(rect_string):
     if len(elements) != 4:
         raise ST7789vParseException("Malformed rectangle '%s'"
                                     % (rect_string,))
+    for i in range(0, len(elements) - 1):
+        if (elements[i] < 0 or
+           ( (i%1 == 1) and elements[i] > MAX_ROW) or
+           ( (i%1 == 0) and elements[i] > MAX_COLUMN)):
+            raise ST7789vParseException("Rectangle '%s' outside display"
+                                        % (rect_string,))
 
     return {
         'left': elements[0],
@@ -156,36 +169,172 @@ class ResetHelper(object):
         minclock = self.mcu.print_time_to_clock(print_time)
         self.mcu_resx.update_digital_out(1, minclock=minclock)
 
-class BitmapWriterHelper(object):
-    def __init__(self, display, fgcolor, bgcolor):
-        self.oid = display.oid
-        self.bitmap_cmd = display.bitmap_cmd
-        self.fgcolor = fgcolor
-        self.bgcolor = bgcolor
-        self.max_bytes_in_request = 60
-        self.buffer = None
-        self.use_continuation = False
-        self.reset()
+class PixelRunIterator(object):
+    def __init__(self, pixeldata, width):
+        self.data = pixeldata
+        self.current_bit = 0x80
+        self.next_index = 1
+        self.current_byte = self.data[0]
+        self.remaining = width
 
-    def reset(self):
-        self.buffer = bytearray(0)
-        self.use_continuation = False
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.remaining == 0:
+            raise StopIteration
+
+        thisbit = self.peekbit()
+        count = 1
+
+        while self.advance():
+            if self.peekbit() != thisbit:
+                break
+            count = count + 1
+
+        return thisbit, count
+    def next(self): # python 2 compatibility
+        return self.__next__()
+
+    def peekbit(self):
+        return ((self.current_byte & self.current_bit) != 0)
+
+    def advance(self):
+        self.remaining -= 1
+
+        if self.remaining == 0:
+            return False
+
+        self.current_bit >>= 1
+        if self.current_bit == 0:
+            self.current_bit = 0x80
+            if self.next_index >= len(self.data):
+                self.current_byte = 0
+            else:
+                self.current_byte = self.data[self.next_index]
+            self.next_index += 1
+        return True
+
+class PackBitsStream(object):
+    LITERAL=-1
+    LITERAL_DCX=-2
+    def __init__(self, oid, send_cmd):
+        self.oid = oid
+        self.send_cmd = send_cmd
+        self.buffer = bytearray()
+
+    def add_command(self, data):
+        self._extend_buffer(PackBitsStream.LITERAL_DCX, data)
+
+    def add_literal_data(self, data):
+        data_len = len(data)
+        for write_pos in range(0, data_len, 64):
+            nr_bytes = min(64, data_len - write_pos)
+            self._extend_buffer(PackBitsStream.LITERAL,
+                                data[write_pos: write_pos + nr_bytes])
+
+    def add_repeating_data(self, runlength, data):
+        while runlength > 0:
+            section = min(129, runlength)
+            runlength -= section
+            self._extend_buffer(section, data)
+
+    def _extend_buffer(self, header, data):
+        if not data:
+            return
+        remaining = MAX_BYTES_IN_REQUEST - len(self.buffer) - 1
+
+        if len(data) > remaining:
+            # data will not fit
+            if header == PackBitsStream.LITERAL:
+                self._extend_buffer(PackBitsStream.LITERAL,
+                                    data[:remaining])
+                self._extend_buffer(PackBitsStream.LITERAL, data[remaining:])
+            elif header == PackBitsStream.LITERAL_DCX:
+                # Assert DCX on first write
+                self._extend_buffer(PackBitsStream.LITERAL_DCX,
+                                    data[:remaining])
+                self._extend_buffer(PackBitsStream.LITERAL, data[remaining:])
+            else:
+                # flush and try again
+                self.flush()
+                self._extend_buffer(header, data)
+        else:
+            if header == PackBitsStream.LITERAL:
+                self.buffer.append(len(data) + 63)
+            elif header == PackBitsStream.LITERAL_DCX:
+                self.buffer.append(len(data) - 1)
+            else:
+                self.buffer.append(header + 126) # repeat
+            self.buffer.extend(data)
+
+            if len(self.buffer) >= MAX_BYTES_TO_KEEP_PENDING:
+                self.flush()
 
     def flush(self):
         if self.buffer:
-            self.bitmap_cmd.send([self.oid, self.use_continuation,
-                                  self.fgcolor, self.bgcolor, self.buffer])
-            self.reset()
+            self.send_cmd.send([self.oid, self.buffer],
+                            reqclock=BACKGROUND_PRIORITY_CLOCK)
+            self.buffer = bytearray()
 
-    def write(self, data):
-        self.buffer.extend(data)
-        if len(self.buffer) >= self.max_bytes_in_request:
-            self.bitmap_cmd.send([self.oid, self.use_continuation,
-                                  self.fgcolor, self.bgcolor,
-                                  self.buffer[0:self.max_bytes_in_request]])
-            self.buffer = self.buffer[self.max_bytes_in_request:]
-            self.use_continuation = True
+class BitmapWriterHelper(object):
+    def __init__(self, display, fgcolor, bgcolor, start_x, end_x, end_y):
+        self.stream = PackBitsStream(display.oid, display.send_cmd)
+        self.fgcolor = fgcolor
+        self.bgcolor = bgcolor
 
+        self.last_row = None
+        self.start_x = start_x
+        self.end_x = end_x - 1 # CASET end column is included!
+        self.end_y = end_y - 1 # RASET end row is included!
+        self.width = end_x - start_x
+        self.literal_buffer = None
+
+        self.caset_sent = False
+
+    def flush(self):
+        if self.caset_sent:
+            self._flush_literal_buffer()
+            self.stream.flush()
+
+    def _flush_literal_buffer(self):
+        if not self.literal_buffer:
+            return
+
+        self.stream.add_literal_data(self.literal_buffer)
+
+        self.literal_buffer = None
+
+    def write(self, row, data):
+        if not self.last_row or self.last_row+1 != row:
+            # Do not continue previous row
+            self._flush_literal_buffer()
+            if not self.caset_sent:
+                self.stream.add_command([0x2A, # CASET
+                                         self.start_x >>8, self.start_x & 0xff,
+                                         self.end_x >> 8, self.end_x & 0xff])
+                self.caset_sent = True
+
+            self.stream.add_command([0x2b, # RASET
+                                     0, row, 0, self.end_y])
+            self.stream.add_command([0x2c]) # data, no continuation
+
+        self.last_row = row
+
+        for is_foreground, runlength in PixelRunIterator(data, self.width):
+            value = self.fgcolor if is_foreground else self.bgcolor
+
+            hi = value >> 8
+            lo = value & 0xff
+
+            if runlength < 2:
+                if not self.literal_buffer:
+                    self.literal_buffer = bytearray([hi, lo])
+                else:
+                    self.literal_buffer.extend([hi, lo])
+            else:
+                self._flush_literal_buffer()
+                self.stream.add_repeating_data(runlength, [hi, lo])
 class Framebuffer(object):
     def __init__(self, display, origin_x, origin_y,
                  size_x, size_y, fgcolor, bgcolor):
@@ -209,33 +358,15 @@ class Framebuffer(object):
         return [bytearray((self.size_x+7)//8) for _i in range(self.size_y)]
 
     def flush(self):
-        caset_sent = False
-        last_row = None
         writer = BitmapWriterHelper(
-            self.display, self.fgcolor, self.bgcolor)
+            self.display, self.fgcolor, self.bgcolor,
+            self.origin_x, self.end_x, self.size_y + self.origin_y)
 
         for row in range(self.size_y):
             old_row = self.old_framebuffer[row]
             new_row = self.framebuffer[row]
             if old_row is None or old_row != new_row:
-                if not caset_sent:
-                    # CASET 0-319
-                    caset_cmd = [[0x2A,
-                                  self.origin_x >> 8, self.origin_x & 0xff,
-                                  self.end_x >> 8, self.end_x & 0xff]]
-                    self.display.send(caset_cmd)
-                    caset_sent = True
-
-                if last_row is None or last_row != row + 1:
-                    # Flush existing data, send RASET
-                    writer.flush()
-                    raset_cmd = [[0x2B,
-                                  0, row + self.origin_y, 0x0,
-                                  row + self.origin_y + 1]]
-                    self.display.send(raset_cmd)
-
-                last_row = row
-                writer.write(new_row)
+                writer.write(row + self.origin_y, new_row)
 
         writer.flush()
         self.old_framebuffer[:] = self.framebuffer
@@ -337,18 +468,18 @@ class ST7789VButton(object):
         width = rect['right'] - left
         height = rect['bottom'] - top
 
-        self.__framebuffer = Framebuffer(display,
-                                         left, top,
-                                         width + 1, height + 1,
-                                         fgcolor, bgcolor)
+        self._framebuffer = Framebuffer(display,
+                                        left, top,
+                                        width, height,
+                                        fgcolor, bgcolor)
 
         glyph_x = (width - glyph_width) // 2
         glyph_y = (height - glyph_height) // 2
 
-        self.__framebuffer.write_bitmap(glyph_x, glyph_y, glyph)
+        self._framebuffer.write_bitmap(glyph_x, glyph_y, glyph)
 
     def flush(self):
-        self.__framebuffer.flush()
+        self._framebuffer.flush()
 
 class ST7789V(object):
     def __init__(self, config):
@@ -446,15 +577,15 @@ class ST7789V(object):
             )
 
         self.send_cmd = self.mcu.lookup_command(
-            "st7789v_send_cmd oid=%c cmds=%*s", cq=self.cmd_queue)
-        self.bitmap_cmd = self.mcu.lookup_command(
-            "st7789v_bitmap oid=%c cont=%c fg=%hu bg=%hu data=%*s",
-            cq=self.cmd_queue)
+            "st7789v_send_cmd oid=%c data=%*s", cq=self.cmd_queue)
 
     def send(self, cmds):
+        stream = PackBitsStream(self.oid, self.send_cmd)
+
         for cmd in cmds:
-            self.send_cmd.send([self.oid, cmd],
-                               reqclock=BACKGROUND_PRIORITY_CLOCK)
+            stream.add_command(cmd)
+
+        stream.flush()
 
     def flush(self):
         self.menu_framebuffer.flush()
