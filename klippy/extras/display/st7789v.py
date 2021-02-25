@@ -18,6 +18,9 @@ ST7789_MINIMAL_DELAY = 0.100 # min. 5 ms according to manual
 MAX_BYTES_IN_REQUEST = 48      # max payload to encode in a single request.
 MAX_BYTES_TO_KEEP_PENDING = 45 # max payload to keep pending.
 
+MAX_NR_CONSECUTIVE_UNCHANGED_PIXELS = 3 # max nr. of consecutive unchanged
+                                        # pixels before a new RASET is issued
+
 MAX_ROW = 240
 MAX_COLUMN = 320
 
@@ -170,12 +173,21 @@ class ResetHelper(object):
         self.mcu_resx.update_digital_out(1, minclock=minclock)
 
 class PixelRunIterator(object):
-    def __init__(self, pixeldata, width):
+    def __init__(self, pixeldata, begin = 0, end = None):
         self.data = pixeldata
-        self.current_bit = 0x80
-        self.next_index = 1
-        self.current_byte = self.data[0]
-        self.remaining = width
+
+        if not end:
+            end = 8 * len(pixeldata)
+
+        self.next_index = begin // 8
+        self.current_bit = 0x80 >> (begin & 7)
+        if self.next_index < len(self.data) and begin < end:
+            self.current_byte = self.data[self.next_index]
+            self.remaining = end - begin
+        else:
+            self.current_byte = 0
+            self.remaining = 0
+        self.next_index += 1
 
     def __iter__(self):
         return self
@@ -278,22 +290,23 @@ class PackBitsStream(object):
             self.buffer = bytearray()
 
 class BitmapWriterHelper(object):
-    def __init__(self, display, fgcolor, bgcolor, start_x, end_x, end_y):
+    def __init__(self, display, fgcolor, bgcolor, start_x, start_y):
         self.stream = PackBitsStream(display.oid, display.send_cmd)
         self.fgcolor = fgcolor
         self.bgcolor = bgcolor
 
-        self.last_row = None
         self.start_x = start_x
-        self.end_x = end_x - 1 # CASET end column is included!
-        self.end_y = end_y - 1 # RASET end row is included!
-        self.width = end_x - start_x
+        self.start_y = start_y
+
         self.literal_buffer = None
 
-        self.caset_sent = False
+        self.last_row = None
+        self.last_begin = None
+        self.last_end = None
 
     def flush(self):
-        if self.caset_sent:
+        if self.last_row != None:
+            # at least one row as been written
             self._flush_literal_buffer()
             self.stream.flush()
 
@@ -305,23 +318,37 @@ class BitmapWriterHelper(object):
 
         self.literal_buffer = None
 
-    def write(self, row, data):
-        if not self.last_row or self.last_row+1 != row:
-            # Do not continue previous row
-            self._flush_literal_buffer()
-            if not self.caset_sent:
-                self.stream.add_command([0x2A, # CASET
-                                         self.start_x >>8, self.start_x & 0xff,
-                                         self.end_x >> 8, self.end_x & 0xff])
-                self.caset_sent = True
+    def write(self, row, data, begin, end):
+        if  begin != self.last_begin or end != self.last_end:
+            caset_updated = True
+            raset_updated = not self.last_row or self.last_row != row
+        else:
+            caset_updated = False
+            raset_updated = not self.last_row or (self.last_row+1) != row
 
-            self.stream.add_command([0x2b, # RASET
-                                     0, row, 0, self.end_y])
-            self.stream.add_command([0x2c]) # data, no continuation
-
+        self.last_begin = begin
+        self.last_end = end
         self.last_row = row
 
-        for is_foreground, runlength in PixelRunIterator(data, self.width):
+        if caset_updated or raset_updated:
+            # Finish previous pixel stream
+            self._flush_literal_buffer()
+
+        if caset_updated:
+            x_begin = begin + self.start_x
+            x_end = end + self.start_x - 1 # CASET end column is included!
+            self.stream.add_command([0x2A, # CASET
+                                     x_begin >> 8, x_begin & 0xff,
+                                     x_end >> 8, x_end & 0xff])
+        if raset_updated:
+            self.stream.add_command([0x2b, # RASET
+                                     0, row + self.start_y, 0, MAX_ROW-1])
+
+        if caset_updated or raset_updated:
+            # start new pixel stream
+            self.stream.add_command([0x2c]) # data, no continuation
+
+        for is_foreground, runlength in PixelRunIterator(data, begin, end):
             value = self.fgcolor if is_foreground else self.bgcolor
 
             hi = value >> 8
@@ -335,6 +362,7 @@ class BitmapWriterHelper(object):
             else:
                 self._flush_literal_buffer()
                 self.stream.add_repeating_data(runlength, [hi, lo])
+
 class Framebuffer(object):
     def __init__(self, display, origin_x, origin_y,
                  size_x, size_y, fgcolor, bgcolor):
@@ -360,16 +388,46 @@ class Framebuffer(object):
     def flush(self):
         writer = BitmapWriterHelper(
             self.display, self.fgcolor, self.bgcolor,
-            self.origin_x, self.end_x, self.size_y + self.origin_y)
+            self.origin_x, self.origin_y)
 
         for row in range(self.size_y):
             old_row = self.old_framebuffer[row]
             new_row = self.framebuffer[row]
-            if old_row is None or old_row != new_row:
-                writer.write(row + self.origin_y, new_row)
+            for begin, end in Framebuffer.get_pixel_changes(old_row, new_row,
+                                                            self.size_x):
+                writer.write(row, new_row, begin, end)
 
         writer.flush()
         self.old_framebuffer[:] = self.framebuffer
+
+    @staticmethod
+    def get_pixel_changes(old_row, new_row, row_width):
+        if old_row is None:
+            return [(0, row_width)] # Issue full change
+
+        if old_row == new_row:
+            return [] # shortcut for identical data.
+
+        differences = bytearray([ b1 ^ b2 for b1, b2 in zip(old_row, new_row)])
+        changes = []
+
+        merge_with_last = False
+        current = 0
+
+        for value, runlength in PixelRunIterator(differences, 0, row_width):
+            begin = current
+            current += runlength
+            end = begin + runlength # exclusive
+
+            if  value:
+                if merge_with_last:
+                    merge_with_last = False
+                    begin = changes.pop()[0]
+
+                changes.append((begin, end))
+            elif runlength <= MAX_NR_CONSECUTIVE_UNCHANGED_PIXELS and changes:
+                merge_with_last = True # Suppress RASET change for this run
+        return changes
 
     def write_glyph(self, _x, _y, glyph_name):
         icon = self.icons.get(glyph_name)
