@@ -108,19 +108,16 @@ class Xpt2046Button(object):
         return result
 
     # The following two methods are to be overridden by derived classes
-    # pylint: disable=R0201
 
     # Called when a button is clicked. Can return a timestamp for an expected
     # repeat event.
     def clicked(self, eventtime):
-        del eventtime
-        return None
+        pass
 
     # Called repeatedly while a button is being held. Can return a timestamp
     # for the next expected repeat event.
     def repeat(self, eventtime):
-        del eventtime
-        return None
+        pass
 
 class Xpt2046OneshotButton(Xpt2046Button):
     def __init__(self, points, action):
@@ -222,7 +219,7 @@ class Xpt2046(object):
                     %(i, err.value))
 
         self._gcode.register_command(
-            "XPT_DEBUG", self._cmd_debug,
+            "XPT_TOUCH_REPORT", self._cmd_touch_report,
             desc="Enable/disable touch panel reporting")
         self.report_enabled = False
 
@@ -255,14 +252,14 @@ class Xpt2046(object):
 
         return desired_callback or self._reactor.NEVER
 
-    def _cmd_debug(self, gcmd):
+    def _cmd_touch_report(self, gcmd):
         enable = gcmd.get_int('ENABLE', None)
         if enable is not None:
             self.report_enabled = (enable != 0)
         else:
             self.report_enabled = not self.report_enabled
 
-        gcmd.respond_info("XPT2046 debugging has been %s"
+        gcmd.respond_info("XPT2046 touch reporting has been %s"
                           %("enabled" if self.report_enabled else "disabled"))
 
     def _handle_ready(self):

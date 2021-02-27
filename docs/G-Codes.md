@@ -765,6 +765,7 @@ is enabled (also see the
 The following command is available when a
 [xpt_2046 config section](Config_Reference.md#xpt_2046)
 is enabled.
-- `XPT_DEBUG [ENABLE=[1|0]]`: Enables or disables debug reporting. When
+- `XPT_TOUCH_REPORT [ENABLE=[1|0]]`: Enables or disables touch reporting. When
   enabled, all touch events and the associated coordinates are printed to the
-  terminal.
+  terminal. This can be used as an aid when defining button shapes in the
+  printer configuration.

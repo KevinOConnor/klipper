@@ -3056,7 +3056,7 @@ lcd_type:
 #   in "RepRapDiscount 2004 Smart Controller" type displays), "st7920"
 #   (which is used in "RepRapDiscount 12864 Full Graphic Smart
 #   Controller" type displays), "uc1701" (which is used in "MKS Mini
-#   12864" type displays), "ssd1306", "sh1106" or "st7789v". This 
+#   12864" type displays), "ssd1306", "sh1106" or "st7789v". This
 #   parameter must be provided.
 #hd44780_protocol_init: True
 #    Perform 8-bit/4-bit protocol initialization on an hd44780 display.
@@ -3233,9 +3233,10 @@ to the coordinate space of the display the XPT 2046 is attached to).
 Buttons must be numbered sequentially, starting from 0. Buttons can be
 mapped to a menu key, or can trigger a gcode command template.
 
-To determine the boundaries of a button, enable debugging using
-`XPT_DEBUG enable=1`. Touch all corners of the button using a stylus in
-a consistent order (clockwise or counter-clockwise) and write down the
+To determine the boundaries of a button, enable touch reporting using
+`XPT_TOUCH_REPORT enable=1`. This will cause all touch events to be echoed
+to the terminal. Touch all corners of the button using a stylus in a
+consistent order (clockwise or counter-clockwise) and write down the
 reported coordinates.
 ```
 [xpt2046]
