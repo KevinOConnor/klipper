@@ -15,7 +15,6 @@
 #include "sched.h" // DECL_SHUTDOWN
 
 struct st7789v {
-    uint8_t last_data;
     struct gpio_out dcx, wrx, databits[8];
 };
 
@@ -27,20 +26,15 @@ struct st7789v {
 static inline void
 st7789v_xmit_byte(struct st7789v *h, uint8_t data)
 {
-    uint8_t mask = 0x01;
     gpio_out_write(h->wrx, 0);
-
+    uint8_t mask = 0x01;
     for (int bit = 0; bit < 8; ++bit, mask <<=1)
     {
         const uint8_t new_data = data & mask;
-        if ( new_data != (h->last_data & mask) )
-        {
-            gpio_out_write( h->databits[bit], new_data);
-        }
+        gpio_out_write( h->databits[bit], new_data);
     }
 
     gpio_out_write(h->wrx, 1);
-    h->last_data = data;
 }
 
 // Data is encrypted using an run-length encoded algorithm resembling
@@ -111,8 +105,6 @@ command_config_st7789v(uint32_t *args)
     {
         h->databits[bit] = gpio_out_setup(args[3 + bit], 1);
     }
-
-    h->last_data = 0xff;
 }
 DECL_COMMAND(command_config_st7789v,
              "config_st7789v oid=%c dcx_pin=%u wrx_pin=%u"
