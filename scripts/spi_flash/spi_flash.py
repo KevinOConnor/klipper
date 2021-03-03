@@ -777,9 +777,11 @@ class SDCardSPI:
 class MCUConnection:
     def __init__(self, k_reactor, device, baud, board_cfg):
         self.reactor = k_reactor
+        self.serial_device = device
+        self.baud = baud
         # TODO: a change in baudrate will cause an issue, come up
         # with a method for handling it gracefully
-        self._serial = serialhdl.SerialReader(self.reactor, device, baud)
+        self._serial = serialhdl.SerialReader(self.reactor)
         self.clocksync = clocksync.ClockSync(self.reactor)
         self.board_config = board_cfg
         self.fatfs = None
@@ -817,7 +819,7 @@ class MCUConnection:
         endtime = eventtime + 60.
         while True:
             try:
-                self._serial.connect()
+                self._serial.connect_uart(self.serial_device, self.baud)
                 self.clocksync.connect(self._serial)
             except Exception:
                 curtime = self.reactor.monotonic()

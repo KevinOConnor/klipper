@@ -573,7 +573,10 @@ input_event(struct serialqueue *sq, double eventtime)
     int ret = read(sq->serial_fd, &sq->input_buf[sq->input_pos]
                    , sizeof(sq->input_buf) - sq->input_pos);
     if (ret <= 0) {
-        report_errno("read", ret);
+        if(ret < 0)
+            report_errno("read", ret);
+        else
+            errorf("Got EOF when reading from device");
         pollreactor_do_exit(&sq->pr);
         return;
     }

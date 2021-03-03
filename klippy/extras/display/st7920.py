@@ -4,6 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
+from .. import bus
 from . import font8x14
 
 BACKGROUND_PRIORITY_CLOCK = 0x7fffffff00000000
@@ -15,24 +16,8 @@ ST7920_SYNC_DELAY = .000045
 TextGlyphs = { 'right_arrow': '\x1a' }
 CharGlyphs = { 'degrees': bytearray(font8x14.VGA_FONT[0xf8]) }
 
-class ST7920:
-    def __init__(self, config):
-        printer = config.get_printer()
-        # pin config
-        ppins = printer.lookup_object('pins')
-        pins = [ppins.lookup_pin(config.get(name + '_pin'))
-                for name in ['cs', 'sclk', 'sid']]
-        mcu = None
-        for pin_params in pins:
-            if mcu is not None and pin_params['chip'] != mcu:
-                raise ppins.error("st7920 all pins must be on same mcu")
-            mcu = pin_params['chip']
-        self.pins = [pin_params['pin'] for pin_params in pins]
-        self.mcu = mcu
-        self.oid = self.mcu.create_oid()
-        self.mcu.register_config_callback(self.build_config)
-        self.send_data_cmd = self.send_cmds_cmd = None
-        self.is_extended = False
+class DisplayBase:
+    def __init__(self):
         # framebuffers
         self.text_framebuffer = bytearray(' '*64)
         self.glyph_framebuffer = bytearray(128)
@@ -47,30 +32,6 @@ class ST7920:
                  for i in range(32)]
         self.cached_glyphs = {}
         self.icons = {}
-    def build_config(self):
-        self.mcu.add_config_cmd(
-            "config_st7920 oid=%u cs_pin=%s sclk_pin=%s sid_pin=%s"
-            " sync_delay_ticks=%d cmd_delay_ticks=%d" % (
-                self.oid, self.pins[0], self.pins[1], self.pins[2],
-                self.mcu.seconds_to_clock(ST7920_SYNC_DELAY),
-                self.mcu.seconds_to_clock(ST7920_CMD_DELAY)))
-        cmd_queue = self.mcu.alloc_command_queue()
-        self.send_cmds_cmd = self.mcu.lookup_command(
-            "st7920_send_cmds oid=%c cmds=%*s", cq=cmd_queue)
-        self.send_data_cmd = self.mcu.lookup_command(
-            "st7920_send_data oid=%c data=%*s", cq=cmd_queue)
-    def send(self, cmds, is_data=False, is_extended=False):
-        cmd_type = self.send_cmds_cmd
-        if is_data:
-            cmd_type = self.send_data_cmd
-        elif self.is_extended != is_extended:
-            add_cmd = 0x22
-            if is_extended:
-                add_cmd = 0x26
-            cmds = [add_cmd] + cmds
-            self.is_extended = is_extended
-        cmd_type.send([self.oid, cmds], reqclock=BACKGROUND_PRIORITY_CLOCK)
-        #logging.debug("st7920 %d %s", is_data, repr(cmds))
     def flush(self):
         # Find all differences in the framebuffers and send them to the chip
         for new_data, old_data, fb_id in self.all_framebuffers:
@@ -174,3 +135,123 @@ class ST7920:
             gfb[:] = zeros
     def get_dimensions(self):
         return (16, 4)
+
+# Display driver for stock ST7920 displays
+class ST7920(DisplayBase):
+    def __init__(self, config):
+        printer = config.get_printer()
+        # pin config
+        ppins = printer.lookup_object('pins')
+        pins = [ppins.lookup_pin(config.get(name + '_pin'))
+                for name in ['cs', 'sclk', 'sid']]
+        mcu = None
+        for pin_params in pins:
+            if mcu is not None and pin_params['chip'] != mcu:
+                raise ppins.error("st7920 all pins must be on same mcu")
+            mcu = pin_params['chip']
+        self.pins = [pin_params['pin'] for pin_params in pins]
+        # prepare send functions
+        self.mcu = mcu
+        self.oid = self.mcu.create_oid()
+        self.mcu.register_config_callback(self.build_config)
+        self.send_data_cmd = self.send_cmds_cmd = None
+        self.is_extended = False
+        # init display base
+        DisplayBase.__init__(self)
+    def build_config(self):
+        # configure send functions
+        self.mcu.add_config_cmd(
+            "config_st7920 oid=%u cs_pin=%s sclk_pin=%s sid_pin=%s"
+            " sync_delay_ticks=%d cmd_delay_ticks=%d" % (
+                self.oid, self.pins[0], self.pins[1], self.pins[2],
+                self.mcu.seconds_to_clock(ST7920_SYNC_DELAY),
+                self.mcu.seconds_to_clock(ST7920_CMD_DELAY)))
+        cmd_queue = self.mcu.alloc_command_queue()
+        self.send_cmds_cmd = self.mcu.lookup_command(
+            "st7920_send_cmds oid=%c cmds=%*s", cq=cmd_queue)
+        self.send_data_cmd = self.mcu.lookup_command(
+            "st7920_send_data oid=%c data=%*s", cq=cmd_queue)
+    def send(self, cmds, is_data=False, is_extended=False):
+        cmd_type = self.send_cmds_cmd
+        if is_data:
+            cmd_type = self.send_data_cmd
+        elif self.is_extended != is_extended:
+            add_cmd = 0x22
+            if is_extended:
+                add_cmd = 0x26
+            cmds = [add_cmd] + cmds
+            self.is_extended = is_extended
+        cmd_type.send([self.oid, cmds], reqclock=BACKGROUND_PRIORITY_CLOCK)
+        #logging.debug("st7920 %d %s", is_data, repr(cmds))
+
+# Helper code for toggling the en pin on startup
+class EnableHelper:
+    def __init__(self, pin_desc, spi):
+        self.en_pin = bus.MCU_bus_digital_out(spi.get_mcu(), pin_desc,
+                                              spi.get_command_queue())
+    def init(self):
+        mcu = self.en_pin.get_mcu()
+        curtime = mcu.get_printer().get_reactor().monotonic()
+        print_time = mcu.estimated_print_time(curtime)
+        # Toggle enable pin
+        minclock = mcu.print_time_to_clock(print_time + .100)
+        self.en_pin.update_digital_out(0, minclock=minclock)
+        minclock = mcu.print_time_to_clock(print_time + .200)
+        self.en_pin.update_digital_out(1, minclock=minclock)
+        # Force a delay to any subsequent commands on the command queue
+        minclock = mcu.print_time_to_clock(print_time + .300)
+        self.en_pin.update_digital_out(1, minclock=minclock)
+
+# Display driver for displays that emulate the ST7920 in software.
+# These displays rely on the CS pin to be toggled in order to initialize the
+# SPI correctly. This display driver uses a software SPI with an unused pin
+# as the MISO pin.
+class EmulatedST7920(DisplayBase):
+    def __init__(self, config):
+        # create software spi
+        ppins = config.get_printer().lookup_object('pins')
+        sw_pin_names = ['spi_software_%s_pin' % (name,)
+                        for name in ['miso', 'mosi', 'sclk']]
+        sw_pin_params = [ppins.lookup_pin(config.get(name), share_type=name)
+                         for name in sw_pin_names]
+        mcu = None
+        for pin_params in sw_pin_params:
+            if mcu is not None and pin_params['chip'] != mcu:
+                raise ppins.error("%s: spi pins must be on same mcu" % (
+                    config.get_name(),))
+            mcu = pin_params['chip']
+        sw_pins = tuple([pin_params['pin'] for pin_params in sw_pin_params])
+        speed = config.getint('spi_speed', 1000000, minval=100000)
+        self.spi = bus.MCU_SPI(mcu, None, None, 0, speed, sw_pins)
+        # create enable helper
+        self.en_helper = EnableHelper(config.get("en_pin"), self.spi)
+        self.en_set = False
+        # init display base
+        self.is_extended = False
+        DisplayBase.__init__(self)
+    def send(self, cmds, is_data=False, is_extended=False):
+        # setup sync byte and check for exten mode switch
+        sync_byte = 0xfa
+        if not is_data:
+            sync_byte = 0xf8
+            if self.is_extended != is_extended:
+                add_cmd = 0x22
+                if is_extended:
+                    add_cmd = 0x26
+                cmds = [add_cmd] + cmds
+                self.is_extended = is_extended
+        # copy data to ST7920 data format
+        spi_data = [0] * (2 * len(cmds) + 1)
+        spi_data[0] = sync_byte
+        i = 1
+        for b in cmds:
+            spi_data[i] = b & 0xF0
+            spi_data[i + 1] = (b & 0x0F) << 4
+            i = i + 2
+        # check if enable pin has been set
+        if not self.en_set:
+            self.en_helper.init()
+            self.en_set = True
+        # send data
+        self.spi.spi_send(spi_data, reqclock=BACKGROUND_PRIORITY_CLOCK)
+        #logging.debug("st7920 %s", repr(spi_data))

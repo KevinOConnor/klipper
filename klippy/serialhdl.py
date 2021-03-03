@@ -1,9 +1,9 @@
 # Serial port management for firmware communication
 #
-# Copyright (C) 2016-2020  Kevin O'Connor <kevin@koconnor.net>
+# Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import logging, threading
+import logging, threading, os
 import serial
 
 import msgproto, chelper, util
@@ -13,13 +13,10 @@ class error(Exception):
 
 class SerialReader:
     BITS_PER_BYTE = 10.
-    def __init__(self, reactor, serialport, baud, rts=True):
+    def __init__(self, reactor):
         self.reactor = reactor
-        self.serialport = serialport
-        self.baud = baud
         # Serial port
-        self.ser = None
-        self.rts = rts
+        self.serial_dev = None
         self.msgparser = msgproto.MessageParser()
         # C interface
         self.ffi_main, self.ffi_lib = chelper.get_ffi()
@@ -75,41 +72,20 @@ class SerialReader:
                     # Done
                     return identify_data
                 identify_data += msgdata
-    def connect(self):
-        # Initial connection
-        logging.info("Starting serial connect")
-        start_time = self.reactor.monotonic()
-        while 1:
-            connect_time = self.reactor.monotonic()
-            if connect_time > start_time + 90.:
-                raise error("Unable to connect")
-            try:
-                if self.baud:
-                    self.ser = serial.Serial(
-                        baudrate=self.baud, timeout=0, exclusive=True)
-                    self.ser.port = self.serialport
-                    self.ser.rts = self.rts
-                    self.ser.open()
-                else:
-                    self.ser = open(self.serialport, 'rb+', buffering=0)
-            except (OSError, IOError, serial.SerialException) as e:
-                logging.warn("Unable to open port: %s", e)
-                self.reactor.pause(connect_time + 5.)
-                continue
-            if self.baud:
-                stk500v2_leave(self.ser, self.reactor)
-            self.serialqueue = self.ffi_main.gc(
-                self.ffi_lib.serialqueue_alloc(self.ser.fileno(), 0),
-                self.ffi_lib.serialqueue_free)
-            self.background_thread = threading.Thread(target=self._bg_thread)
-            self.background_thread.start()
-            # Obtain and load the data dictionary from the firmware
-            completion = self.reactor.register_callback(self._get_identify_data)
-            identify_data = completion.wait(connect_time + 5.)
-            if identify_data is not None:
-                break
-            logging.info("Timeout on serial connect")
+    def _start_session(self, serial_dev):
+        self.serial_dev = serial_dev
+        self.serialqueue = self.ffi_main.gc(
+            self.ffi_lib.serialqueue_alloc(serial_dev.fileno(), 0),
+            self.ffi_lib.serialqueue_free)
+        self.background_thread = threading.Thread(target=self._bg_thread)
+        self.background_thread.start()
+        # Obtain and load the data dictionary from the firmware
+        completion = self.reactor.register_callback(self._get_identify_data)
+        identify_data = completion.wait(self.reactor.monotonic() + 5.)
+        if identify_data is None:
+            logging.info("Timeout on connect")
             self.disconnect()
+            return False
         msgparser = msgproto.MessageParser()
         msgparser.process_identify(identify_data)
         self.msgparser = msgparser
@@ -124,11 +100,49 @@ class SerialReader:
         if receive_window is not None:
             self.ffi_lib.serialqueue_set_receive_window(
                 self.serialqueue, receive_window)
+        return True
+    def connect_pipe(self, filename):
+        logging.info("Starting connect")
+        start_time = self.reactor.monotonic()
+        while 1:
+            if self.reactor.monotonic() > start_time + 90.:
+                raise error("Unable to connect")
+            try:
+                fd = os.open(filename, os.O_RDWR | os.O_NOCTTY)
+            except OSError as e:
+                logging.warn("Unable to open port: %s", e)
+                self.reactor.pause(self.reactor.monotonic() + 5.)
+                continue
+            serial_dev = os.fdopen(fd, 'rb+', 0)
+            ret = self._start_session(serial_dev)
+            if ret:
+                break
+    def connect_uart(self, serialport, baud, rts=True):
+        # Initial connection
+        logging.info("Starting serial connect")
+        start_time = self.reactor.monotonic()
+        while 1:
+            if self.reactor.monotonic() > start_time + 90.:
+                raise error("Unable to connect")
+            try:
+                serial_dev = serial.Serial(baudrate=baud, timeout=0,
+                                           exclusive=True)
+                serial_dev.port = serialport
+                serial_dev.rts = rts
+                serial_dev.open()
+            except (OSError, IOError, serial.SerialException) as e:
+                logging.warn("Unable to open serial port: %s", e)
+                self.reactor.pause(self.reactor.monotonic() + 5.)
+                continue
+            stk500v2_leave(serial_dev, self.reactor)
+            ret = self._start_session(serial_dev)
+            if ret:
+                break
     def connect_file(self, debugoutput, dictionary, pace=False):
-        self.ser = debugoutput
+        self.serial_dev = debugoutput
         self.msgparser.process_identify(dictionary, decompress=False)
         self.serialqueue = self.ffi_main.gc(
-            self.ffi_lib.serialqueue_alloc(self.ser.fileno(), 1),
+            self.ffi_lib.serialqueue_alloc(self.serial_dev.fileno(), 1),
             self.ffi_lib.serialqueue_free)
     def set_clock_est(self, freq, last_time, last_clock):
         self.ffi_lib.serialqueue_set_clock_est(
@@ -139,9 +153,9 @@ class SerialReader:
             if self.background_thread is not None:
                 self.background_thread.join()
             self.background_thread = self.serialqueue = None
-        if self.ser is not None:
-            self.ser.close()
-            self.ser = None
+        if self.serial_dev is not None:
+            self.serial_dev.close()
+            self.serial_dev = None
         for pn in self.pending_notifications.values():
             pn.complete(None)
         self.pending_notifications.clear()

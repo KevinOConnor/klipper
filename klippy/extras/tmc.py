@@ -109,7 +109,16 @@ class TMCErrorCheck:
         last_value, reg_name, mask, err_mask = reg_info
         count = 0
         while 1:
-            val = self.mcu_tmc.get_register(reg_name)
+            try:
+                val = self.mcu_tmc.get_register(reg_name)
+            except self.printer.command_error as e:
+                count += 1
+                if count < 3 and str(e).startswith("Unable to read tmc uart"):
+                    # Allow more retries on a TMC UART read error
+                    reactor = self.printer.get_reactor()
+                    reactor.pause(reactor.monotonic() + 0.050)
+                    continue
+                raise
             if val & mask != last_value & mask:
                 fmt = self.fields.pretty_format(reg_name, val)
                 logging.info("TMC '%s' reports %s", self.stepper_name, fmt)
@@ -221,11 +230,10 @@ class TMCCommandHelper:
     # Stepper enable/disable tracking
     def _do_enable(self, print_time):
         try:
-            print_time -= 0.100 # Schedule slightly before deadline
             if self.toff is not None:
                 # Shared enable via comms handling
-                val = self.fields.set_field("toff", self.toff)
-            self._init_registers(print_time)
+                self.fields.set_field("toff", self.toff)
+            self._init_registers()
             self.echeck_helper.start_checks()
         except self.printer.command_error as e:
             self.printer.invoke_shutdown(str(e))
@@ -339,26 +347,30 @@ class TMCVirtualPinHelper:
         reg = self.fields.lookup_register("en_pwm_mode", None)
         if reg is None:
             # On "stallguard4" drivers, "stealthchop" must be enabled
-            self.mcu_tmc.set_register("TPWMTHRS", 0)
+            tp_val = self.fields.set_field("TPWMTHRS", 0)
+            self.mcu_tmc.set_register("TPWMTHRS", tp_val)
             val = self.fields.set_field("en_spreadCycle", 0)
         else:
             # On earlier drivers, "stealthchop" must be disabled
             self.fields.set_field("en_pwm_mode", 0)
             val = self.fields.set_field(self.diag_pin_field, 1)
         self.mcu_tmc.set_register("GCONF", val)
-        self.mcu_tmc.set_register("TCOOLTHRS", 0xfffff)
+        tc_val = self.fields.set_field("TCOOLTHRS", 0xfffff)
+        self.mcu_tmc.set_register("TCOOLTHRS", tc_val)
     def handle_homing_move_end(self, endstops):
         if self.mcu_endstop not in endstops:
             return
         reg = self.fields.lookup_register("en_pwm_mode", None)
         if reg is None:
-            self.mcu_tmc.set_register("TPWMTHRS", self.pwmthrs)
+            tp_val = self.fields.set_field("TPWMTHRS", self.pwmthrs)
+            self.mcu_tmc.set_register("TPWMTHRS", tp_val)
             val = self.fields.set_field("en_spreadCycle", not self.en_pwm)
         else:
             self.fields.set_field("en_pwm_mode", self.en_pwm)
             val = self.fields.set_field(self.diag_pin_field, 0)
         self.mcu_tmc.set_register("GCONF", val)
-        self.mcu_tmc.set_register("TCOOLTHRS", 0)
+        tc_val = self.fields.set_field("TCOOLTHRS", 0)
+        self.mcu_tmc.set_register("TCOOLTHRS", tc_val)
 
 
 ######################################################################

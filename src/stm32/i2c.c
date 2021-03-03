@@ -17,12 +17,16 @@ struct i2c_info {
     uint8_t scl_pin, sda_pin;
 };
 
-DECL_ENUMERATION_RANGE("i2c_bus", "i2c1", 0, 2);
+DECL_ENUMERATION("i2c_bus", "i2c1", 0);
 DECL_CONSTANT_STR("BUS_PINS_i2c1", "PB6,PB7");
+DECL_ENUMERATION("i2c_bus", "i2c1a", 1);
+DECL_CONSTANT_STR("BUS_PINS_i2c1a", "PB8,PB9");
+DECL_ENUMERATION("i2c_bus", "i2c2", 2);
 DECL_CONSTANT_STR("BUS_PINS_i2c2", "PB10,PB11");
 
 static const struct i2c_info i2c_bus[] = {
     { I2C1, GPIO('B', 6), GPIO('B', 7) },
+    { I2C1, GPIO('B', 8), GPIO('B', 9) },
     { I2C2, GPIO('B', 10), GPIO('B', 11) },
 };
 

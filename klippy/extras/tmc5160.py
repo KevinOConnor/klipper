@@ -208,6 +208,9 @@ Fields["TPOWERDOWN"] = {
 Fields["TPWMTHRS"] = {
     "TPWMTHRS":                 0xfffff << 0
 }
+Fields["TCOOLTHRS"] = {
+    "TCOOLTHRS":                0xfffff << 0
+}
 Fields["TSTEP"] = {
     "TSTEP":                    0xfffff << 0
 }

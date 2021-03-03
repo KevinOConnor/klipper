@@ -129,6 +129,10 @@ The following are common printer attributes:
   This is also available on "heater_fan", "fan_generic", and
   "controller_fan" config sections (eg,
   `printer["fan_generic my_fan"].speed`).
+- `printer.fan.rpm`: The measured fan speed in rotations per minute if
+  the fan has a tachometer_pin defined.  This is also available on
+  "heater_fan", "fan_generic", and "controller_fan" config sections
+  (eg, `printer["fan_generic my_fan"].rpm`).
 - `printer.gcode_move.gcode_position`: The current position of the
   toolhead relative to the current G-Code origin. That is, positions
   that one might directly send to a `G1` command. It is possible to

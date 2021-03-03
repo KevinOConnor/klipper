@@ -410,24 +410,18 @@ class MCU:
             self._name = self._name[4:]
         # Serial port
         self._serialport = config.get('serial')
-        serial_rts = True
-        if config.get('restart_method', None) == "cheetah":
-            # Special case: Cheetah boards require RTS to be deasserted, else
-            # a reset will trigger the built-in bootloader.
-            serial_rts = False
-        baud = 0
+        self._baud = 0
         if not (self._serialport.startswith("/dev/rpmsg_")
                 or self._serialport.startswith("/tmp/klipper_host_")):
-            baud = config.getint('baud', 250000, minval=2400)
-        self._serial = serialhdl.SerialReader(
-            self._reactor, self._serialport, baud, serial_rts)
+            self._baud = config.getint('baud', 250000, minval=2400)
+        self._serial = serialhdl.SerialReader(self._reactor)
         # Restarts
+        restart_methods = [None, 'arduino', 'cheetah', 'command', 'rpi_usb']
         self._restart_method = 'command'
-        if baud:
-            rmethods = {m: m for m in [None, 'arduino', 'cheetah', 'command',
-                                       'rpi_usb']}
-            self._restart_method = config.getchoice(
-                'restart_method', rmethods, None)
+        if self._baud:
+            rmethods = {m: m for m in restart_methods}
+            self._restart_method = config.getchoice('restart_method',
+                                                    rmethods, None)
         self._reset_cmd = self._config_reset_cmd = None
         self._emergency_stop_cmd = None
         self._is_shutdown = self._is_timeout = False
@@ -612,12 +606,18 @@ class MCU:
         if self.is_fileoutput():
             self._connect_file()
         else:
-            if (self._restart_method == 'rpi_usb'
-                and not os.path.exists(self._serialport)):
+            resmeth = self._restart_method
+            if resmeth == 'rpi_usb' and not os.path.exists(self._serialport):
                 # Try toggling usb power
                 self._check_restart("enable power")
             try:
-                self._serial.connect()
+                if self._baud:
+                    # Cheetah boards require RTS to be deasserted
+                    # else a reset will trigger the built-in bootloader.
+                    rts = (resmeth != "cheetah")
+                    self._serial.connect_uart(self._serialport, self._baud, rts)
+                else:
+                    self._serial.connect_pipe(self._serialport)
                 self._clocksync.connect(self._serial)
             except serialhdl.error as e:
                 raise error(str(e))

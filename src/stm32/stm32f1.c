@@ -124,10 +124,16 @@ gpio_peripheral(uint32_t gpio, uint32_t mode, int pullup)
     // way from other STM32s.
     // Code below is emulating a few mappings to work like an STM32F4
     uint32_t func = (mode >> 4) & 0xf;
-    if(( gpio == GPIO('B', 8) || gpio == GPIO('B', 9)) &&
-       func == 9) { // CAN
-        stm32f1_alternative_remap(AFIO_MAPR_CAN_REMAP_Msk,
-                                  AFIO_MAPR_CAN_REMAP_REMAP2);
+    if (gpio == GPIO('B', 8) || gpio == GPIO('B', 9)) {
+        if (func == 9) {
+            // CAN
+            stm32f1_alternative_remap(AFIO_MAPR_CAN_REMAP_Msk,
+                                      AFIO_MAPR_CAN_REMAP_REMAP2);
+        } else if (func == 4) {
+            // I2C1 Alt
+            stm32f1_alternative_remap(AFIO_MAPR_I2C1_REMAP_Msk,
+                                      AFIO_MAPR_I2C1_REMAP);
+        }
     }
     // Add more as needed
 }
