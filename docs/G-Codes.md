@@ -712,7 +712,7 @@ The following commands are available when an
   accelerometer does not have a name in its config section (simply
   `[adxl345]`) <chip> part of the name is not generated.
 - `ACCELEROMETER_QUERY [CHIP=<config_name>] [RATE=<value>]`: queries
-  accelerometer fo  r the current value. If CHIP is not specified it
+  accelerometer for the current value. If CHIP is not specified it
   defaults to "default". If RATE is not specified, the default value
   is used. This command is useful to test the connection to the
   ADXL345 accelerometer: one of the returned values should be a
