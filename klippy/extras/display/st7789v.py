@@ -178,9 +178,12 @@ class PixelRunIterator(object):
 
         if not end:
             end = 8 * len(pixeldata)
+        else:
+            end = min(8 * len(pixeldata), end)
 
         self.next_index = begin // 8
         self.current_bit = 0x80 >> (begin & 7)
+
         if self.next_index < len(self.data) and begin < end:
             self.current_byte = self.data[self.next_index]
             self.remaining = end - begin
@@ -196,36 +199,32 @@ class PixelRunIterator(object):
         if self.remaining == 0:
             raise StopIteration
 
-        thisbit = self.peekbit()
-        count = 1
+        thisbit = ((self.current_byte & self.current_bit) != 0)
+        full_byte = 0xff if thisbit else 0
 
-        while self.advance():
-            if self.peekbit() != thisbit:
+        count = 1
+        self.remaining -= 1
+
+        while self.remaining > 0:
+            self.remaining -= 1
+            self.current_bit >>= 1
+            if self.current_bit == 0:
+                self.current_bit = 0x80
+                while True:
+                    self.current_byte = self.data[self.next_index]
+                    self.next_index += 1
+                    if self.current_byte != full_byte or self.remaining < 8:
+                        break
+                    count += 8
+                    self.remaining -= 8
+
+            if ((self.current_byte & self.current_bit) != 0) != thisbit:
                 break
             count = count + 1
 
         return thisbit, count
     def next(self): # python 2 compatibility
         return self.__next__()
-
-    def peekbit(self):
-        return ((self.current_byte & self.current_bit) != 0)
-
-    def advance(self):
-        self.remaining -= 1
-
-        if self.remaining == 0:
-            return False
-
-        self.current_bit >>= 1
-        if self.current_bit == 0:
-            self.current_bit = 0x80
-            if self.next_index >= len(self.data):
-                self.current_byte = 0
-            else:
-                self.current_byte = self.data[self.next_index]
-            self.next_index += 1
-        return True
 
 class PackBitsStream(object):
     LITERAL=-1
@@ -554,7 +553,6 @@ class ST7789V(object):
         except ST7789vParseException as err:
             raise config.error(("Error while parsing st7789v bgcolor: %s")
                                %(err.value,))
-
 
         # pin config
         ppins = printer.lookup_object('pins')
