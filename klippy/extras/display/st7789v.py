@@ -203,10 +203,12 @@ class PixelRunIterator(object):
         full_byte = 0xff if thisbit else 0
 
         count = 1
-        self.remaining -= 1
 
-        while self.remaining > 0:
+        while True:
             self.remaining -= 1
+            if self.remaining == 0:
+                break
+
             self.current_bit >>= 1
             if self.current_bit == 0:
                 self.current_bit = 0x80
@@ -217,6 +219,11 @@ class PixelRunIterator(object):
                         break
                     count += 8
                     self.remaining -= 8
+                    if self.remaining == 0:
+                        break
+
+            if self.remaining == 0:
+                break
 
             if ((self.current_byte & self.current_bit) != 0) != thisbit:
                 break
