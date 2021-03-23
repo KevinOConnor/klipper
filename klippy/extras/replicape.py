@@ -167,7 +167,7 @@ class Replicape:
         config.getchoice('revision', revisions)
         self.host_mcu = mcu.get_printer_mcu(printer, config.get('host_mcu'))
         # Setup enable pin
-        enable_pin = config.get('enable_pin', '!P9_41')
+        enable_pin = config.get('enable_pin', '!gpio0_20')
         self.mcu_pwm_enable = ppins.setup_pin('digital_out', enable_pin)
         self.mcu_pwm_enable.setup_max_duration(0.)
         self.mcu_pwm_start_value = self.mcu_pwm_shutdown_value = False

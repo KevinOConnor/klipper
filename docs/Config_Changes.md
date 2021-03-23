@@ -6,6 +6,11 @@ All dates in this document are approximate.
 
 # Changes
 
+20210319: Support for the `pin_map` config option is deprecated. Use
+the [sample-aliases.cfg](../config/sample-aliases.cfg) file to
+translate to the actual micro-controller pin names. The `pin_map`
+config option will be removed in the near future.
+
 20210313: Klipper's support for micro-controllers that communicate
 with CAN bus has changed. If using CAN bus then all micro-controllers
 must be reflashed and the [Klipper configuration must be

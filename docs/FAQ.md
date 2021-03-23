@@ -333,22 +333,17 @@ details.
 
 ### How do I convert a Marlin pin number to a Klipper pin name?
 
-Short answer: In some cases one can use Klipper's `pin_map: arduino`
-feature. Otherwise, for "digital" pins, one method is to search for
-the requested pin in Marlin's fastio header files. The Atmega2560 and
-Atmega1280 chips use
-[fastio_1280.h](https://github.com/MarlinFirmware/Marlin/blob/1.1.9/Marlin/fastio_1280.h),
-while the Atmega644p and Atmega1284p chips use
-[fastio_644.h](https://github.com/MarlinFirmware/Marlin/blob/1.1.9/Marlin/fastio_644.h).
-For example, if you are looking to translate Marlin's digital pin
-number 23 on an atmega2560 then one could find the following line in
-Marlin's fastio_1280.h file:
-```
-#define DIO23_PIN PINA1
-```
-The `DIO23` indicates the line is for Marlin's pin 23 and the `PINA1`
-indicates the pin uses the hardware name of `PA1`. Klipper uses the
-hardware names (eg, `PA1`).
+Short answer: A mapping is available in the
+[sample-aliases.cfg](../config/sample-aliases.cfg) file. Use that file
+as a guide to finding the actual micro-controller pin names. (It is
+also possible to copy the relevant
+[board_pins](Config_Reference.md#board_pins) config section into your
+config file and use the aliases in your config, but it is preferable
+to translate and use the actual micro-controller pin names.) Note that
+the sample-aliases.cfg file uses pin names that start with the prefix
+"ar" instead of "D" (eg, Arduino pin `D23` is Klipper alias `ar23`)
+and the prefix "analog" instead of "A" (eg, Arduino pin `A14` is
+Klipper alias `analog14`).
 
 Long answer: Klipper uses the standard pin names defined by the
 micro-controller. On the Atmega chips these hardware pins have names
@@ -362,22 +357,8 @@ In particular the Arduino pin numbers frequently don't translate to
 the same hardware names. For example, `D21` is `PD0` on one common
 Arduino board, but is `PC7` on another common Arduino board.
 
-In order to support 3d printers based on real Arduino boards, Klipper
-supports the Arduino pin aliases. This feature is enabled by adding
-`pin_map: arduino` to the [mcu] section of the config file. When these
-aliases are enabled, Klipper understands pin names that start with the
-prefix "ar" (eg, Arduino pin `D23` is Klipper alias `ar23`) and the
-prefix "analog" (eg, Arduino pin `A14` is Klipper alias `analog14`).
-Klipper does not use the Arduino names directly because we feel a name
-like D7 is too easily confused with the hardware name PD7.
-
-Marlin primarily follows the Arduino pin numbering scheme.  However,
-Marlin supports a few chips that Arduino does not support and in some
-cases it supports pins that Arduino boards do not expose. In these
-cases, Marlin chose their own pin numbering scheme. Klipper does not
-support these custom pin numbers - check Marlin's fastio headers (see
-above) to translate these pin numbers to their standard hardware
-names.
+To avoid this confusion, the core Klipper code uses the standard pin
+names defined by the micro-controller.
 
 ### Do I have to wire my device to a specific type of micro-controller pin?
 
