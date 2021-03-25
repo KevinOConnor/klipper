@@ -760,3 +760,12 @@ is enabled (also see the
   defaults to the current time in "YYYYMMDD_HHMMSS" format. Note that
   the suggested input shaper parameters can be persisted in the config
   by issuing `SAVE_CONFIG` command.
+
+### XPT 2046 touch screen controller commands
+The following command is available when a
+[xpt_2046 config section](Config_Reference.md#xpt_2046)
+is enabled.
+- `XPT_TOUCH_REPORT [ENABLE=[1|0]]`: Enables or disables touch reporting. When
+  enabled, all touch events and the associated coordinates are printed to the
+  terminal. This can be used as an aid when defining button shapes in the
+  printer configuration.
