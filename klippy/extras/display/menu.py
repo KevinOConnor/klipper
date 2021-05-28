@@ -29,10 +29,12 @@ class MenuElement(object):
         self._index = kwargs.get('index', None)
         self._enable = kwargs.get('enable', True)
         self._name = kwargs.get('name', None)
+        self._event_sender = kwargs.get('event_sender', None)
         self._enable_tpl = self._name_tpl = None
         if config is not None:
             # overwrite class attributes from config
             self._index = config.getint('index', self._index)
+            self._event_sender = config.get('event_sender', self._event_sender)
             self._name_tpl = manager.gcode_macro.load_template(
                 config, 'name', self._name)
             try:
@@ -178,8 +180,10 @@ class MenuElement(object):
         return name.strip()
 
     def send_event(self, event, *args):
-        return self.manager.send_event(
-            "%s:%s" % (self.get_ns(), str(event)), *args)
+        if self._event_sender:
+            return self.manager.send_event(
+                "%s:%s" % (str(event), str(self._event_sender)), *args)
+        return []
 
     def get_script(self, name):
         if name in self._scripts:
@@ -659,26 +663,11 @@ class MenuList(MenuContainer):
             logging.exception('List drawing error')
 
 
-class MenuVSDList(MenuList):
-    def __init__(self, manager, config, **kwargs):
-        super(MenuVSDList, self).__init__(manager, config, **kwargs)
-
-    def _populate(self):
-        super(MenuVSDList, self)._populate()
-        sdcard = self.manager.printer.lookup_object('virtual_sdcard', None)
-        if sdcard is not None:
-            files = sdcard.get_file_list()
-            for fname, fsize in files:
-                self.insert_item(self.manager.menuitem_from(
-                    'command', name=repr(fname), gcode='M23 /%s' % str(fname)))
-
-
 menu_items = {
     'disabled': MenuDisabled,
     'command': MenuCommand,
     'input': MenuInput,
-    'list': MenuList,
-    'vsdlist': MenuVSDList
+    'list': MenuList
 }
 
 
@@ -709,7 +698,8 @@ class MenuManager:
         self.gcode_macro = self.printer.load_object(config, 'gcode_macro')
         # register itself for printer callbacks
         self.printer.add_object('menu', self)
-        self.printer.register_event_handler("klippy:ready", self.handle_ready)
+        self.printer.register_event_handler(
+            "klippy:connect", self.handle_connect)
         # register for key events
         menu_keys.MenuKeys(config, self.key_event)
         # Load local config file in same directory as current module
@@ -718,10 +708,8 @@ class MenuManager:
         self.load_menuitems(config)
         # Load menu root
         self.root = self.lookup_menuitem(self._root)
-        # send init event
-        self.send_event('init', self)
 
-    def handle_ready(self):
+    def handle_connect(self):
         # start timer
         reactor = self.printer.get_reactor()
         reactor.register_timer(self.timer_event, reactor.NOW)

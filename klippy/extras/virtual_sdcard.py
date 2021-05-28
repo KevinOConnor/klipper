@@ -11,6 +11,9 @@ class VirtualSD:
     def __init__(self, config):
         printer = config.get_printer()
         printer.register_event_handler("klippy:shutdown", self.handle_shutdown)
+        # Register menu handlers
+        printer.register_event_handler(
+            "menu:populate:__vsdfiles", self.handle_sdcard_populate)
         # sdcard state
         sd = config.get('path')
         self.sdcard_dirname = os.path.normpath(os.path.expanduser(sd))
@@ -49,6 +52,14 @@ class VirtualSD:
             logging.info("Virtual sdcard (%d): %s\nUpcoming (%d): %s",
                          readpos, repr(data[:readcount]),
                          self.file_position, repr(data[readcount:]))
+    # menu handlers
+    def handle_sdcard_populate(self, item):
+        if item is not None:
+            files = self.get_file_list()
+            for fname, fsize in files:
+                sdfile = item.manager.menuitem_from(
+                    'command', name=repr(fname), gcode='M23 /%s' % str(fname))
+                item.insert_item(sdfile)
     def stats(self, eventtime):
         if self.work_timer is None:
             return False, ""
