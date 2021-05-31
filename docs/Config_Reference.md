@@ -1019,7 +1019,15 @@ extended [G-Code command](G-Codes.md#z-tilt) becomes available.
 #   stepper. It is described using nozzle coordinates (the XY position
 #   of the nozzle if it could move directly above the point). The
 #   first entry corresponds to stepper_z, the second to stepper_z1,
-#   the third to stepper_z2, etc. This parameter must be provided.
+#   the third to stepper_z2, etc. This parameter must be provided,
+#   unless the parameter "extra_points" is provided. In that case only
+#   the command Z_TILT_AUTODETECT can be run to automatically determine
+#   the z_positions. See 'extra_points' below.
+#z_offsets:
+#   A list of Z offsets for each z_position. The z_offset is added to each
+#   probed value during Z_TILT_ADJUST to offset for unevenness of the bed.
+#   This values can also be automatically detected by running
+#   Z_TILT_CALIBRATE. See "extra_points" below.
 #points:
 #   A list of X,Y coordinates (one per line; subsequent lines
 #   indented) that should be probed during a Z_TILT_ADJUST command.
@@ -1042,7 +1050,33 @@ extended [G-Code command](G-Codes.md#z-tilt) becomes available.
 #   more points than steppers then you will likely have a fixed
 #   minimum value for the range of probed points which you can learn
 #   by observing command output.
+#extra_points:
+#   A list in the same format as "points" above. This list contains
+#   additional points to be probed during the two calibration commands
+#   Z_TILT_CALIBRATE and Z_TILT_AUTODETECT. If the bed is not perfectly
+#   level, it is possible to specify more probing points with "points".
+#   In that Z_TILT_ADJUST will determine the best fit via a least squares
+#   algorithm. As this comes with additional overhead on each Z_TILT_ADJUST
+#   run, it is instead possible to move the additional probing points here,
+#   and use Z_TILT_CALIBRATE to find z_offsets to use for the probing points
+#   used in Z_TILT_ADJUST.
+#   The extra points are also used during T_ZILT_AUTODETECT. This command
+#   can determine the z_positions automatically by during several probings
+#   with intentionally tilted bed. It is currently only implemented for 3
+#   z steppers.
+#   Note that for both commands to work numpy has to be installed.
+#averaging_len: 3
+#   Z_TILT_CALIBRATE and Z_TILT_AUTODETECT both run repeatedly until the
+#   result can no longer be improved. To determine this, the probed values
+#   are averaged. The number of runs to average over is configured with this
+#   parameter.
+#autodetect_delta: 1.0
+#   The amount by which Z_TILT_AUTODETECT intentionally tilts the bed. Higher
+#   values yield better results, but can also lead to situations where the
+#   bed is tilted in a way that the nozzle touched the bed before the probe.
+#   The default is conservative.
 ```
+
 
 ## [quad_gantry_level]
 
