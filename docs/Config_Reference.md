@@ -3262,6 +3262,27 @@ lcd_type:
 #   The resistance range for a 'kill' button. Range minimum and
 #   maximum comma-separated values must be provided when using analog
 #   button.
+#bright_value: 0.7
+#   The brightness value (expressed as a value from 0.0 to 1.0) to use
+#   when screen is dimmed after time of inactivity.
+#dim_value: 0.3
+#   The brightness value (expressed as a value from 0.0 to 1.0) to use
+#   when screen is dimmed after time of inactivity.
+#dim_timeout: 10
+#   Timeout for dimming. Being inactive this amount of seconds will
+#   make screen dimmed with dim_value. The default is 10 seconds
+#brightness_pin:
+#   The connected PWM pin to control brightness of the screen
+#brightness_cycle_time: 0.001
+#   The amount of time (in seconds) for each PWM power cycle to the
+#   brightness pin. It is recommended this be 10 milliseconds or greater when
+#   using software based PWM. The default is 0.001 seconds.
+#brightness_hardware_pwm: True
+#   Enable this to use hardware PWM instead of software PWM.
+#   Most screens are best controlled with hardware PWM to reduce
+#   flickering effect. When using hardware PWM the actual cycle time is
+#   constrained by the implementation and may be significantly
+#   different than the requested cycle_time. The default is True.
 ```
 
 ### hd44780 display
