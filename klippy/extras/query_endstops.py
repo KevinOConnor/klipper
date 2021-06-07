@@ -30,6 +30,13 @@ class QueryEndstops:
                                for mcu_endstop, name in self.endstops]
         web_request.send({name: ["open", "TRIGGERED"][not not t]
                           for name, t in self.last_state})
+    def request_status(self, name):
+        for mcu_endstop, mcu_endstop_name in self.endstops:
+            if mcu_endstop_name == name:
+                toolhead = self.printer.lookup_object('toolhead')
+                print_time = toolhead.get_last_move_time()
+                return mcu_endstop.query_endstop(print_time)
+        return None
     cmd_QUERY_ENDSTOPS_help = "Report on the status of each endstop"
     def cmd_QUERY_ENDSTOPS(self, gcmd):
         # Query the endstops
