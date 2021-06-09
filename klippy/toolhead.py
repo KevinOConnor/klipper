@@ -534,6 +534,32 @@ class ToolHead:
         last_move.timing_callbacks.append(callback)
     def note_kinematic_activity(self, kin_time):
         self.last_kin_move_time = max(self.last_kin_move_time, kin_time)
+    def note_synchronous_command(self, kin_time):
+        """
+        Invalid to be called by background tasks
+        """
+
+        # FIXME: with this uncommented, it causes
+        # sporadic "invalid step sequence" errors.
+        # But only with this, mid-move updates are
+        # possible (e.g. to use this for BLTouch pins)
+        #
+        # This may be remedied by not being called by background tasks
+        # (directly)
+
+        # Also: Is it allowed for a second kin_time
+        # to be smaller than a previous one?
+
+        self.note_kinematic_activity(kin_time)
+        if(kin_time >= self.last_kin_move_time):
+            if self.special_queuing_state == "Drip":
+                self._update_drip_move_time(kin_time)
+            else:
+                self._update_move_time(kin_time)
+            # ---
+            if self.print_time > self.need_check_stall:
+                self._check_stall()
+
     def get_max_velocity(self):
         return self.max_velocity, self.max_accel
     def _calc_junction_deviation(self):

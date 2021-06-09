@@ -24,14 +24,6 @@ so that when your host or MCU encounters an error, the tool will stop.
 
 For an example configuration, see `config/sample-pwm-tool-cfg`.
 
-## Current Limitations
-
-There is a limitation of how frequent PWM updates may occur.
-While being very precise, a PWM update may only occur every 0.1 seconds,
-rendering it almost useless for raster engraving.
-However, there exists an [experimental branch](https://github.com/Cirromulus/klipper/tree/laser_tool) with its own tradeoffs.
-In long term, it is planned to add this functionality to main-line klipper.
-
 ## Commands
 
 `M3/M4 S<value>` : Set PWM duty-cycle. Values between 0 and 255.

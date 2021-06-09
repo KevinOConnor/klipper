@@ -48,6 +48,15 @@ struct stepcompress {
     struct list_head history_list;
 };
 
+struct sync_channel {
+    // Buffer management
+    uint32_t *queue, *queue_end, *queue_pos, *queue_next;
+
+    // Message generation
+    struct list_head msg_queue;
+    uint32_t oid;
+};
+
 struct step_move {
     uint32_t interval;
     uint16_t count;
@@ -305,6 +314,41 @@ int
 stepcompress_get_step_dir(struct stepcompress *sc)
 {
     return sc->next_step_dir;
+}
+
+/****************************************************************
+ * Sync channel interface
+ ****************************************************************/
+
+struct sync_channel * __visible
+sync_channel_alloc(uint32_t oid)
+{
+    struct sync_channel *pc = malloc(sizeof(*pc));
+    memset(pc, 0, sizeof(*pc));
+    list_init(&pc->msg_queue);
+    pc->oid = oid;
+    return pc;
+}
+
+void __visible
+sync_channel_free(struct sync_channel *pc)
+{
+    if (!pc)
+        return;
+    free(pc->queue);
+    message_queue_free(&pc->msg_queue);
+    free(pc);
+}
+
+void __visible
+sync_channel_queue_msg(struct sync_channel *pc, uint32_t *data, int len,
+        uint64_t req_clock)
+{
+    struct queue_message *qm = message_alloc_and_encode(data, len);
+    qm->req_clock = req_clock;
+    qm->min_clock = req_clock;
+
+    list_add_tail(&qm->node, &pc->msg_queue);
 }
 
 // Determine the "print time" of the last_step_clock
@@ -624,6 +668,9 @@ struct steppersync {
     // Storage for associated stepcompress objects
     struct stepcompress **sc_list;
     int sc_num;
+    // Storage for associated synchronous message objects
+    struct sync_channel **pc_list;
+    int pc_num;
     // Storage for list of pending move clocks
     uint64_t *move_clocks;
     int num_move_clocks;
@@ -631,8 +678,9 @@ struct steppersync {
 
 // Allocate a new 'steppersync' object
 struct steppersync * __visible
-steppersync_alloc(struct serialqueue *sq, struct stepcompress **sc_list
-                  , int sc_num, int move_num)
+steppersync_alloc(struct serialqueue *sq, struct stepcompress **sc_list,
+                  int sc_num, struct sync_channel **pc_list,
+                  int pc_num,  int move_num)
 {
     struct steppersync *ss = malloc(sizeof(*ss));
     memset(ss, 0, sizeof(*ss));
@@ -642,6 +690,10 @@ steppersync_alloc(struct serialqueue *sq, struct stepcompress **sc_list
     ss->sc_list = malloc(sizeof(*sc_list)*sc_num);
     memcpy(ss->sc_list, sc_list, sizeof(*sc_list)*sc_num);
     ss->sc_num = sc_num;
+
+    ss->pc_list = malloc(sizeof(*pc_list)*pc_num);
+    memcpy(ss->pc_list, pc_list, sizeof(*pc_list)*pc_num);
+    ss->pc_num = pc_num;
 
     ss->move_clocks = malloc(sizeof(*ss->move_clocks)*move_num);
     memset(ss->move_clocks, 0, sizeof(*ss->move_clocks)*move_num);
@@ -723,6 +775,18 @@ steppersync_flush(struct steppersync *ss, uint64_t move_clock)
             if (!list_empty(&sc->msg_queue)) {
                 struct queue_message *m = list_first_entry(
                     &sc->msg_queue, struct queue_message, node);
+                if (m->req_clock < req_clock) {
+                    qm = m;
+                    req_clock = m->req_clock;
+                }
+            }
+        }
+        // sync_channel
+        for (i=0; i<ss->pc_num; i++) {
+            struct sync_channel *pc = ss->pc_list[i];
+            if (!list_empty(&pc->msg_queue)) {
+                struct queue_message *m = list_first_entry(
+                    &pc->msg_queue, struct queue_message, node);
                 if (m->req_clock < req_clock) {
                     qm = m;
                     req_clock = m->req_clock;

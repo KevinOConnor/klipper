@@ -18,10 +18,15 @@ int stepcompress_commit(struct stepcompress *sc);
 int stepcompress_reset(struct stepcompress *sc, uint64_t last_step_clock);
 int stepcompress_queue_msg(struct stepcompress *sc, uint32_t *data, int len);
 
+struct sync_channel *sync_channel_alloc(uint32_t oid);
+void sync_channel_free(struct sync_channel *pc);
+void sync_channel_queue_msg(struct sync_channel *pc, uint32_t *data, int len,
+        uint64_t req_clock);
+
 struct serialqueue;
 struct steppersync *steppersync_alloc(
-    struct serialqueue *sq, struct stepcompress **sc_list, int sc_num
-    , int move_num);
+    struct serialqueue *sq, struct stepcompress **sc_list, int sc_num,
+    struct sync_channel **pc_list, int pc_num, int move_num);
 void steppersync_free(struct steppersync *ss);
 void steppersync_set_time(struct steppersync *ss, double time_offset
                           , double mcu_freq);
