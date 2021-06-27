@@ -7,7 +7,7 @@ config STM32_SELECT
     default y
     select HAVE_GPIO
     select HAVE_GPIO_ADC
-    select HAVE_GPIO_I2C if !MACH_STM32F031
+    select HAVE_GPIO_I2C if !(MACH_STM32F031 || MACH_STM32H7)
     select HAVE_GPIO_SPI if !MACH_STM32F031
     select HAVE_GPIO_BITBANGING if !MACH_STM32F031
     select HAVE_STRICT_TIMING
@@ -55,6 +55,10 @@ choice
     config MACH_STM32F070
         bool "STM32F070"
         select MACH_STM32F0
+    config MACH_STM32H750
+        bool "STM32H750 (revision V)"
+        select MACH_STM32H7
+        select HAVE_GPIO_HARD_PWM
 endchoice
 
 config MACH_STM32F0
@@ -64,6 +68,8 @@ config MACH_STM32F1
 config MACH_STM32F2
     bool
 config MACH_STM32F4
+    bool
+config MACH_STM32H7
     bool
 config HAVE_STM32_USBFS
     bool
@@ -87,6 +93,7 @@ config MCU
     default "stm32f407xx" if MACH_STM32F407
     default "stm32f429xx" if MACH_STM32F429
     default "stm32f446xx" if MACH_STM32F446
+    default "stm32h750xx" if MACH_STM32H750
 
 config CLOCK_FREQ
     int
@@ -97,6 +104,7 @@ config CLOCK_FREQ
     default 84000000 if MACH_STM32F401
     default 168000000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429
     default 180000000 if MACH_STM32F446
+    default 480000000 if MACH_STM32H750
 
 config FLASH_SIZE
     hex
@@ -106,6 +114,7 @@ config FLASH_SIZE
     default 0x10000 if MACH_STM32F103 # Flash size of stm32f103x8 (64KiB)
     default 0x40000 if MACH_STM32F2 || MACH_STM32F401
     default 0x80000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446
+    default 0x20000 if MACH_STM32H7 # Flash size of stm32h750 (128KiB)
 
 config RAM_START
     hex
@@ -120,6 +129,7 @@ config RAM_SIZE
     default 0x20000 if MACH_STM32F207
     default 0x10000 if MACH_STM32F401
     default 0x20000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446
+    default 0x20000 if MACH_STM32H7 # TODO find correct value, 864KiB is SRAM size, total is 1MB
 
 config STACK_SIZE
     int
@@ -199,6 +209,7 @@ config CLOCK_REF_FREQ
     default 25000000 if STM32_CLOCK_REF_25M
     default 16000000 if STM32_CLOCK_REF_16M
     default 12000000 if STM32_CLOCK_REF_12M
+    default 25000000 if STM32_CLOCK_REF_25M
     default 1 if STM32_CLOCK_REF_INTERNAL
     default 8000000
 

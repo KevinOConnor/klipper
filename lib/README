@@ -2,7 +2,7 @@ This directory contains external library code.
 
 The cmsis directory contains code from:
   https://github.com/ARM-software/CMSIS_5
-version 5.3.0 (49ac527aa7406cecbba46d4d3bdbc7f60c6c6d42). Contents
+version 5.3.0 (fa6076b91b83505a37b94e3b5c7053992fb60ae1). Contents
 taken from the CMSIS/Core/Include/ directory.
 
 The sam3x directory contains code from the
@@ -53,6 +53,10 @@ version 1.9.0 (extracted 20200614).
 The stm32f4 directory contains code from STMicroelectronics:
   http://www.st.com/en/embedded-software/stm32cubef4.html
 version 1.24.0 (extracted 20190723).
+
+The stm32h7 directory contains code from STMicroelectronics:
+  https://www.st.com/en/embedded-software/stm32cubeh7.html
+version 1.7.0 (extracted 20200810).
 
 The hub-ctrl directory contains code from:
   https://github.com/codazoda/hub-ctrl.c/

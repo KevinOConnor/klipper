@@ -11,6 +11,7 @@
 #include "internal.h" // enable_pclock
 #include "sched.h" // DECL_INIT
 
+// USART6 (STM32H7) is not implemented yet
 // Select the configured serial port
 #if CONFIG_STM32_SERIAL_USART1
   DECL_CONSTANT_STR("RESERVE_PINS_serial", "PA10,PA9");
@@ -56,6 +57,20 @@
 void
 USARTx_IRQHandler(void)
 {
+#if CONFIG_MACH_STM32H7
+    uint32_t isr = USARTx->ISR;
+    if (isr & (USART_ISR_RXNE_RXFNE | USART_ISR_ORE))
+        serial_rx_byte(USARTx->RDR);
+    //USART_ISR_TXE_TXFNF only works with Fifo mode disabled
+    if (isr & USART_ISR_TXE_TXFNF && USARTx->CR1 & USART_CR1_TXEIE) {
+        uint8_t data;
+        int ret = serial_get_tx_byte(&data);
+        if (ret)
+            USARTx->CR1 = CR1_FLAGS;
+        else
+            USARTx->TDR = data;
+    }
+#else
     uint32_t sr = USARTx->SR;
     if (sr & (USART_SR_RXNE | USART_SR_ORE))
         serial_rx_byte(USARTx->DR);
@@ -67,6 +82,7 @@ USARTx_IRQHandler(void)
         else
             USARTx->DR = data;
     }
+#endif
 }
 
 void
@@ -82,8 +98,13 @@ serial_init(void)
 
     uint32_t pclk = get_pclock_frequency((uint32_t)USARTx);
     uint32_t div = DIV_ROUND_CLOSEST(pclk, CONFIG_SERIAL_BAUD);
+#if CONFIG_MACH_STM32H7
+    USARTx->BRR = (((div / 16) << USART_BRR_DIV_MANTISSA_Pos)
+                 | ((div % 16) << USART_BRR_DIV_FRACTION_Pos));
+#else
     USARTx->BRR = (((div / 16) << USART_BRR_DIV_Mantissa_Pos)
-                   | ((div % 16) << USART_BRR_DIV_Fraction_Pos));
+                 | ((div % 16) << USART_BRR_DIV_Fraction_Pos));
+#endif
     USARTx->CR1 = CR1_FLAGS;
     armcm_enable_irq(USARTx_IRQHandler, USARTx_IRQn, 0);
 

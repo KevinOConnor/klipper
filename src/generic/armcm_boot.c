@@ -13,6 +13,10 @@
 // Export MCU type
 DECL_CONSTANT_STR("MCU", CONFIG_MCU);
 
+#if CONFIG_MACH_STM32H7
+#define SHP SHPR
+#endif
+
 // Symbols created by armcm_link.lds.S linker script
 extern uint32_t _data_start, _data_end, _data_flash;
 extern uint32_t _bss_start, _bss_end, _stack_start;

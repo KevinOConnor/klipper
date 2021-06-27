@@ -392,8 +392,8 @@ class MCU_adc:
         max_adc = self._sample_count * mcu_adc_max
         self._inv_max_adc = 1.0 / max_adc
         self._report_clock = self._mcu.seconds_to_clock(self._report_time)
-        min_sample = max(0, min(0xffff, int(self._min_sample * max_adc)))
-        max_sample = max(0, min(0xffff, int(
+        min_sample = max(0, min(0xffffffff, int(self._min_sample * max_adc)))
+        max_sample = max(0, min(0xffffffff, int(
             math.ceil(self._max_sample * max_adc))))
         self._mcu.add_config_cmd(
             "query_analog_in oid=%d clock=%d sample_ticks=%d sample_count=%d"

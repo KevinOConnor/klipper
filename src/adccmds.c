@@ -13,7 +13,7 @@
 struct analog_in {
     struct timer timer;
     uint32_t rest_time, sample_time, next_begin_time;
-    uint16_t value, min_value, max_value;
+    uint32_t value, min_value, max_value;
     struct gpio_adc pin;
     uint8_t invalid_count, range_check_count;
     uint8_t state, sample_count;
@@ -30,7 +30,7 @@ analog_in_event(struct timer *timer)
         a->timer.waketime += sample_delay;
         return SF_RESCHEDULE;
     }
-    uint16_t value = gpio_adc_read(a->pin);
+    uint32_t value = gpio_adc_read(a->pin);
     uint8_t state = a->state;
     if (state >= a->sample_count) {
         state = 0;
@@ -91,7 +91,7 @@ command_query_analog_in(uint32_t *args)
 }
 DECL_COMMAND(command_query_analog_in,
              "query_analog_in oid=%c clock=%u sample_ticks=%u sample_count=%c"
-             " rest_ticks=%u min_value=%hu max_value=%hu range_check_count=%c");
+             " rest_ticks=%u min_value=%u max_value=%u range_check_count=%c");
 
 void
 analog_in_task(void)
@@ -108,11 +108,11 @@ analog_in_task(void)
             irq_enable();
             continue;
         }
-        uint16_t value = a->value;
+        uint32_t value = a->value;
         uint32_t next_begin_time = a->next_begin_time;
         a->state++;
         irq_enable();
-        sendf("analog_in_state oid=%c next_clock=%u value=%hu"
+        sendf("analog_in_state oid=%c next_clock=%u value=%u"
               , oid, next_begin_time, value);
     }
 }
