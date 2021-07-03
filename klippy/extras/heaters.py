@@ -169,7 +169,6 @@ class ControlBangBang:
 # Proportional Integral Derivative (PID) control algo
 ######################################################################
 
-PID_SETTLE_DELTA = 1.
 PID_SETTLE_SLOPE = .1
 
 class ControlPID:
@@ -180,6 +179,7 @@ class ControlPID:
         self.Ki = config.getfloat('pid_Ki') / PID_PARAM_BASE
         self.Kd = config.getfloat('pid_Kd') / PID_PARAM_BASE
         self.min_deriv_time = heater.get_smooth_time()
+        self.pid_settle_delta = config.getfloat('pid_settle_delta', 1.)
         imax = config.getfloat('pid_integral_max', self.heater_max_power,
                                minval=0.)
         self.temp_integ_max = 0.
@@ -216,7 +216,7 @@ class ControlPID:
             self.prev_temp_integ = temp_integ
     def check_busy(self, eventtime, smoothed_temp, target_temp):
         temp_diff = target_temp - smoothed_temp
-        return (abs(temp_diff) > PID_SETTLE_DELTA
+        return (abs(temp_diff) > self.pid_settle_delta
                 or abs(self.prev_temp_deriv) > PID_SETTLE_SLOPE)
 
 
@@ -243,6 +243,8 @@ class PrinterHeaters:
         gcode.register_command("M105", self.cmd_M105, when_not_ready=True)
         gcode.register_command("TEMPERATURE_WAIT", self.cmd_TEMPERATURE_WAIT,
                                desc=self.cmd_TEMPERATURE_WAIT_help)
+        gcode.register_command("PID", self.cmd_PID,
+                               desc=self.cmd_PID_help)
     def add_sensor_factory(self, sensor_type, sensor_factory):
         self.sensor_factories[sensor_type] = sensor_factory
     def setup_heater(self, config, gcode_id=None):
@@ -358,6 +360,39 @@ class PrinterHeaters:
             print_time = toolhead.get_last_move_time()
             gcmd.respond_raw(self._get_temp(eventtime))
             eventtime = reactor.pause(eventtime + 1.)
+    cmd_PID_help = "Update PID settings for a heater"
+    def cmd_PID(self, gcmd):
+        try:
+            heater = self.heaters[gcmd.get('HEATER')]
+        except KeyError:
+            raise gcmd.error("Unknown heater '%s' (available: %s)" %
+                             (sensor_name, self.available_heaters))
+        if not isinstance(heater.control, ControlPID):
+            raise gcmd.error("This heater does not use PID control")
+        proportional = gcmd.get_float('P', None)
+        if proportional is not None:
+            proportional /= PID_PARAM_BASE
+            logging.info("Setting PID_Kp to %s (was %s)",
+                            proportional, heater.control.Kp)
+            heater.control.Kp = proportional
+        integral = gcmd.get_float('I', None)
+        if integral is not None:
+            integral /= PID_PARAM_BASE
+            logging.info("Setting PID_Ki to %s (was %s)",
+                            integral, heater.control.Ki)
+            heater.control.Ki = integral
+        derivative = gcmd.get_float('D', None)
+        if derivative is not None:
+            derivative /= PID_PARAM_BASE
+            logging.info("Setting PID_Ki to %s (was %s)",
+                            derivative, heater.control.Kd)
+            heater.control.Ki = derivative
+        settle_delta = gcmd.get_float('SETTLE_DELTA', None)
+        if settle_delta is not None:
+            logging.info("Setting PID_SETTLE_DELTA to %s (was %s)",
+                            settle_delta, heater.control.pid_settle_delta)
+            heater.control.pid_settle_delta = settle_delta
+
 
 def load_config(config):
     return PrinterHeaters(config)
