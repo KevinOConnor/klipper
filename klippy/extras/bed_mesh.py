@@ -443,14 +443,14 @@ class BedMeshCalibrate:
                         raise config.error(
                             "bed_mesh: Existing faulty_region_%d %s overlaps "
                             "added faulty_region_%d %s"
-                            % (j, repr([prev_c1, prev_c3]), i, repr([c1, c3])))
+                            % (j+1, repr([prev_c1, prev_c3]), i, repr([c1, c3])))
                 # Validate that no new corner is within an existing region
                 for coord in [c1, c2, c3, c4]:
                     if within(coord, prev_c1, prev_c3):
                         raise config.error(
                             "bed_mesh: Added faulty_region_%d %s overlaps "
                             "existing faulty_region_%d %s"
-                            % (i, repr([c1, c3]), j, repr([prev_c1, prev_c3])))
+                            % (i, repr([c1, c3]), j+1, repr([prev_c1, prev_c3])))
             self.faulty_regions.append((c1, c3))
         self._verify_algorithm(config.error)
     def _verify_algorithm(self, error):
