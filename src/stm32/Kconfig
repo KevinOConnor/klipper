@@ -24,6 +24,10 @@ config BOARD_DIRECTORY
 
 choice
     prompt "Processor model"
+        config MACH_GD32F103
+        bool "GD32F103"
+        select MACH_STM32F1
+        select HAVE_GPIO_HARD_PWM
     config MACH_STM32F103
         bool "STM32F103"
         select MACH_STM32F1
@@ -85,6 +89,7 @@ config MCU
     default "stm32f070xb" if MACH_STM32F070
     default "stm32f072xb" if MACH_STM32F072
     default "stm32f103xe" if MACH_STM32F103
+    default "gd32f103rct" if MACH_GD32F103
     default "stm32f207xx" if MACH_STM32F207
     default "stm32f401xc" if MACH_STM32F401
     default "stm32f405xx" if MACH_STM32F405
@@ -97,6 +102,7 @@ config CLOCK_FREQ
     default 48000000 if MACH_STM32F0
     default 64000000 if MACH_STM32F103 && STM32_CLOCK_REF_INTERNAL
     default 72000000 if MACH_STM32F103
+    default 72000000 if MACH_GD32F103
     default 120000000 if MACH_STM32F207
     default 84000000 if MACH_STM32F401
     default 168000000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429
@@ -108,6 +114,7 @@ config FLASH_SIZE
     default 0x8000 if MACH_STM32F042
     default 0x20000 if MACH_STM32F070 || MACH_STM32F072
     default 0x10000 if MACH_STM32F103 # Flash size of stm32f103x8 (64KiB)
+    default 0x5000 if MACH_GD32F103
     default 0x40000 if MACH_STM32F2 || MACH_STM32F401
     default 0x80000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446
 
@@ -121,6 +128,7 @@ config RAM_SIZE
     default 0x1800 if MACH_STM32F042
     default 0x4000 if MACH_STM32F070 || MACH_STM32F072
     default 0x5000 if MACH_STM32F103 # Ram size of stm32f103x8 (20KiB)
+    default 0x3750 if MACH_GD32F103
     default 0x20000 if MACH_STM32F207
     default 0x10000 if MACH_STM32F401
     default 0x20000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446
@@ -135,26 +143,26 @@ config STACK_SIZE
 ######################################################################
 
 choice
-    prompt "Bootloader offset" if MACH_STM32F207 || MACH_STM32F407 || MACH_STM32F405 || MACH_STM32F446 || MACH_STM32F103 || MACH_STM32F070
+    prompt "Bootloader offset" if MACH_STM32F207 || MACH_STM32F407 || MACH_STM32F405 || MACH_STM32F446 || MACH_STM32F103 || MACH_STM32F070 || MACH_GD32F103
     config STM32_FLASH_START_2000
-        bool "8KiB bootloader (stm32duino)" if MACH_STM32F103 || MACH_STM32F070
+        bool "8KiB bootloader (stm32duino)" if MACH_STM32F103 || MACH_STM32F070 || MACH_GD32F103
     config STM32_FLASH_START_5000
-        bool "20KiB bootloader" if MACH_STM32F103
+        bool "20KiB bootloader" if MACH_STM32F103 || MACH_GD32F103
     config STM32_FLASH_START_7000
-        bool "28KiB bootloader" if MACH_STM32F103
+        bool "28KiB bootloader" if MACH_STM32F103 || MACH_GD32F103
     config STM32_FLASH_START_8000
         bool "32KiB bootloader" if MACH_STM32F207 || MACH_STM32F407 || MACH_STM32F446
     config STM32_FLASH_START_8800
-        bool "34KiB bootloader (Chitu v6 Bootloader)" if MACH_STM32F103
+        bool "34KiB bootloader (Chitu v6 Bootloader)" if MACH_STM32F103 || MACH_GD32F103
     config STM32_FLASH_START_20200
         bool "128KiB bootloader with 512 byte offset (Prusa Buddy)" if MACH_STM32F407
     config STM32_FLASH_START_C000
         bool "48KiB bootloader (MKS Robin Nano V3)" if MACH_STM32F407
     config STM32_FLASH_START_10000
-        bool "64KiB bootloader" if MACH_STM32F103 || MACH_STM32F446
+        bool "64KiB bootloader" if MACH_STM32F103 || MACH_STM32F446 || MACH_GD32F103
 
     config STM32_FLASH_START_800
-        bool "2KiB bootloader (HID Bootloader)" if MACH_STM32F103
+        bool "2KiB bootloader (HID Bootloader)" if MACH_STM32F103 || MACH_GD32F103
     config STM32_FLASH_START_4000
         bool "16KiB bootloader (HID Bootloader)" if MACH_STM32F207 || MACH_STM32F405 || MACH_STM32F407
 
