@@ -77,22 +77,63 @@ for the completion of the installation. On some occasions, if the board has
 too little RAM, the installation may fail, and you will need to
 [enable swap](https://nebl.io/neblio-university/enabling-increasing-raspberry-pi-swap/).
 
-If you intend to connect the ADXL345 to your Raspberry Pi, check and follow the
+## Hardware Configuration
+You can connect your ADXL345 to any spi bus supported by Klipper. Regular printer
+control boards, dedicated boards, and the Raspberry Pi mcu are all options that have
+their own advantages and disadvantages.
+
+### Raspberry Pi MCU
+The reccomended way to connect the sensor to the printer in a permenant installation
+is to connect it directly to the SPI bus on the Raspberry Pi. Check and follow the
 instructions in the [RPi Microcontroller document](RPi_microcontroller.md) to setup the
 "linux mcu" on the Raspberry Pi. Make sure the Linux SPI driver is enabled by running
 `sudo raspi-config` and enabling SPI under the "Interfacing options" menu.
 
 Add the following to the printer.cfg file:
 ```
+[mcu rpi]
+serial: /tmp/klipper_host_mcu
+
 [adxl345]
-cs_pin: AB0 # The CS pin on your sensor that may be connected to your
-            # primary MCU, Pi, or another MCU
+cs_pin: rpi:None
 
 [resonance_tester]
 accel_chip: adxl345
 probe_points:
     100,100,20  # an example
 ```
+
+### Primary MCU
+Add the following to the printer.cfg file:
+```
+[adxl345]
+cs_pin: AB0 # The MCU pin connected to the CS pin on your sensor
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    100,100,20  # an example
+```
+
+### Secondary MCU
+If you want to avoid rewireing your printer to install your sensor permenantly,
+you can use a second mcu such as an Uno or 8-bit board
+
+To use an Uno, add the following to the printer.cfg file:
+```
+[mcu arduino]
+serial: /dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_8523535303735111F150-if00
+
+[adxl345]
+cs_pin: arduino:PB2
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    100,100,20  # an example
+```
+For more information, refer to the [extra mcu documentation](config_reference.md#mcu-my_extra_mcu)
+
 It is advised to start with 1 probe point, in the middle of the print bed,
 slightly above it.
 
