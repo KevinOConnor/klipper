@@ -38,3 +38,32 @@ corexz_stepper_alloc(char type)
     sk->active_flags = AF_X | AF_Z;
     return sk;
 }
+
+static double
+corexz_reverse_stepper_plus_calc_position(struct stepper_kinematics *sk,
+                                  struct move *m, double move_time)
+{
+    struct coord c = move_get_coord(m, move_time);
+    return -c.x - c.z;
+}
+
+static double
+corexz_reverse_stepper_minus_calc_position(struct stepper_kinematics *sk,
+                                   struct move *m, double move_time)
+{
+    struct coord c = move_get_coord(m, move_time);
+    return -c.x + c.z;
+}
+
+struct stepper_kinematics * __visible
+corexz_reverse_stepper_alloc(char type)
+{
+    struct stepper_kinematics *sk = malloc(sizeof(*sk));
+    memset(sk, 0, sizeof(*sk));
+    if (type == '+')
+        sk->calc_position_cb = corexz_reverse_stepper_plus_calc_position;
+    else if (type == '-')
+        sk->calc_position_cb = corexz_reverse_stepper_minus_calc_position;
+    sk->active_flags = AF_X | AF_Z;
+    return sk;
+}

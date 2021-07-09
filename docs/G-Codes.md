@@ -482,6 +482,10 @@ enabled:
 - `SET_DUAL_CARRIAGE CARRIAGE=[0|1]`: This command will set the active
   carriage. It is typically invoked from the activate_gcode and
   deactivate_gcode fields in a multiple extruder configuration.
+- `SET_DUAL_CARRIAGE_MODE MODE=[FULL_CONTROL|DUPLICATION|MIRRORED]`: This
+  command will set the active dual_carriage mode. The user must position the
+  CARRIAGE_1 before activate the DUPLICATION mode. This commande is available
+  for hybrid_corexy and hybrid_corexz robots.
 
 ## TMC stepper drivers
 

@@ -85,10 +85,12 @@ defs_kin_cartesian = """
 
 defs_kin_corexy = """
     struct stepper_kinematics *corexy_stepper_alloc(char type);
+    struct stepper_kinematics *corexy_reverse_stepper_alloc(char type);
 """
 
 defs_kin_corexz = """
     struct stepper_kinematics *corexz_stepper_alloc(char type);
+    struct stepper_kinematics *corexz_reverse_stepper_alloc(char type);
 """
 
 defs_kin_delta = """
