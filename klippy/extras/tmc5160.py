@@ -211,6 +211,9 @@ Fields["TPWMTHRS"] = {
 Fields["TCOOLTHRS"] = {
     "TCOOLTHRS":                0xfffff << 0
 }
+Fields["THIGH"] = {
+    "THIGH":                    0xfffff << 0
+}
 Fields["TSTEP"] = {
     "TSTEP":                    0xfffff << 0
 }
@@ -238,19 +241,18 @@ class TMC5160CurrentHelper:
         hold_current = config.getfloat('hold_current', run_current,
                                        above=0., maxval=MAX_CURRENT)
         self.sense_resistor = config.getfloat('sense_resistor', 0.075, above=0.)
-        self._set_globalscaler(run_current)
-        irun, ihold = self._calc_current(run_current, hold_current)
+        gscaler, irun, ihold = self._calc_current(run_current, hold_current)
+        self.fields.set_field("GLOBALSCALER", gscaler)
         self.fields.set_field("IHOLD", ihold)
         self.fields.set_field("IRUN", irun)
-    def _set_globalscaler(self, current):
+    def _calc_globalscaler(self, current):
         globalscaler = int((current * 256. * math.sqrt(2.)
                             * self.sense_resistor / VREF) + .5)
         globalscaler = max(32, globalscaler)
         if globalscaler >= 256:
             globalscaler = 0
-        self.fields.set_field("GLOBALSCALER", globalscaler)
-    def _calc_current_bits(self, current):
-        globalscaler = self.fields.get_field("GLOBALSCALER")
+        return globalscaler
+    def _calc_current_bits(self, current, globalscaler):
         if not globalscaler:
             globalscaler = 256
         cs = int((current * 256. * 32. * math.sqrt(2.) * self.sense_resistor)
@@ -258,9 +260,10 @@ class TMC5160CurrentHelper:
                  - 1. + .5)
         return max(0, min(31, cs))
     def _calc_current(self, run_current, hold_current):
-        irun = self._calc_current_bits(run_current)
-        ihold = self._calc_current_bits(min(hold_current, run_current))
-        return irun, ihold
+        gscaler = self._calc_globalscaler(max(hold_current, run_current))
+        irun = self._calc_current_bits(run_current, gscaler)
+        ihold = self._calc_current_bits(min(hold_current, run_current), gscaler)
+        return gscaler, irun, ihold
     def _calc_current_from_field(self, field_name):
         globalscaler = self.fields.get_field("GLOBALSCALER")
         if not globalscaler:
@@ -273,7 +276,9 @@ class TMC5160CurrentHelper:
         hold_current = self._calc_current_from_field("IHOLD")
         return run_current, hold_current, MAX_CURRENT
     def set_current(self, run_current, hold_current, print_time):
-        irun, ihold = self._calc_current(run_current, hold_current)
+        gscaler, irun, ihold = self._calc_current(run_current, hold_current)
+        val = self.fields.set_field("GLOBALSCALER", gscaler)
+        self.mcu_tmc.set_register("GLOBALSCALER", val, print_time)
         self.fields.set_field("IHOLD", ihold)
         val = self.fields.set_field("IRUN", irun)
         self.mcu_tmc.set_register("IHOLD_IRUN", val, print_time)
@@ -289,18 +294,21 @@ class TMC5160:
         self.fields = tmc.FieldHelper(Fields, SignedFields, FieldFormatters)
         self.mcu_tmc = tmc2130.MCU_TMC_SPI(config, Registers, self.fields)
         # Allow virtual pins to be created
-        tmc.TMCVirtualPinHelper(config, self.mcu_tmc)
+        tmc.TMCVirtualPinHelper(config, self.mcu_tmc, TMC_FREQUENCY)
         # Register commands
         current_helper = TMC5160CurrentHelper(config, self.mcu_tmc)
         cmdhelper = tmc.TMCCommandHelper(config, self.mcu_tmc, current_helper)
         cmdhelper.setup_register_dump(ReadRegisters)
+        tmc.TMCHomingCurrentHelper(config, self.mcu_tmc, current_helper)
         # Setup basic register values
         mh = tmc.TMCMicrostepHelper(config, self.mcu_tmc)
         self.get_microsteps = mh.get_microsteps
         self.get_phase = mh.get_phase
         tmc.TMCStealthchopHelper(config, self.mcu_tmc, TMC_FREQUENCY)
-        #   CHOPCONF
+        tmc.TMCTHIGHHelper(config, self.mcu_tmc, TMC_FREQUENCY)
+        tmc.TMCcoolStepHelper(config, self.mcu_tmc, TMC_FREQUENCY)
         set_config_field = self.fields.set_config_field
+        # CHOPCONF
         set_config_field(config, "toff", 3)
         set_config_field(config, "hstrt", 5)
         set_config_field(config, "hend", 2)
@@ -313,17 +321,17 @@ class TMC5160:
         set_config_field(config, "tpfd", 4)
         set_config_field(config, "diss2g", 0)
         set_config_field(config, "diss2vs", 0)
-        #   COOLCONF
-        set_config_field(config, "semin", 0)    # page 52
+        # COOLCONF
+        set_config_field(config, "semin", 0)
         set_config_field(config, "seup", 0)
         set_config_field(config, "semax", 0)
         set_config_field(config, "sedn", 0)
         set_config_field(config, "seimin", 0)
         set_config_field(config, "sgt", 0)
         set_config_field(config, "sfilt", 0)
-        #   IHOLDIRUN
+        # IHOLDIRUN
         set_config_field(config, "IHOLDDELAY", 6)
-        #   PWMCONF
+        # PWMCONF
         set_config_field(config, "PWM_OFS", 30)
         set_config_field(config, "PWM_GRAD", 0)
         set_config_field(config, "pwm_freq", 0)
@@ -332,7 +340,7 @@ class TMC5160:
         set_config_field(config, "freewheel", 0)
         set_config_field(config, "PWM_REG", 4)
         set_config_field(config, "PWM_LIM", 12)
-        #   TPOWERDOWN
+        # TPOWERDOWN
         set_config_field(config, "TPOWERDOWN", 10)
 
 def load_config_prefix(config):
