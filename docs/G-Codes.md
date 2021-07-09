@@ -148,6 +148,8 @@ The following standard commands are supported:
   is specified then the toolhead move will be performed with the given
   speed (in mm/s); otherwise the toolhead move will use the restored
   g-code speed.
+- PID HEATER=<config_name> [P=<proportional>] [I=<integral>] [D=<derivative>]
+  [SETTLE_DELTA=<temperature>] : Adjust PID parameters.
 - `PID_CALIBRATE HEATER=<config_name> TARGET=<temperature>
   [WRITE_FILE=1]`: Perform a PID calibration test. The specified
   heater will be enabled until the specified target temperature is
