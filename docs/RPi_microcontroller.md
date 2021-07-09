@@ -154,3 +154,39 @@ gpiochip1 - 8 lines:
         line   6:      unnamed       unused   input  active-high
         line   7:      unnamed       unused   input  active-high
 ```
+
+Optional: Hardware PWM
+=======================================
+Raspberry Pi's have two PWM channels (PWM0 and PWM1) which are exposed on the header or if not, can be routed to existing gpio pins.
+The Linux mcu daemon uses the pwmchip sysfs interface to control hardware pwm devices on Linux hosts.
+The pwm sysfs interface is not exposed by default on a Raspberry and can be activated by adding a line to ```/boot/config.txt```:
+```
+# Enable pwmchip sysfs interface
+dtoverlay=pwm,pin=12,func=4
+```
+This example enables only PWM0 and routes it to gpio12. If both PWM channels need to be enabled you can use ```pwm-2chan```.
+
+The overlay does not expose the pwm line on sysfs on boot and needs to be exported by echo'ing the number of the pwm channel to ```/sys/class/pwm/pwmchip0/export```:
+```
+echo 0 > /sys/class/pwm/pwmchip0/export
+```
+This will create device ```/sys/class/pwm/pwmchip0/pwm0``` in the filesystem.
+The easiest way to do this is by adding this to ```/etc/rc.local``` before the ```exit 0``` line.
+
+With the sysfs in place, you can now use either the pwm channel(s) by adding the following piece of configuration to your ```printer.cfg```:
+```
+[output_pin caselight]
+pin: host:pwmchip0/pwm0
+pwm: True
+hardware_pwm: True
+cycle_time: 0.000001
+```
+This will add hardware pwm control to gpio12 on the Pi (because the overlay was configured to route pwm0 to pin=12).
+
+PWM0 can be routed to gpio12 and gpio18, PWM1 can be routed to gpio13 and gpio19:
+|PWM|gpio PIN|Func|
+|---|--------|----|
+|  0|      12|   4|
+|  0|      18|   2|
+|  1|      13|   4|
+|  1|      19|   2|
