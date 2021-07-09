@@ -373,6 +373,23 @@ see the [BL-Touch guide](BLTouch.md)):
 - `BLTOUCH_STORE MODE=<output_mode>`: This stores an output mode in the
   EEPROM of a BLTouch V3.1 Available output_modes are: `5V`, `OD`
 
+## Annexed Probe
+
+In addition to the normal commands available for a [probe], the following
+commands are available when an
+[annexed_probe config section](Config_Reference.md#annexed_probe) is enabled
+(also see the [Annexed Probe guide](Annexed_Probe.md)):
+
+- `ATTACH_PROBE`: Move to dock and attach probe to the toolhead, the toolhead
+  will return to its previous position after attaching.
+- `DETACH_PROBE`: Move to dock and detach probe from the toolhead, the toolhead
+  will return to its previous position after detaching.
+- `GET_PROBE_STATUS`: Respond with current probe state. This is useful for
+  verifying configuration settings are working as intended.
+- `SET_PROBE_STATUS STATE=UNKNOWN|ATTACHED|DOCKED`: If configured, this allows
+  the probe state to be set manually in the event automated probe verification
+  methods cannot be used.
+
 ## Delta Calibration
 
 The following commands are available when the
