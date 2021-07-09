@@ -408,6 +408,8 @@ class MessageParser:
         except Exception as e:
             logging.exception("process_identify error")
             self._error("Error during identify: %s", str(e))
+    def get_raw_data_dictionary(self):
+        return self.raw_identify_data
     def get_version_info(self):
         return self.version, self.build_versions
     def get_messages(self):
