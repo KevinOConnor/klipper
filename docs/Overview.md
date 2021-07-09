@@ -51,6 +51,8 @@ communication with the Klipper developers.
 - [PWM tools](Using_PWM_Tools.md): Guide on how to use PWM controlled
   tools such as lasers or spindles.
 - [G-Codes](G-Codes.md): Information on commands supported by Klipper.
+- [Advanced tuning](Advanced_Tuning.md): Hints on tuning some common
+  configuration parameters.
 
 # Developer Documentation
 
