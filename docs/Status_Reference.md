@@ -146,6 +146,7 @@ The following information is available for heater objects such as
   1.0) associated with the heater.
 - `can_extrude`: If extruder can extrude (defined by `min_extrude_temp`),
   available only for [extruder](Config_Reference.md#extruder)
+- `sync_heaters`: The list of synchronised heaters with the given heater
 
 # heaters
 

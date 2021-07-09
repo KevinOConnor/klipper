@@ -19,6 +19,8 @@ class Heater:
     def __init__(self, config, sensor):
         self.printer = config.get_printer()
         self.name = config.get_name().split()[-1]
+        self.sync_heaters_master = None
+        self.sync_heaters = {}
         # Setup sensor
         self.sensor = sensor
         self.min_temp = config.getfloat('min_temp', minval=KELVIN_TO_CELSIUS)
@@ -61,6 +63,9 @@ class Heater:
         gcode.register_mux_command("SET_HEATER_TEMPERATURE", "HEATER",
                                    self.name, self.cmd_SET_HEATER_TEMPERATURE,
                                    desc=self.cmd_SET_HEATER_TEMPERATURE_help)
+        gcode.register_mux_command("SYNC_HEATER_TEMPERATURE", "HEATER",
+                                   self.name, self.cmd_SYNC_HEATER_TEMPERATURE,
+                                   desc=self.cmd_SYNC_HEATER_TEMPERATURE_help)
     def set_pwm(self, read_time, value):
         if self.target_temp <= 0.:
             value = 0.
@@ -93,13 +98,29 @@ class Heater:
         return self.max_power
     def get_smooth_time(self):
         return self.smooth_time
-    def set_temp(self, degrees):
+    def get_name(self):
+        return self.name
+    def get_heater_master(self):
+        return self.sync_heaters_master
+    def set_heater_master(self, heater):
+        self.sync_heaters_master = heater
+    def remove_sync_heater(self, heater):
+        self.sync_heaters.pop(heater, None)
+    def _set_temp(self, degrees):
         if degrees and (degrees < self.min_temp or degrees > self.max_temp):
             raise self.printer.command_error(
                 "Requested temperature (%.1f) out of range (%.1f:%.1f)"
                 % (degrees, self.min_temp, self.max_temp))
         with self.lock:
             self.target_temp = degrees
+    def set_temp(self, degrees):
+        if self.sync_heaters_master is not None:
+            return
+        self._set_temp(degrees)
+        for sync_heater in self.sync_heaters:
+            offset = self.sync_heaters[sync_heater]
+            sync_degrees = 0. if degrees <= 0. else max(degrees + offset, 0.)
+            sync_heater._set_temp(sync_degrees)
     def get_temp(self, eventtime):
         print_time = self.mcu_pwm.get_mcu().estimated_print_time(eventtime) - 5.
         with self.lock:
@@ -108,8 +129,12 @@ class Heater:
             return self.smoothed_temp, self.target_temp
     def check_busy(self, eventtime):
         with self.lock:
-            return self.control.check_busy(
-                eventtime, self.smoothed_temp, self.target_temp)
+            check_heater_busy = self.control.check_busy(
+               eventtime, self.smoothed_temp, self.target_temp)
+        if check_heater_busy is True or self.sync_heaters == {}:
+            return check_heater_busy
+        else:
+            return any(h.check_busy(eventtime) for h in self.sync_heaters)
     def set_control(self, control):
         with self.lock:
             old_control = self.control
@@ -128,18 +153,61 @@ class Heater:
         is_active = target_temp or last_temp > 50.
         return is_active, '%s: target=%.0f temp=%.1f pwm=%.3f' % (
             self.name, target_temp, last_temp, last_pwm_value)
+    def sync_heater(self, heater, offset_temp=0.):
+        if self == heater:
+            if self.sync_heaters_master is not None:
+                # resync heater to itself
+                self.sync_heaters_master.remove_sync_heater(self)
+                self.sync_heaters_master = None
+            return
+        if self.sync_heaters_master is not None:
+            # heater master is a replica
+            raise self.printer.config_error(
+                "Heater '%s' is already synchronized with '%s'"
+                % (self.get_name(), self.sync_heaters_master.get_name()))
+        heater_master = heater.get_heater_master()
+        if heater_master is None or heater_master == self:
+            # sync new heater or udpate
+            if self.target_temp > 0.:
+                pheaters = self.printer.lookup_object('heaters')
+                pheaters.set_temperature(heater,
+                            self.target_temp + offset_temp, wait=True)
+            self.sync_heaters[heater] = offset_temp
+            heater.set_heater_master(self)
+        else:
+            # heater replica has a master
+            raise self.printer.config_error(
+                "Heater '%s' is already synchronized with '%s'"
+                % (heater.get_name(), heater_master.get_name(),))
     def get_status(self, eventtime):
         with self.lock:
             target_temp = self.target_temp
             smoothed_temp = self.smoothed_temp
             last_pwm_value = self.last_pwm_value
+            sync_heaters = map(lambda h: h.get_name(), self.sync_heaters)
         return {'temperature': smoothed_temp, 'target': target_temp,
-                'power': last_pwm_value}
+                'power': last_pwm_value, 'sync_heaters': sync_heaters}
     cmd_SET_HEATER_TEMPERATURE_help = "Sets a heater temperature"
     def cmd_SET_HEATER_TEMPERATURE(self, gcmd):
         temp = gcmd.get_float('TARGET', 0.)
         pheaters = self.printer.lookup_object('heaters')
         pheaters.set_temperature(self, temp)
+    cmd_SYNC_HEATER_TEMPERATURE_help = "Synchronize heaters with an offset"
+    def cmd_SYNC_HEATER_TEMPERATURE(self, gcmd):
+        offset_temp = gcmd.get_float('OFFSET_TEMP', 0.)
+        name_heater = gcmd.get('TO', None)
+        if name_heater is None or name_heater == self.name:
+            self.sync_heater(self)
+            gcmd.respond_info("Heater '%s' is now unsynchronize" % self.name)
+            return
+        pheaters = self.printer.lookup_object('heaters')
+        heater = pheaters.lookup_heater(name_heater, None)
+        if heater is not None:
+            heater.sync_heater(self, offset_temp)
+            gcmd.respond_info("Heater '%s' is now synchronized with '%s'"
+                        % (self.name, heater.get_name(),))
+        else:
+            raise gcmd.error("Heater '%s' not found" % name_heater)
 
 
 ######################################################################
@@ -258,11 +326,14 @@ class PrinterHeaters:
         return heater
     def get_all_heaters(self):
         return self.available_heaters
-    def lookup_heater(self, heater_name):
-        if heater_name not in self.heaters:
+    class sentinel: pass
+    def lookup_heater(self, heater_name, default=sentinel):
+        if heater_name in self.heaters:
+            return self.heaters[heater_name]
+        if default is self.sentinel:
             raise self.printer.config_error(
                 "Unknown heater '%s'" % (heater_name,))
-        return self.heaters[heater_name]
+        return default
     def setup_sensor(self, config):
         modules = ["thermistor", "adc_temperature", "spi_temperature",
                    "bme280", "htu21d", "lm75", "temperature_host",

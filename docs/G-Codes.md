@@ -165,9 +165,18 @@ The following standard commands are supported:
 - `SET_HEATER_TEMPERATURE HEATER=<heater_name> [TARGET=<target_temperature>]`:
   Sets the target temperature for a heater. If a target temperature is
   not supplied, the target is 0.
+- `SYNC_HEATER_TEMPERATURE HEATER=<heater_name> [TO=<heater_name>]
+  [OFFSET_TEMP=<value>]`: Synchronize heaters temperatures with an optional
+  offset. The follower heater will reach the offsetted temperature prior to the
+  synchronisation is active. To unsynchronize an heater, omits the TO parameter.
 - `ACTIVATE_EXTRUDER EXTRUDER=<config_name>`: In a printer with
   multiple extruders this command is used to change the active
   extruder.
+- `SYNC_EXTRUDER EXTRUDER=<config_name> [TO=<config_name>] [OFFSET_TEMP=<value>]`:
+  Synchronize extruders heaters and steppers with an optional offset applied
+  to the temperature. The follower extruder will reach the offsetted temperature
+  prior to the synchronisation is active. To unsynchronize an extruder, omits
+  the TO parameter.
 - `SET_PRESSURE_ADVANCE [EXTRUDER=<config_name>] [ADVANCE=<pressure_advance>]
   [SMOOTH_TIME=<pressure_advance_smooth_time>]`: Set pressure advance
   parameters. If EXTRUDER is not specified, it defaults to the active
