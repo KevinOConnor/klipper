@@ -1,6 +1,6 @@
 # Support for enable pins on stepper motor drivers
 #
-# Copyright (C) 2019  Kevin O'Connor <kevin@koconnor.net>
+# Copyright (C) 2019-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
@@ -22,29 +22,33 @@ class StepperEnablePin:
         if not self.enable_count:
             self.mcu_enable.set_digital(print_time, 0)
 
+def setup_enable_pin(printer, pin):
+    if pin is None:
+        # No enable line (stepper always enabled)
+        enable = StepperEnablePin(None, 9999)
+        enable.is_dedicated = False
+        return enable
+    ppins = printer.lookup_object('pins')
+    pin_params = ppins.lookup_pin(pin, can_invert=True,
+                                  share_type='stepper_enable')
+    enable = pin_params.get('class')
+    if enable is not None:
+        # Shared enable line
+        enable.is_dedicated = False
+        return enable
+    mcu_enable = pin_params['chip'].setup_pin('digital_out', pin_params)
+    mcu_enable.setup_max_duration(0.)
+    enable = pin_params['class'] = StepperEnablePin(mcu_enable, 0)
+    return enable
+
 # Enable line tracking for each stepper motor
 class EnableTracking:
-    def __init__(self, printer, stepper, pin):
+    def __init__(self, stepper, enable):
         self.stepper = stepper
+        self.enable = enable
         self.callbacks = []
         self.is_enabled = False
         self.stepper.add_active_callback(self.motor_enable)
-        if pin is None:
-            # No enable line (stepper always enabled)
-            self.enable = StepperEnablePin(None, 9999)
-            self.enable.is_dedicated = False
-            return
-        ppins = printer.lookup_object('pins')
-        pin_params = ppins.lookup_pin(pin, can_invert=True,
-                                      share_type='stepper_enable')
-        self.enable = pin_params.get('class')
-        if self.enable is not None:
-            # Shared enable line
-            self.enable.is_dedicated = False
-            return
-        mcu_enable = pin_params['chip'].setup_pin('digital_out', pin_params)
-        mcu_enable.setup_max_duration(0.)
-        self.enable = pin_params['class'] = StepperEnablePin(mcu_enable, 0)
     def register_state_callback(self, callback):
         self.callbacks.append(callback)
     def motor_enable(self, print_time):
@@ -82,7 +86,8 @@ class PrinterStepperEnable:
                                desc=self.cmd_SET_STEPPER_ENABLE_help)
     def register_stepper(self, stepper, pin):
         name = stepper.get_name()
-        self.enable_lines[name] = EnableTracking(self.printer, stepper, pin)
+        enable = setup_enable_pin(self.printer, pin)
+        self.enable_lines[name] = EnableTracking(stepper, enable)
     def motor_off(self):
         toolhead = self.printer.lookup_object('toolhead')
         toolhead.dwell(DISABLE_STALL_TIME)

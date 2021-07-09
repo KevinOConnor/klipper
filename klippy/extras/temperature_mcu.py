@@ -62,6 +62,7 @@ class PrinterTemperatureMCU:
         self.mcu_type = mcu.get_constants().get("MCU", "")
         # Run MCU specific configuration
         cfg_funcs = [
+            ('rp2040', self.config_rp2040),
             ('sam3', self.config_sam3), ('sam4', self.config_sam4),
             ('samd21', self.config_samd21), ('samd51', self.config_samd51),
             ('stm32f1', self.config_stm32f1), ('stm32f2', self.config_stm32f2),
@@ -89,6 +90,9 @@ class PrinterTemperatureMCU:
     def config_unknown(self):
         raise self.printer.config_error("MCU temperature not supported on %s"
                                         % (self.mcu_type,))
+    def config_rp2040(self):
+        self.slope = 3.3 / -0.001721
+        self.base_temperature = self.calc_base(27., 0.706 / 3.3)
     def config_sam3(self):
         self.slope = 3.3 / .002650
         self.base_temperature = self.calc_base(27., 0.8 / 3.3)

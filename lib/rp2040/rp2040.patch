@@ -1,0 +1,28 @@
+diff --git a/lib/rp2040/boot_stage2/boot2_w25q080.S b/lib/rp2040/boot_stage2/boot2_w25q080.S
+index ad3238e2..8fb3def4 100644
+--- a/lib/rp2040/boot_stage2/boot2_w25q080.S
++++ b/lib/rp2040/boot_stage2/boot2_w25q080.S
+@@ -26,7 +26,7 @@
+ //                4-byte checksum. Therefore code size cannot exceed 252 bytes.
+ // ----------------------------------------------------------------------------
+ 
+-#include "pico/asm_helper.S"
++//#include "pico/asm_helper.S"
+ #include "hardware/regs/addressmap.h"
+ #include "hardware/regs/ssi.h"
+ #include "hardware/regs/pads_qspi.h"
+diff --git a/lib/rp2040/hardware/address_mapped.h b/lib/rp2040/hardware/address_mapped.h
+index b58f1e50..d651f598 100644
+--- a/lib/rp2040/hardware/address_mapped.h
++++ b/lib/rp2040/hardware/address_mapped.h
+@@ -7,7 +7,9 @@
+ #ifndef _HARDWARE_ADDRESS_MAPPED_H
+ #define _HARDWARE_ADDRESS_MAPPED_H
+ 
+-#include "pico.h"
++//#include "pico.h"
++#define __force_inline inline
++#define static_assert(a,b)
+ #include "hardware/regs/addressmap.h"
+ 
+ /** \file address_mapped.h

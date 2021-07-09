@@ -389,6 +389,35 @@ If you are doing a shaper re-calibration and the reported smoothing for the
 suggested shaper configuration is almost the same as what you got during the
 previous calibration, this step can be skipped.
 
+## Testing custom axes
+
+`TEST_RESONANCES` command supports custom axes. While this is not really
+useful for input shaper calibration, it can be used to study printer
+resonances in-depth and to check, for example, belt tension.
+
+To check the belt tension on CoreXY printers, execute
+```
+TEST_RESONANCES AXIS=1,1 OUTPUT=raw_data
+TEST_RESONANCES AXIS=1,-1 OUTPUT=raw_data
+```
+and use `graph_accelerometer.py` to process the generated files, e.g.
+```
+~/klipper/scripts/graph_accelerometer.py -c /tmp/raw_data_axis*.csv -o /tmp/resonances.png
+```
+which will generate `/tmp/resonances.png` comparing the resonances.
+
+For Delta printers with the default tower placement
+(tower A ~= 210 degrees, B ~= 330 degrees, and C ~= 90 degrees), execute
+```
+TEST_RESONANCES AXIS=0,1 OUTPUT=raw_data
+TEST_RESONANCES AXIS=-0.866025404,-0.5 OUTPUT=raw_data
+TEST_RESONANCES AXIS=0.866025404,-0.5 OUTPUT=raw_data
+```
+and then use the same command
+```
+~/klipper/scripts/graph_accelerometer.py -c /tmp/raw_data_axis*.csv -o /tmp/resonances.png
+```
+to generate `/tmp/resonances.png` comparing the resonances.
 
 # Input Shaper auto-calibration
 

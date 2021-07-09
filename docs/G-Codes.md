@@ -755,9 +755,13 @@ is enabled (also see the
 - `TEST_RESONANCES AXIS=<axis> OUTPUT=<resonances,raw_data>
   [NAME=<name>] [FREQ_START=<min_freq>] [FREQ_END=<max_freq>]
   [HZ_PER_SEC=<hz_per_sec>] [INPUT_SHAPING=[<0:1>]]`: Runs the resonance
-  test in all configured probe points for the requested axis (X or Y)
+  test in all configured probe points for the requested <axis>
   and measures the acceleration using the accelerometer chips configured
-  for the respective axis. If `INPUT_SHAPING=0` or not set (default),
+  for the respective axis. <axis> can either be X or Y, or specify an
+  arbitrary direction as `AXIS=dx,dy`, where dx and dy are floating point
+  numbers defining a direction vector (e.g. `AXIS=X`, `AXIS=Y`, or
+  `AXIS=1,-1` to define a diagonal direction). Note that `AXIS=dx,dy` and
+  `AXIS=-dx,-dy` is equivalent. If `INPUT_SHAPING=0` or not set (default),
   disables input shaping for the resonance testing, because it is not valid
   to run the resonance testing with the input shaper enabled.
   `OUTPUT` parameter is a comma-separated list of which outputs will be

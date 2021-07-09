@@ -61,8 +61,8 @@ class MCU_stepper:
         self.set_stepper_kinematics(sk)
     def _build_config(self):
         self._mcu.add_config_cmd(
-            "config_stepper oid=%d step_pin=%s dir_pin=%s invert_step=%d" % (
-                self._oid, self._step_pin, self._dir_pin, self._invert_step))
+            "config_stepper oid=%d step_pin=%s dir_pin=%s invert_step=%d"
+            % (self._oid, self._step_pin, self._dir_pin, self._invert_step))
         self._mcu.add_config_cmd("reset_step_clock oid=%d clock=0"
                                  % (self._oid,), on_restart=True)
         step_cmd_tag = self._mcu.lookup_command_tag(
@@ -302,8 +302,8 @@ class PrinterRail:
                 self.homing_positive_dir = True
             else:
                 raise config.error(
-                    "Unable to infer homing_positive_dir in section '%s'" % (
-                        config.get_name(),))
+                    "Unable to infer homing_positive_dir in section '%s'"
+                    % (config.get_name(),))
             config.getboolean('homing_positive_dir', self.homing_positive_dir)
         elif ((self.homing_positive_dir
                and self.position_endstop == self.position_min)

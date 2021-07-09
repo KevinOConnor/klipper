@@ -174,7 +174,7 @@ CONFIG ../../config/generic-prusa-buddy.cfg
 CONFIG ../../config/printer-prusa-mini-plus-2020.cfg
 
 # Printers using the stm32f446
-DICTIONARY stm32f407.dict
+DICTIONARY stm32f446.dict
 CONFIG ../../config/generic-fysetc-s6.cfg
 CONFIG ../../config/generic-fysetc-s6-v2.cfg
 CONFIG ../../config/generic-fysetc-spider.cfg

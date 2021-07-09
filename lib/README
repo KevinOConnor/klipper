@@ -54,6 +54,12 @@ The stm32f4 directory contains code from STMicroelectronics:
   http://www.st.com/en/embedded-software/stm32cubef4.html
 version 1.24.0 (extracted 20190723).
 
+The rp2040 directory contains code from the pico sdk:
+  https://github.com/raspberrypi/pico-sdk.git
+version 1.2.0 (bfcbefafc5d2a210551a4d9d80b4303d4ae0adf7). It has been
+modified so that it can build outside of the pico sdk. See
+rp2040.patch for the modifications.
+
 The hub-ctrl directory contains code from:
   https://github.com/codazoda/hub-ctrl.c/
 revision 42095e522859059e8a5f4ec05c1e3def01a870a9.

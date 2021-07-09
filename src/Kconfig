@@ -21,6 +21,8 @@ choice
         bool "LPC176x (Smoothieboard)"
     config MACH_STM32
         bool "STMicroelectronics STM32"
+    config MACH_RP2040
+        bool "Raspberry Pi RP2040"
     config MACH_PRU
         bool "Beaglebone PRU"
     config MACH_LINUX
@@ -34,6 +36,7 @@ source "src/atsam/Kconfig"
 source "src/atsamd/Kconfig"
 source "src/lpc176x/Kconfig"
 source "src/stm32/Kconfig"
+source "src/rp2040/Kconfig"
 source "src/pru/Kconfig"
 source "src/linux/Kconfig"
 source "src/simulator/Kconfig"

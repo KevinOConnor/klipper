@@ -4,7 +4,7 @@
 //
 // This file may be distributed under the terms of the GNU GPLv3 license.
 
-#include "autoconf.h" // CONFIG_CLOCK_FREQ
+#include "autoconf.h" // CONFIG_MACH_AVR
 #include "basecmd.h" // oid_alloc
 #include "board/gpio.h" // gpio_out_write
 #include "board/irq.h" // irq_disable
@@ -32,7 +32,7 @@ nsecs_to_ticks(uint32_t ns)
 static inline void
 ndelay(uint32_t nsecs)
 {
-    if (CONFIG_CLOCK_FREQ <= 48000000)
+    if (CONFIG_MACH_AVR)
         // Slower MCUs don't require a delay
         return;
     uint32_t end = timer_read_time() + nsecs_to_ticks(nsecs);

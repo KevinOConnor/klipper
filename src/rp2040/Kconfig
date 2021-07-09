@@ -1,0 +1,64 @@
+# Kconfig settings for STM32 processors
+
+if MACH_RP2040
+
+config RP2040_SELECT
+    bool
+    default y
+    select HAVE_GPIO
+    select HAVE_GPIO_ADC
+    select HAVE_GPIO_BITBANGING
+    select HAVE_STRICT_TIMING
+    select HAVE_CHIPID
+
+config BOARD_DIRECTORY
+    string
+    default "rp2040"
+
+config MCU
+    string
+    default "rp2040"
+
+config CLOCK_FREQ
+    int
+    default 12000000
+
+config FLASH_SIZE
+    hex
+    default 0x200000
+
+config RAM_START
+    hex
+    default 0x20000000
+
+config RAM_SIZE
+    hex
+    default 0x42000
+
+config STACK_SIZE
+    int
+    default 512
+
+config FLASH_START
+    hex
+    default 0x10000000
+
+######################################################################
+# Communication inteface
+######################################################################
+
+config USBSERIAL
+    bool
+config SERIAL
+    bool
+choice
+    prompt "Communication interface"
+    config RP2040_USB
+        bool "USB"
+        select USBSERIAL
+    config RP2040_SERIAL_UART0
+        bool "Serial (on UART0 GPIO1/GPIO0)"
+        select SERIAL
+endchoice
+
+endif
