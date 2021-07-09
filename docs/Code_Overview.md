@@ -430,11 +430,10 @@ Recv: // gcode homing: X:0.000000 Y:0.000000 Z:0.000000
 The "mcu" position (`stepper.get_mcu_position()` in the code) is the
 total number of steps the micro-controller has issued in a positive
 direction minus the number of steps issued in a negative direction
-since the micro-controller was last reset. The value reported is only
-valid after the stepper has been homed. If the robot is in motion when
-the query is issued then the reported value includes moves buffered on
-the micro-controller, but does not include moves on the look-ahead
-queue.
+since the micro-controller was last reset. If the robot is in motion
+when the query is issued then the reported value includes moves
+buffered on the micro-controller, but does not include moves on the
+look-ahead queue.
 
 The "stepper" position (`stepper.get_commanded_position()`) is the
 position of the given stepper as tracked by the kinematics code. This

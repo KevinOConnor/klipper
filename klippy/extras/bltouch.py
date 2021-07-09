@@ -116,7 +116,8 @@ class BLTouchEndstopWrapper:
         self.mcu_endstop.home_start(self.action_end_time, ENDSTOP_SAMPLE_TIME,
                                     ENDSTOP_SAMPLE_COUNT, ENDSTOP_REST_TIME,
                                     triggered=triggered)
-        return self.mcu_endstop.home_wait(self.action_end_time + 0.100)
+        trigger_time = self.mcu_endstop.home_wait(self.action_end_time + 0.100)
+        return trigger_time > 0.
     def raise_probe(self):
         self.sync_mcu_print_time()
         if not self.pin_up_not_triggered:
