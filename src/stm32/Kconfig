@@ -34,6 +34,12 @@ choice
     config MACH_STM32F401
         bool "STM32F401"
         select MACH_STM32F4
+    config MACH_STM32F401xC
+        bool "STM32F401xC"
+        depends on MACH_STM32F4 && MACH_STM32F401
+    config MACH_STM32F401xE
+        bool "STM32F401xE"
+        depends on MACH_STM32F4 && MACH_STM32F401
     config MACH_STM32F405
         bool "STM32F405"
         select MACH_STM32F4
@@ -86,7 +92,8 @@ config MCU
     default "stm32f072xb" if MACH_STM32F072
     default "stm32f103xe" if MACH_STM32F103
     default "stm32f207xx" if MACH_STM32F207
-    default "stm32f401xc" if MACH_STM32F401
+    default "stm32f401xc" if MACH_STM32F401xC
+    default "stm32f401xe" if MACH_STM32F401xE
     default "stm32f405xx" if MACH_STM32F405
     default "stm32f407xx" if MACH_STM32F407
     default "stm32f429xx" if MACH_STM32F429
@@ -108,8 +115,8 @@ config FLASH_SIZE
     default 0x8000 if MACH_STM32F042
     default 0x20000 if MACH_STM32F070 || MACH_STM32F072
     default 0x10000 if MACH_STM32F103 # Flash size of stm32f103x8 (64KiB)
-    default 0x40000 if MACH_STM32F2 || MACH_STM32F401
-    default 0x80000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446
+    default 0x40000 if MACH_STM32F2 || MACH_STM32F401xC  # 256 Kbytes of Flash memory
+    default 0x80000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446 || MACH_STM32F401xE #512 Kbytes of Flash memory
 
 config RAM_START
     hex
@@ -122,7 +129,8 @@ config RAM_SIZE
     default 0x4000 if MACH_STM32F070 || MACH_STM32F072
     default 0x5000 if MACH_STM32F103 # Ram size of stm32f103x8 (20KiB)
     default 0x20000 if MACH_STM32F207
-    default 0x10000 if MACH_STM32F401
+    default 0x10000 if MACH_STM32F401xC  # 64 Kbytes of SRAM
+    default 0x18000 if MACH_STM32F401xE  # 96 Kbytes of SRAM
     default 0x20000 if MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F429 || MACH_STM32F446
 
 config STACK_SIZE

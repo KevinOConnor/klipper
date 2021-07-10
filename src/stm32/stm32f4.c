@@ -56,7 +56,15 @@ is_enabled_pclock(uint32_t periph_base)
 uint32_t
 get_pclock_frequency(uint32_t periph_base)
 {
+#if CONFIG_MACH_STM32F401
+    if (periph_base < APB2PERIPH_BASE) {
+         return FREQ_PERIPH;           // APB1 clock frequency  (up to 42 MHz)
+    } else {
+         return FREQ_PERIPH * 2;       // APB2 clock frequency  (up to 84 MHz)
+    }
+#else
     return FREQ_PERIPH;
+#endif
 }
 
 // Enable a GPIO peripheral clock
@@ -150,12 +158,12 @@ enable_clock_stm32f40x(void)
     uint32_t pllp = (CONFIG_MACH_STM32F401) ? 4 : 2;
     uint32_t pll_freq = CONFIG_CLOCK_FREQ * pllp, pllcfgr;
     if (!CONFIG_STM32_CLOCK_REF_INTERNAL) {
-        // Configure 168Mhz PLL from external crystal (HSE)
+        // Configure 168Mhz/84Mhz PLL from external crystal (HSE)
         uint32_t div = CONFIG_CLOCK_REF_FREQ / pll_base;
         RCC->CR |= RCC_CR_HSEON;
         pllcfgr = RCC_PLLCFGR_PLLSRC_HSE | (div << RCC_PLLCFGR_PLLM_Pos);
     } else {
-        // Configure 168Mhz PLL from internal 16Mhz oscillator (HSI)
+        // Configure 168Mhz/84Mhz PLL from internal 16Mhz oscillator (HSI)
         uint32_t div = 16000000 / pll_base;
         pllcfgr = RCC_PLLCFGR_PLLSRC_HSI | (div << RCC_PLLCFGR_PLLM_Pos);
     }
@@ -238,7 +246,7 @@ clock_setup(void)
 
     // Switch system clock to PLL
     if (FREQ_PERIPH_DIV == 2)
-        RCC->CFGR = RCC_CFGR_PPRE1_DIV2 | RCC_CFGR_PPRE2_DIV2 | RCC_CFGR_SW_PLL;
+        RCC->CFGR = RCC_CFGR_PPRE1_DIV2 | RCC_CFGR_PPRE2_DIV1 | RCC_CFGR_SW_PLL;
     else
         RCC->CFGR = RCC_CFGR_PPRE1_DIV4 | RCC_CFGR_PPRE2_DIV4 | RCC_CFGR_SW_PLL;
     while ((RCC->CFGR & RCC_CFGR_SWS_Msk) != RCC_CFGR_SWS_PLL)
