@@ -72,6 +72,24 @@ pins such as "extra_mcu:ar9" may then be used elsewhere in the config
 # See the "mcu" section for configuration parameters.
 ```
 
+## [flash_mcu]
+
+Hints for compiling and flashing Klipper's micro-controller code.
+
+```
+[flash_mcu my_board_type]
+kconfig:
+#   List of "kconfig declarations" (one per line) to use when
+#   compiling the micro-controller code. This parameter must be
+#   provided.
+flash_method:
+#   The type of bootloader on the target board. This parameter must be
+#   provided.
+#mcu: mcu
+#   A comma separated list of Klipper micro-controllers names that use
+#   this type of micro-controller. The default is "mcu".
+```
+
 # Common kinematic settings
 
 ## [printer]

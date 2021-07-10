@@ -318,3 +318,25 @@ might return:
 
 As with the "gcode/script" endpoint, this endpoint only completes
 after any pending G-Code commands complete.
+
+### flash_mcu/get_devices
+
+This endpoint provides a list of possible devices when attempting to
+flash a micro-controller. For example:
+`{"id": 123, "method": "flash_mcu/get_devices", "params": {"name":
+"my_board_type"}}`
+might return:
+`{"id": 123, "result": ["/dev/ttyUSB0", "/dev/ttyAMA0", "/dev/ttyACM0"]}`
+
+The "name" parameter must correspond with a [flash_mcu config
+section](Config_Reference.md#flash_mcu).
+
+### flash_mcu/flash
+
+This endpoint requests that the micro-controller code be compiled and
+flashed to a micro-controller. For example:
+`{"id": 123, "method": "flash_mcu/flash", "params": {"name":
+"my_board_type", "device": "/dev/ttyS0"}}`
+
+The "name" parameter must correspond with a [flash_mcu config
+section](Config_Reference.md#flash_mcu).
