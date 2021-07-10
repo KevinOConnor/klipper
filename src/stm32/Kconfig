@@ -156,7 +156,7 @@ choice
     config STM32_FLASH_START_800
         bool "2KiB bootloader (HID Bootloader)" if MACH_STM32F103
     config STM32_FLASH_START_4000
-        bool "16KiB bootloader (HID Bootloader)" if MACH_STM32F207 || MACH_STM32F401 || MACH_STM32F405 || MACH_STM32F407
+        bool "16KiB bootloader (HID Bootloader)" if MACH_STM32F207 || MACH_STM32F401 || MACH_STM32F405 || MACH_STM32F407 || MACH_STM32F103
 
     config STM32_FLASH_START_0000
         bool "No bootloader"
