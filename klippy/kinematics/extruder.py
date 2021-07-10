@@ -44,6 +44,11 @@ class PrinterExtruder:
         pressure_advance = config.getfloat('pressure_advance', 0., minval=0.)
         smooth_time = config.getfloat('pressure_advance_smooth_time',
                                       0.040, above=0., maxval=.200)
+
+        self.nonlinear_a = self.nonlinear_b = 0.
+        nonlinear_a = config.getfloat('nonlinear_a', 0.)
+        nonlinear_b = config.getfloat('nonlinear_b', 0.)
+
         # Setup iterative solver
         ffi_main, ffi_lib = chelper.get_ffi()
         self.trapq = ffi_main.gc(ffi_lib.trapq_alloc(), ffi_lib.trapq_free)
@@ -55,7 +60,9 @@ class PrinterExtruder:
         self.stepper.set_trapq(self.trapq)
         toolhead.register_step_generator(self.stepper.generate_steps)
         self.extruder_set_smooth_time = ffi_lib.extruder_set_smooth_time
+        self.extruder_set_nonlinear = ffi_lib.extruder_set_nonlinear
         self._set_pressure_advance(pressure_advance, smooth_time)
+        self._set_nonlinear_extrusion(nonlinear_a, nonlinear_b)
         # Register commands
         gcode = self.printer.lookup_object('gcode')
         if self.name == 'extruder':
@@ -65,6 +72,9 @@ class PrinterExtruder:
             gcode.register_mux_command("SET_PRESSURE_ADVANCE", "EXTRUDER", None,
                                        self.cmd_default_SET_PRESSURE_ADVANCE,
                                        desc=self.cmd_SET_PRESSURE_ADVANCE_help)
+        gcode.register_mux_command("SET_NONLINEAR_EXTRUSION", "EXTRUDER",
+                                   self.name, self.cmd_SET_NONLINEAR_EXTRUSION,
+                                   desc=self.cmd_SET_NONLINEAR_EXTRUSION_help)
         gcode.register_mux_command("SET_PRESSURE_ADVANCE", "EXTRUDER",
                                    self.name, self.cmd_SET_PRESSURE_ADVANCE,
                                    desc=self.cmd_SET_PRESSURE_ADVANCE_help)
@@ -89,6 +99,10 @@ class PrinterExtruder:
         self.extruder_set_smooth_time(self.sk_extruder, new_smooth_time)
         self.pressure_advance = pressure_advance
         self.pressure_advance_smooth_time = smooth_time
+    def _set_nonlinear_extrusion(self, a, b):
+        self.extruder_set_nonlinear(self.sk_extruder, a, b)
+        self.nonlinear_a = a
+        self.nonlinear_b = b
     def get_status(self, eventtime):
         return dict(self.heater.get_status(eventtime),
                     can_extrude=self.heater.can_extrude,
@@ -188,6 +202,20 @@ class PrinterExtruder:
         msg = ("pressure_advance: %.6f\n"
                "pressure_advance_smooth_time: %.6f"
                % (pressure_advance, smooth_time))
+        self.printer.set_rollover_info(self.name, "%s: %s" % (self.name, msg))
+        gcmd.respond_info(msg, log=False)
+    cmd_SET_NONLINEAR_EXTRUSION_help = "Set nonlinear extrusion parameters"
+    def cmd_SET_NONLINEAR_EXTRUSION(self, gcmd):
+        a = gcmd.get_float('A', self.nonlinear_a)
+        b = gcmd.get_float('B', self.nonlinear_b)
+
+        toolhead = self.printer.lookup_object('toolhead')
+        toolhead.flush_step_generation()
+        self._set_nonlinear_extrusion(a, b)
+
+        msg = ("a: %.6f\n"
+               "b: %.6f"
+               % (a, b))
         self.printer.set_rollover_info(self.name, "%s: %s" % (self.name, msg))
         gcmd.respond_info(msg, log=False)
     cmd_SET_E_STEP_DISTANCE_help = "Set extruder step distance"

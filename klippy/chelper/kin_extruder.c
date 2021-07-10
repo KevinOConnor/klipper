@@ -97,9 +97,37 @@ pa_range_integrate(struct move *m, double move_time, double hst)
     return res;
 }
 
+// Calculate the additional non-linear extrusion movement over a move
+static double
+nonlinear_extrusion_integrate(struct move *m, double move_time,
+                              double a, double b)
+{
+    double t2 = move_time * move_time;
+    double t3 = t2 * move_time;
+    double t4 = t3 * move_time;
+    double sv2 = m->start_v * m->start_v;
+    double sv3 = sv2 * m->start_v;
+
+    // Integral of the intended velocity squared
+    double v2 = sv2 * move_time
+        + m->start_v * m->half_accel * t2
+        + m->half_accel * m->half_accel * t3 * (4.0 / 3.0);
+
+    // Integral of the intended velocity cubed
+    double v3 = sv3 * move_time
+        + sv2 * m->half_accel * t2 * 3.0
+        + m->half_accel * m->half_accel * m->start_v  * t3 * 4.0
+        + m->half_accel * m->half_accel * m->half_accel * t4 * 2.0;
+
+    return a * v2 + b * v3;
+}
+
 struct extruder_stepper {
     struct stepper_kinematics sk;
     double half_smooth_time, inv_half_smooth_time2;
+    // Total amount of extra movement added by nonlinear extrusion
+    double added_travel;
+    double nonlinear_a, nonlinear_b;
 };
 
 static double
@@ -107,13 +135,29 @@ extruder_calc_position(struct stepper_kinematics *sk, struct move *m
                        , double move_time)
 {
     struct extruder_stepper *es = container_of(sk, struct extruder_stepper, sk);
+    double pos = m->start_pos.x + es->added_travel;
     double hst = es->half_smooth_time;
-    if (!hst)
-        // Pressure advance not enabled
-        return m->start_pos.x + move_get_distance(m, move_time);
-    // Apply pressure advance and average over smooth_time
-    double area = pa_range_integrate(m, move_time, hst);
-    return m->start_pos.x + area * es->inv_half_smooth_time2;
+    if (hst) {
+        // Apply pressure advance and average over smooth_time
+        double area = pa_range_integrate(m, move_time, hst);
+        pos += area * es->inv_half_smooth_time2;
+    } else // Pressure advance not enabled
+        pos += move_get_distance(m, move_time);
+
+    double a = es->nonlinear_a, b = es->nonlinear_b;
+    if (a || b)
+        pos += nonlinear_extrusion_integrate(m, move_time, a, b);
+    return pos;
+}
+
+static void
+extruder_post_move(struct stepper_kinematics *sk, struct move *m)
+{
+    struct extruder_stepper *es = container_of(sk, struct extruder_stepper, sk);
+
+    double a = es->nonlinear_a, b = es->nonlinear_b;
+    if (a || b)
+        es->added_travel += nonlinear_extrusion_integrate(m, m->move_t, a, b);
 }
 
 void __visible
@@ -128,12 +172,21 @@ extruder_set_smooth_time(struct stepper_kinematics *sk, double smooth_time)
     es->inv_half_smooth_time2 = 1. / (hst * hst);
 }
 
+void __visible
+extruder_set_nonlinear(struct stepper_kinematics *sk, double a, double b)
+{
+    struct extruder_stepper *es = container_of(sk, struct extruder_stepper, sk);
+    es->nonlinear_a = a;
+    es->nonlinear_b = b;
+}
+
 struct stepper_kinematics * __visible
 extruder_stepper_alloc(void)
 {
     struct extruder_stepper *es = malloc(sizeof(*es));
     memset(es, 0, sizeof(*es));
     es->sk.calc_position_cb = extruder_calc_position;
+    es->sk.post_move_cb = extruder_post_move;
     es->sk.active_flags = AF_X;
     return &es->sk;
 }

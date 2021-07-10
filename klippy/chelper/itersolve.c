@@ -174,6 +174,9 @@ itersolve_generate_steps(struct stepper_kinematics *sk, double flush_time)
                                                             , flush_time);
                     if (ret)
                         return ret;
+
+                    if (sk->post_move_cb)
+                        sk->post_move_cb(sk, pm);
                     pm = list_next_entry(pm, node);
                 } while (pm != m);
             }
@@ -207,6 +210,9 @@ itersolve_generate_steps(struct stepper_kinematics *sk, double flush_time)
             if (flush_time + sk->gen_steps_pre_active <= move_end)
                 return 0;
         }
+
+        if (sk->post_move_cb)
+            sk->post_move_cb(sk, m);
         m = list_next_entry(m, node);
     }
 }

@@ -115,6 +115,8 @@ defs_kin_extruder = """
     struct stepper_kinematics *extruder_stepper_alloc(void);
     void extruder_set_smooth_time(struct stepper_kinematics *sk
         , double smooth_time);
+    void extruder_set_nonlinear(struct stepper_kinematics *sk, double a
+        , double b);
 """
 
 defs_kin_shaper = """

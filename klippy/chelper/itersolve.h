@@ -11,6 +11,7 @@ struct stepper_kinematics;
 struct move;
 typedef double (*sk_calc_callback)(struct stepper_kinematics *sk, struct move *m
                                    , double move_time);
+typedef void (*sk_post_move)(struct stepper_kinematics *sk, struct move *m);
 typedef void (*sk_post_callback)(struct stepper_kinematics *sk);
 struct stepper_kinematics {
     double step_dist, commanded_pos;
@@ -22,6 +23,7 @@ struct stepper_kinematics {
     double gen_steps_pre_active, gen_steps_post_active;
 
     sk_calc_callback calc_position_cb;
+    sk_post_move post_move_cb;
     sk_post_callback post_cb;
 };
 
