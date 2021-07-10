@@ -1,0 +1,34 @@
+name: Build and deploy Jekyll site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docs/**
+      - .github/workflows/klipper3d-deploy.yaml
+jobs:
+  github-pages:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup cache
+      uses: actions/cache@v2
+      with:
+        path: docs/_klipper3d/vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    - name: Build the documentation site
+      uses: helaili/jekyll-action@v2
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+        target_branch: gh-pages
+        jekyll_src: docs/_klipper3d
+        pre_build_commands: |
+          apk --update add --no-cache python3
+          cd docs/_klipper3d
+          python3 pages_insert_metadata.py
+          cp -v ../*.md ./
+          mkdir -p img; cp -v ../img/* img/
+          mkdir -p prints; cp -v ../prints/* prints/

@@ -1,0 +1,72 @@
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha512-mhbv5DqBMgrWL+32MmsDOt/OAvqr/cHimk6B8y/bx/xS88MVkYGPiVv2ixKVrkywF2qHplNRUvFsAHUdxZ3Krg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    /* Automatically fix links to files outside docs/ */
+    $('.main-content').find('a[href^="../"]').each(function() {
+        this.href = $(this).attr("href").replace(/^\.\./, "https://github.com/KevinOConnor/klipper/blob/master");
+    });
+
+    /* Automatically add the current page's TOC to the navigation */
+    $(".nav-list-link.active").after(`
+        <div id="page-toc">
+            <ul style="list-style: none"></ul>
+        </div>`);
+    var levels = [];
+    var headings = $('.main-content').find('h1, h2, h3, h4, h5, h6');
+    if(headings.length == 0){
+        $("#page-toc").hide();
+    }
+    headings.each(function() {
+        var $item = $(this);
+        var $id = $(this).attr('id');
+        var li = $('<li class="toc-item"/>');
+        var tag = $item.prop("tagName");
+        while (levels.length && tag <= levels[levels.length - 1]) {
+            levels.pop();
+        }
+        levels.push(tag);
+        li.addClass("toc-item-H" + levels.length);
+        var a = $('<a/>', {text: $item.text(), href: '#' + $id, title: $item.text()});
+        a.appendTo(li);
+        $('#page-toc ul').append(li);
+    });
+
+    /* highlight search term occurences after navigating to a search result */
+    let $searchInput = $('#search-input');
+    $searchInput.on('input', function() {
+        sessionStorage.setItem("highlightTerm", $(this).val());
+    });
+
+    function highlightTerm(term){
+        $("#main-content").unmark();
+        if(term){
+            $("#main-content").mark(term, {
+                className: "marked-search-term",
+                acrossElements: true,
+                ignoreJoiners: true,
+                wildcards: "enabled",
+                ignorePunctuation: ":;.,-–—‒_(){}[]!'\"+=".split("")
+            });
+            let $marks = $(".marked-search-term");
+            $marks.attr("title", "Click to clear all highlights");
+            $marks.click(function(){
+                $("#main-content").unmark();
+            });
+        }
+    }
+
+    $(document).ready(function() {
+        $(document).on("click", ".search-result", function() {
+            if($(this).attr("href") == window.location.href){
+                highlightTerm(sessionStorage.getItem("highlightTerm"));
+                sessionStorage.removeItem("highlightTerm");
+                $searchInput.val("");
+            }
+        });
+    });
+
+    highlightTerm(sessionStorage.getItem("highlightTerm"));
+    sessionStorage.removeItem("highlightTerm");
+</script>

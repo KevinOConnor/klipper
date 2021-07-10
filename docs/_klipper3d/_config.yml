@@ -1,0 +1,49 @@
+title: Klipper
+description: >-
+  Klipper is a 3d-Printer firmware. It combines the power of a general
+  purpose computer with one or more micro-controllers.
+logo: img/klipper-logo.png
+tagline: tagline.
+
+# Build settings
+baseurl: "/" # the subpath of your site, e.g. /blog
+url: "https://klipper3d.org" # the base hostname & protocol for your site, e.g. http://example.com
+permalink: pretty
+exclude: [ "insert_pages_metadata.py", "pages_metadata.ini", "README.md", "Gemfile", "Gemfile.lock", "node_modules", "vendor/bundle/", "vendor/cache/", "vendor/gems/", "vendor/ruby/"]
+remote_theme: pmarsceill/just-the-docs@v0.3.3
+color_scheme: "klipper"
+search_enabled: true
+search.heading_level: 6
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Footer last edited timestamp
+last_edit_timestamp: true # show or hide edit time - page must have `last_modified_date` defined in the frontmatter
+last_edit_time_format: "%b %e %Y at %I:%M %p" # uses ruby's time format: https://ruby-doc.org/stdlib-2.7.0/libdoc/time/rdoc/Time.html
+
+# Footer "Edit this page on GitHub" link text
+gh_edit_link: true # show or hide edit this page link
+gh_edit_link_text: "View this page on GitHub"
+gh_edit_repository: "https://github.com/KevinOConnor/klipper" # the github URL for your repo
+gh_edit_branch: "master" # the branch that your docs is served from
+gh_edit_source: docs # the source that your files originate from
+gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into the editor immediately
+
+# Use front matter defaults to set og:image
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      image: img/klipper-logo-small.png
+
+aux_links:
+  "Community forum":
+    - "//klipper.discourse.group"
+  "Klipper on GitHub":
+    - "//github.com/KevinOConnor/klipper"
+
+ga_tracking: UA-138371409-1
+ga_tracking_anonymize_ip: true

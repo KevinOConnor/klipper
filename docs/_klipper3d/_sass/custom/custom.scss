@@ -1,0 +1,183 @@
+html {
+  scroll-behavior: auto;
+}
+
+.site-logo {
+  margin-top: 6px;
+  width: 80% !important;
+  height: 80% !important;
+}
+
+.center-image {
+  margin: 0 auto;
+  display: block;
+}
+
+#page-toc {
+  visibility: visible;
+  display: block;
+
+  hr {
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
+  }
+
+  ul {
+    @include mq(md) {
+      margin-inline-start: 10px;
+    }
+  }
+
+  .toc-item {
+    font-size: 90%;
+    line-height: 100%;
+    padding-top: 0.1em;
+    padding-bottom: 0.2em;
+  }
+  .toc-item-H1 {
+    margin-left: 0px;
+  }
+  .toc-item-H2 {
+    margin-left: 10px;
+  }
+  .toc-item-H3,
+  .toc-item-H4,
+  .toc-item-H5,
+  .toc-item-H6 {
+    margin-left: 20px;
+  }
+}
+
+.nav-list-item:not(.active)>#page-toc{
+  visibility: hidden;
+  display: none;
+}
+
+.main-header{
+  display:flex;
+  position: sticky;
+  top: 0px;
+  z-index: 999;
+}
+
+.aux-nav {
+  display: none;
+  @include mq(sm) {
+    display: block;
+  }
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.main-content {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    position: relative;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    scroll-margin-top: 120px;
+    @include mq(md) {
+      scroll-margin-top: 60px;
+    }
+  }
+}
+
+h1,
+.text-alpha {
+  @include fs-8;
+  font-weight: 500;
+}
+
+h2,
+.text-beta {
+  @include fs-6;
+}
+
+h3,
+.text-gamma {
+  @include fs-5;
+}
+
+h4,
+.text-delta {
+  @include fs-4;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0em;
+}
+
+h4 code {
+  text-transform: none;
+}
+
+h5,
+.text-epsilon {
+  @include fs-3;
+  color: $grey-dk-200;
+}
+
+h6,
+.text-zeta {
+  @include fs-2;
+  color: $grey-dk-200;
+}
+
+.site-nav,
+.site-header,
+.site-footer {
+  width: 100%;
+}
+
+.side-bar {
+  overflow-y: auto;
+
+  @include mq(lg) {
+    width: $nav-width;
+  }
+}
+
+.site-nav {
+  overflow-y: unset;
+}
+
+.site-footer {
+  background-color: $sidebar-color;
+}
+
+.main {
+  @include mq(lg) {
+    margin-left: $nav-width;
+  }
+}
+
+.marked-search-term {
+  background-color: #ffe797;
+}
+
+#main-content > footer {
+  width: 100%;
+  justify-content: stretch;
+  display: block;
+  background-color: $body-background-color;
+  p {
+    float: left;
+    padding: auto;
+    @extend .mt-0;
+    @extend .mb-0;
+  }
+
+  div {
+    float: right;
+    padding: auto;
+    @extend .mt-0;
+    @extend .mb-0;
+    p {
+      @extend .mt-0;
+      @extend .mb-0;
+    }
+  }
+}

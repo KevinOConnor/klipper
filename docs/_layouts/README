@@ -1,5 +1,0 @@
-This directory defines the https://www.klipper3d.org/ website. The
-site is hosted using "github pages" (which uses Jekyll to
-automatically convert the markdown files in the docs/ directory to
-html). In addition to the files in this directory, the docs/CNAME and
-docs/_config.yml file also control the website generation.
