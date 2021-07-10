@@ -11,6 +11,9 @@ class ControllerFan:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
+        self.printer.register_event_handler("klippy:connect",
+                                            self.handle_connect)
+        self.steppers_to_monitor = config.get("stepper", "")
         self.stepper_names = []
         self.stepper_enable = self.printer.load_object(config, 'stepper_enable')
         self.printer.load_object(config, 'heaters')
@@ -24,12 +27,21 @@ class ControllerFan:
         self.heater_name = config.get("heater", "extruder")
         self.last_on = self.idle_timeout
         self.last_speed = 0.
+    def handle_connect(self):
+        steppers = [n.strip() for n in self.steppers_to_monitor.split(',')]
+        kin = self.printer.lookup_object('toolhead').get_kinematics()
+        all_steppers = [s.get_name() for s in kin.get_steppers()]
+        if steppers == [""]:
+            self.stepper_names = all_steppers
+            return
+        if not all(x in all_steppers for x in steppers):
+            raise self.printer.config_error(
+                "One or more of these steppers are unknown: %s" % (steppers))
+        self.stepper_names = steppers
     def handle_ready(self):
         pheaters = self.printer.lookup_object('heaters')
         self.heaters = [pheaters.lookup_heater(n.strip())
                         for n in self.heater_name.split(',')]
-        kin = self.printer.lookup_object('toolhead').get_kinematics()
-        self.stepper_names = [s.get_name() for s in kin.get_steppers()]
         reactor = self.printer.get_reactor()
         reactor.register_timer(self.callback, reactor.monotonic()+PIN_MIN_TIME)
     def get_status(self, eventtime):

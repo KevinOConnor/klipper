@@ -2374,7 +2374,7 @@ a shutdown_speed equal to max_power.
 
 Controller cooling fan (one may define any number of sections with a
 "controller_fan" prefix). A "controller fan" is a fan that will be
-enabled whenever its associated heater or any configured stepper
+enabled whenever its associated heater or its associated stepper
 driver is active. The fan will stop whenever an idle_timeout is
 reached to ensure no overheating will occur after deactivating a
 watched component.
@@ -2405,10 +2405,12 @@ watched component.
 #   will be set to when a heater or stepper driver was active and
 #   before the idle_timeout is reached. The default is fan_speed.
 #heater:
-#   Name of the config section defining the heater that this fan is
-#   associated with. If a comma separated list of heater names is
-#   provided here, then the fan will be enabled when any of the given
-#   heaters are enabled. The default is "extruder".
+#stepper:
+#   Name of the config section defining the heater/stepper that this fan
+#   is associated with. If a comma separated list of heater/stepper names
+#   is provided here, then the fan will be enabled when any of the given
+#   heaters/steppers are enabled. Extruder steppers cannot be used here.
+#   The default heater is "extruder", the default stepper is all of them.
 ```
 
 ## [temperature_fan]
