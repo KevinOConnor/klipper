@@ -133,6 +133,13 @@ config FLASH_START
     default 0x2000 if FLASH_START_2000
     default 0x0000
 
+config ARDUINO_STYLE_BOOTLOADER_TRIGGERING
+    bool "Arduino style bootloader triggering"
+    default y
+    help
+        Delay reset execution & erase application to force entering boot loader mode.
+        This to accomodate bootloaders that has different double tap magic.
+
 config USBSERIAL
     bool
 config SERIAL

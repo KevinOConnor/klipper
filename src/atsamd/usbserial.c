@@ -11,6 +11,7 @@
 #include "board/irq.h" // irq_disable
 #include "board/usb_cdc.h" // usb_notify_ep0
 #include "board/usb_cdc_ep.h" // USB_CDC_EP_BULK_IN
+#include "board/misc.h" // timer_read_time
 #include "command.h" // DECL_CONSTANT_STR
 #include "internal.h" // enable_pclock
 #include "sched.h" // DECL_INIT
@@ -171,19 +172,58 @@ usb_set_configure(void)
         USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_TRCPT1);
 }
 
+#if CONFIG_ARDUINO_STYLE_BOOTLOADER_TRIGGERING
+#define NVM_MEMORY ((volatile uint16_t *)0x000000)
+
+static inline uint8_t nvmReady(void) {
+#if defined(__SAMD51__)
+    return NVMCTRL->STATUS.reg & NVMCTRL_STATUS_READY;
+#else
+    return NVMCTRL->INTFLAG.reg & NVMCTRL_INTFLAG_READY;
+#endif
+}
+#endif
+
 void
 usb_request_bootloader(void)
 {
     if (!CONFIG_FLASH_START)
         return;
+
+#if CONFIG_ARDUINO_STYLE_BOOTLOADER_TRIGGERING
+    //delay restart
+    uint32_t end = timer_read_time() + timer_from_us(250 * 1000);
+    while (timer_is_before(timer_read_time(), end))
+        irq_poll();
+#endif
+
     // Bootloader hack
     irq_disable();
+
 #if CONFIG_MACH_SAMD21
     writel((void*)0x20007FFC, 0x07738135);
 #elif CONFIG_MACH_SAMD51
     writel((void*)(HSRAM_ADDR + HSRAM_SIZE - 4), 0xf01669ef);
 #endif
+
+#if CONFIG_ARDUINO_STYLE_BOOTLOADER_TRIGGERING
+    // Erase application
+    while (!(nvmReady()))
+        ;
+
+    NVMCTRL->STATUS.reg |= NVMCTRL_STATUS_MASK;
+    NVMCTRL->ADDR.reg  = (uintptr_t)&NVM_MEMORY[CONFIG_FLASH_START / 4];
+    NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMD_ER | NVMCTRL_CTRLA_CMDEX_KEY;
+
+    while (!nvmReady())
+        ;
+#endif
+
     NVIC_SystemReset();
+
+#if CONFIG_ARDUINO_STYLE_BOOTLOADER_TRIGGERING
+    while (1);
+#endif
 }
 
 
