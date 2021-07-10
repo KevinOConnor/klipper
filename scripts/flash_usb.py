@@ -133,6 +133,43 @@ def flash_hidflash(device, binfile, sudo=True):
     pathname = wait_path(devpath)
     call_hidflash(binfile, sudo)
 
+# Finds and flashes RP2040 BOOTSEL-mode devices
+def flash_rp2040_bootsel(binfile, sudo=True):
+    found = False
+
+    # Look through attached block devices and see if they are USB devices
+    for disk in os.listdir("/sys/block/"):
+        # Only look at sd* devices
+        if not disk.startswith("sd"):
+            continue
+        devpath = os.path.realpath("/sys/block/%s/../.." % (disk,))
+        # We are looking for USB devices only, ignore everything else
+        if not 'usb' in devpath:
+            continue
+
+        with open("%s/vendor" % (devpath,)) as f:
+            vendor = f.read().strip()
+            if vendor != "RPI":
+                continue
+
+        with open("%s/model" % (devpath,)) as f:
+            model = f.read().strip()
+            if model != "RP2":
+                continue
+
+        # The device looks to be a rp2040 in BOOTSEL mode, so lets flash it
+        args = ["scripts/flash-uf2.sh", disk, binfile]
+        if sudo:
+            args.insert(0, "sudo")
+        sys.stderr.write(" ".join(args) + '\n\n')
+        res = subprocess.call(args)
+        if res != 0:
+            raise error("Error running flash-uf2")
+
+        found = True
+
+    return found
+
 ######################################################################
 # Device specific helpers
 ######################################################################
@@ -240,11 +277,31 @@ def flash_stm32f4(options, binfile):
             options.device, str(e), options.device))
         sys.exit(-1)
 
+RP2040_HELP = """
+Failed to flash to %s: %s
+"""
+def flash_rp2040(options, binfile):
+    try:
+        device = options.device
+        if os.path.exists(device):
+            buspath, devpath = translate_serial_to_usb_path(device)
+            enter_bootloader(device)
+
+        end_time = time.time() + 4.0
+        while time.time() < end_time:
+            found = flash_rp2040_bootsel(binfile, options.sudo)
+            if found:
+                return
+            time.sleep(0.5)
+        raise error("No BOOTSEL device appeared within four seconds")
+    except error as e:
+        sys.stderr.write(RP2040_HELP % (options.device, str(e)))
+
 MCUTYPES = {
     'sam3': flash_atsam3, 'sam4': flash_atsam4, 'samd': flash_atsamd,
     'lpc176': flash_lpc176x, 'stm32f103': flash_stm32f1,
     'stm32f4': flash_stm32f4, 'stm32f042': flash_stm32f4,
-    'stm32f072': flash_stm32f4
+    'stm32f072': flash_stm32f4, 'rp2040': flash_rp2040,
 }
 
 
