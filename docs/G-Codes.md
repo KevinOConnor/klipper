@@ -160,8 +160,9 @@ The following standard commands are supported:
   Wait until the given temperature sensor is at or above the supplied
   MINIMUM and/or at or below the supplied MAXIMUM.
 - `SET_VELOCITY_LIMIT [VELOCITY=<value>] [ACCEL=<value>]
-  [ACCEL_TO_DECEL=<value>] [SQUARE_CORNER_VELOCITY=<value>]`: Modify
-  the printer's velocity limits.
+  [ACCEL_TO_DECEL=<value>] [SQUARE_CORNER_VELOCITY=<value>]
+  [RESPOND=0]`: Modify the printer's velocity limits. If RESPOND=0 is
+  specified then no console output will be send.
 - `SET_HEATER_TEMPERATURE HEATER=<heater_name> [TARGET=<target_temperature>]`:
   Sets the target temperature for a heater. If a target temperature is
   not supplied, the target is 0.

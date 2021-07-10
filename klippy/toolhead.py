@@ -557,6 +557,7 @@ class ToolHead:
             'SQUARE_CORNER_VELOCITY', self.square_corner_velocity, minval=0.)
         self.requested_accel_to_decel = gcmd.get_float(
             'ACCEL_TO_DECEL', self.requested_accel_to_decel, above=0.)
+        respond = gcmd.get_int('RESPOND', 1)
         self.max_velocity = max_velocity
         self.max_accel = max_accel
         self.square_corner_velocity = square_corner_velocity
@@ -569,7 +570,8 @@ class ToolHead:
                    self.requested_accel_to_decel,
                    self.square_corner_velocity))
         self.printer.set_rollover_info("toolhead", "toolhead: %s" % (msg,))
-        gcmd.respond_info(msg, log=False)
+        if respond:
+            gcmd.respond_info(msg, log=False)
     def cmd_M204(self, gcmd):
         # Use S for accel
         accel = gcmd.get_float('S', None, above=0.)
