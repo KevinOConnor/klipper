@@ -1,0 +1,39 @@
+name: Update Locales
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: docs
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install mdpo
+      run: pip3 install mdpo
+      
+    - name: add permission
+      run: chmod +x scripts/update_locales.sh
+      
+    - name: run update_locales.sh
+      run: bash scripts/update_locales.sh
+      
+    - name: Create Pull Request
+      id: cpr
+      uses: peter-evans/create-pull-request@v3
+      with:
+        commit-message: "localization: Automatic Update"
+        committer: GitHub <noreply@github.com>
+        signoff: true
+        title: 'localization: Automatic Update'
+
+    - name: Check outputs
+      run: |
+        echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+        echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+        - name: Check outputs

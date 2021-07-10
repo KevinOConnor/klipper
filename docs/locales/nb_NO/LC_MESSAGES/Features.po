@@ -1,0 +1,324 @@
+#
+msgid ""
+msgstr ""
+
+msgid "Klipper has several compelling features:"
+msgstr ""
+
+msgid ""
+"High precision stepper movement. Klipper utilizes an application "
+"processor (such as a low-cost Raspberry Pi) when calculating printer "
+"movements. The application processor determines when to step each "
+"stepper motor, it compresses those events, transmits them to the "
+"micro-controller, and then the micro-controller executes each event "
+"at the requested time. Each stepper event is scheduled with a "
+"precision of 25 micro-seconds or better. The software does not use "
+"kinematic estimations (such as the Bresenham algorithm) - instead it "
+"calculates precise step times based on the physics of acceleration "
+"and the physics of the machine kinematics. More precise stepper "
+"movement translates to quieter and more stable printer operation."
+msgstr ""
+
+msgid ""
+"Best in class performance. Klipper is able to achieve high stepping "
+"rates on both new and old micro-controllers. Even old 8bit micro-"
+"controllers can obtain rates over 175K steps per second. On more "
+"recent micro-controllers, rates over 500K steps per second are "
+"possible. Higher stepper rates enable higher print velocities. The "
+"stepper event timing remains precise even at high speeds which "
+"improves overall stability."
+msgstr ""
+
+msgid ""
+"Klipper supports printers with multiple micro-controllers. For "
+"example, one micro-controller could be used to control an extruder, "
+"while another controls the printer's heaters, while a third controls "
+"the rest of the printer. The Klipper host software implements clock "
+"synchronization to account for clock drift between micro-controllers."
+" No special code is needed to enable multiple micro-controllers - it "
+"just requires a few extra lines in the config file."
+msgstr ""
+
+msgid ""
+"Configuration via simple config file. There's no need to reflash the "
+"micro-controller to change a setting. All of Klipper's configuration "
+"is stored in a standard config file which can be easily edited. This "
+"makes it easier to setup and maintain the hardware."
+msgstr ""
+
+msgid ""
+"Klipper supports \"Smooth Pressure Advance\" - a mechanism to account"
+" for the effects of pressure within an extruder. This reduces "
+"extruder \"ooze\" and improves the quality of print corners. "
+"Klipper's implementation does not introduce instantaneous extruder "
+"speed changes, which improves overall stability and robustness."
+msgstr ""
+
+msgid ""
+"Klipper supports \"Input Shaping\" to reduce the impact of vibrations"
+" on print quality. This can reduce or eliminate \"ringing\" (also "
+"known as \"ghosting\", \"echoing\", or \"rippling\") in prints. It "
+"may also allow one to obtain faster printing speeds while still "
+"maintaining high print quality."
+msgstr ""
+
+msgid ""
+"Klipper uses an \"iterative solver\" to calculate precise step times "
+"from simple kinematic equations. This makes porting Klipper to new "
+"types of robots easier and it keeps timing precise even with complex "
+"kinematics (no \"line segmentation\" is needed)."
+msgstr ""
+
+msgid ""
+"Portable code. Klipper works on ARM, AVR, and PRU based micro-"
+"controllers. Existing \"reprap\" style printers can run Klipper "
+"without hardware modification - just add a Raspberry Pi. Klipper's "
+"internal code layout makes it easier to support other micro-"
+"controller architectures as well."
+msgstr ""
+
+msgid ""
+"Simpler code. Klipper uses a very high level language (Python) for "
+"most code. The kinematics algorithms, the G-code parsing, the heating"
+" and thermistor algorithms, etc. are all written in Python. This "
+"makes it easier to develop new functionality."
+msgstr ""
+
+msgid ""
+"Custom programmable macros. New G-Code commands can be defined in the"
+" printer config file (no code changes are necessary). Those commands "
+"are programmable - allowing them to produce different actions "
+"depending on the state of the printer."
+msgstr ""
+
+msgid ""
+"Builtin API server. In addition to the standard G-Code interface, "
+"Klipper supports a rich JSON based application interface. This "
+"enables programmers to build external applications with detailed "
+"control of the printer."
+msgstr ""
+
+msgid "Additional features"
+msgstr ""
+
+msgid "Klipper supports many standard 3d printer features:"
+msgstr ""
+
+msgid ""
+"Works with Octoprint. This allows the printer to be controlled using "
+"a regular web-browser. The same Raspberry Pi that runs Klipper can "
+"also run Octoprint."
+msgstr ""
+
+msgid ""
+"Standard G-Code support. Common g-code commands that are produced by "
+"typical \"slicers\" are supported. One may continue to use Slic3r, "
+"Cura, etc. with Klipper."
+msgstr ""
+
+msgid ""
+"Support for multiple extruders. Extruders with shared heaters and "
+"extruders on independent carriages (IDEX) are also supported."
+msgstr ""
+
+msgid ""
+"Support for cartesian, delta, corexy, corexz, rotary delta, polar, "
+"and cable winch style printers."
+msgstr ""
+
+msgid ""
+"Automatic bed leveling support. Klipper can be configured for basic "
+"bed tilt detection or full mesh bed leveling. If the bed uses "
+"multiple Z steppers then Klipper can also level by independently "
+"manipulating the Z steppers. Most Z height probes are supported, "
+"including BL-Touch probes and servo activated probes."
+msgstr ""
+
+msgid ""
+"Automatic delta calibration support. The calibration tool can perform"
+" basic height calibration as well as an enhanced X and Y dimension "
+"calibration. The calibration can be done with a Z height probe or via"
+" manual probing."
+msgstr ""
+
+msgid ""
+"Support for common temperature sensors (eg, common thermistors, "
+"AD595, AD597, AD849x, PT100, PT1000, MAX6675, MAX31855, MAX31856, "
+"MAX31865, BME280, HTU21D, and LM75). Custom thermistors and custom "
+"analog temperature sensors can also be configured."
+msgstr ""
+
+msgid "Basic thermal heater protection enabled by default."
+msgstr ""
+
+msgid ""
+"Support for standard fans, nozzle fans, and temperature controlled "
+"fans. No need to keep fans running when the printer is idle."
+msgstr ""
+
+msgid ""
+"Support for run-time configuration of TMC2130, TMC2208/TMC2224, "
+"TMC2209, TMC2660, and TMC5160 stepper motor drivers. There is also "
+"support for current control of traditional stepper drivers via "
+"AD5206, MCP4451, MCP4728, MCP4018, and PWM pins."
+msgstr ""
+
+msgid ""
+"Support for common LCD displays attached directly to the printer. A "
+"default menu is also available. The contents of the display and menu "
+"can be fully customized via the config file."
+msgstr ""
+
+msgid ""
+"Constant acceleration and \"look-ahead\" support. All printer moves "
+"will gradually accelerate from standstill to cruising speed and then "
+"decelerate back to a standstill. The incoming stream of G-Code "
+"movement commands are queued and analyzed - the acceleration between "
+"movements in a similar direction will be optimized to reduce print "
+"stalls and improve overall print time."
+msgstr ""
+
+msgid ""
+"Klipper implements a \"stepper phase endstop\" algorithm that can "
+"improve the accuracy of typical endstop switches. When properly tuned"
+" it can improve a print's first layer bed adhesion."
+msgstr ""
+
+msgid ""
+"Support for measuring and recording acceleration using an adxl345 "
+"accelerometer."
+msgstr ""
+
+msgid ""
+"Support for limiting the top speed of short \"zigzag\" moves to "
+"reduce printer vibration and noise. See the "
+"[kinematics](Kinematics.md) document for more information."
+msgstr ""
+
+msgid ""
+"Sample configuration files are available for many common printers. "
+"Check the [config directory](../config/) for a list."
+msgstr ""
+
+msgid ""
+"To get started with Klipper, read the [installation](Installation.md)"
+" guide."
+msgstr ""
+
+msgid "Step Benchmarks"
+msgstr ""
+
+msgid ""
+"Below are the results of stepper performance tests. The numbers shown"
+" represent total number of steps per second on the micro-controller."
+msgstr ""
+
+msgid "Micro-controller"
+msgstr ""
+
+msgid "Fastest step rate"
+msgstr ""
+
+msgid "3 steppers active"
+msgstr ""
+
+msgid "16Mhz AVR"
+msgstr ""
+
+msgid "154K"
+msgstr ""
+
+msgid "102K"
+msgstr ""
+
+msgid "20Mhz AVR"
+msgstr ""
+
+msgid "192K"
+msgstr ""
+
+msgid "127K"
+msgstr ""
+
+msgid "Arduino Zero (SAMD21)"
+msgstr ""
+
+msgid "234K"
+msgstr ""
+
+msgid "217K"
+msgstr ""
+
+msgid "\"Blue Pill\" (STM32F103)"
+msgstr ""
+
+msgid "387K"
+msgstr ""
+
+msgid "360K"
+msgstr ""
+
+msgid "Arduino Due (SAM3X8E)"
+msgstr ""
+
+msgid "438K"
+msgstr ""
+
+msgid "Duet2 Maestro (SAM4S8C)"
+msgstr ""
+
+msgid "564K"
+msgstr ""
+
+msgid "Smoothieboard (LPC1768)"
+msgstr ""
+
+msgid "574K"
+msgstr ""
+
+msgid "Smoothieboard (LPC1769)"
+msgstr ""
+
+msgid "661K"
+msgstr ""
+
+msgid "Beaglebone PRU"
+msgstr ""
+
+msgid "680K"
+msgstr ""
+
+msgid "Duet2 Wifi/Eth (SAM4E8E)"
+msgstr ""
+
+msgid "686K"
+msgstr ""
+
+msgid "Adafruit Metro M4 (SAMD51)"
+msgstr ""
+
+msgid "761K"
+msgstr ""
+
+msgid "692K"
+msgstr ""
+
+msgid "BigTreeTech SKR Pro (STM32F407)"
+msgstr ""
+
+msgid "922K"
+msgstr ""
+
+msgid "711K"
+msgstr ""
+
+msgid ""
+"On AVR platforms, the highest achievable step rate is with just one "
+"stepper stepping. On the SAMD21 and STM32F103 the highest step rate "
+"is with two simultaneous steppers stepping. On the SAM3X8E, SAM4S8C, "
+"SAM4E8E, LPC176x, and PRU the highest step rate is with three "
+"simultaneous steppers. On the SAMD51 and STM32F4 the highest step "
+"rate is with four simultaneous steppers. (Further details on the "
+"benchmarks are available in the [Benchmarks "
+"document](Benchmarks.md).)"
+msgstr ""

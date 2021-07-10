@@ -1,0 +1,630 @@
+#
+msgid ""
+msgstr ""
+
+msgid "This document describes Klipper benchmarks."
+msgstr ""
+
+msgid "Micro-controller Benchmarks"
+msgstr ""
+
+msgid ""
+"This section describes the mechanism used to generate the Klipper "
+"micro-controller step rate benchmarks."
+msgstr ""
+
+msgid ""
+"The primary goal of the benchmarks is to provide a consistent "
+"mechanism for measuring the impact of coding changes within the "
+"software. A secondary goal is to provide high-level metrics for "
+"comparing the performance between chips and between software "
+"platforms."
+msgstr ""
+
+msgid ""
+"The step rate benchmark is designed to find the maximum stepping rate"
+" that the hardware and software can reach. This benchmark stepping "
+"rate is not achievable in day-to-day use as Klipper needs to perform "
+"other tasks (eg, mcu/host communication, temperature reading, endstop"
+" checking) in any real-world usage."
+msgstr ""
+
+msgid ""
+"In general, the pins for the benchmark tests are chosen to flash LEDs"
+" or other innocuous pins. **Always verify that it is safe to drive "
+"the configured pins prior to running a benchmark.** It is not "
+"recommended to drive an actual stepper during a benchmark."
+msgstr ""
+
+msgid "Step rate benchmark test"
+msgstr ""
+
+msgid ""
+"The test is performed using the console.py tool (described in "
+"[Debugging.md](Debugging.md)). The micro-controller is configured for"
+" the particular hardware platform (see below) and then the following "
+"is cut-and-paste into the console.py terminal window:"
+msgstr ""
+
+msgid ""
+"The above tests three steppers simultaneously stepping. If running "
+"the above results in a \"Rescheduled timer in the past\" or \"Stepper"
+" too far in past\" error then it indicates the `ticks` parameter is "
+"too low (it results in a stepping rate that is too fast). The goal is"
+" to find the lowest setting of the ticks parameter that reliably "
+"results in a successful completion of the test. It should be possible"
+" to bisect the ticks parameter until a stable value is found."
+msgstr ""
+
+msgid ""
+"On a failure, one can copy-and-paste the following to clear the error"
+" in preparation for the next test:"
+msgstr ""
+
+msgid ""
+"To obtain the single stepper and dual stepper benchmarks, the same "
+"configuration sequence is used, but only the first block (for the "
+"single stepper case) or first two blocks (for the dual stepper case) "
+"of the above test is cut-and-paste into the console.py window."
+msgstr ""
+
+msgid ""
+"To produce the benchmarks found in the Features.md document, the "
+"total number of steps per second is calculated by multiplying the "
+"number of active steppers with the nominal mcu frequency and dividing"
+" by the final ticks parameter. The results are rounded to the nearest"
+" K. For example, with three active steppers:"
+msgstr ""
+
+msgid ""
+"Benchmarks may be run with the micro-controller code compiled using a"
+" \"step pulse duration\" of zero (the tables below report this as "
+"\"no delay\"). This configuration is believed to be valid in real-"
+"world usage when one is solely using Trinamic stepper drivers. The "
+"results of these benchmarks are not reported in the Features.md "
+"document."
+msgstr ""
+
+msgid "AVR step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on AVR chips:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `01d2183f` with gcc version `avr-gcc "
+"(GCC) 5.4.0`. Both the 16Mhz and 20Mhz tests were run using simulavr "
+"configured for an atmega644p (previous tests have confirmed simulavr "
+"results match tests on both a 16Mhz at90usb and a 16Mhz atmega2560)."
+msgstr ""
+
+msgid "avr"
+msgstr ""
+
+msgid "ticks"
+msgstr ""
+
+msgid "1 stepper"
+msgstr ""
+
+msgid "104"
+msgstr ""
+
+msgid "2 stepper"
+msgstr ""
+
+msgid "296"
+msgstr ""
+
+msgid "3 stepper"
+msgstr ""
+
+msgid "472"
+msgstr ""
+
+msgid "Arduino Due step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the Due:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `8d4a5c16` with gcc version `arm-"
+"none-eabi-gcc (Fedora 7.4.0-1.fc30) 7.4.0`."
+msgstr ""
+
+msgid "sam3x8e"
+msgstr ""
+
+msgid "388"
+msgstr ""
+
+msgid "405"
+msgstr ""
+
+msgid "576"
+msgstr ""
+
+msgid "1 stepper (no delay)"
+msgstr ""
+
+msgid "77"
+msgstr ""
+
+msgid "3 stepper (no delay)"
+msgstr ""
+
+msgid "299"
+msgstr ""
+
+msgid "Duet Maestro step rate benchmark"
+msgstr ""
+
+msgid ""
+"The following configuration sequence is used on the Duet Maestro:"
+msgstr ""
+
+msgid "sam4s8c"
+msgstr ""
+
+msgid "527"
+msgstr ""
+
+msgid "535"
+msgstr ""
+
+msgid "638"
+msgstr ""
+
+msgid "70"
+msgstr ""
+
+msgid "254"
+msgstr ""
+
+msgid "Duet Wifi step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the Duet Wifi:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `59a60d68` with gcc version `arm-"
+"none-eabi-gcc 7.3.1 20180622 (release) [ARM/embedded-7-branch "
+"revision 261907]`."
+msgstr ""
+
+msgid "sam4e8e"
+msgstr ""
+
+msgid "519"
+msgstr ""
+
+msgid "520"
+msgstr ""
+
+msgid "525"
+msgstr ""
+
+msgid "4 stepper"
+msgstr ""
+
+msgid "703"
+msgstr ""
+
+msgid "Beaglebone PRU step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the PRU:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `b161a69e` with gcc version `pru-gcc "
+"(GCC) 8.0.0 20170530 (experimental)`."
+msgstr ""
+
+msgid "pru"
+msgstr ""
+
+msgid "861"
+msgstr ""
+
+msgid "853"
+msgstr ""
+
+msgid "883"
+msgstr ""
+
+msgid "STM32F042 step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the STM32F042:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `0b0c47c5` with gcc version `arm-"
+"none-eabi-gcc (Fedora 9.2.0-1.fc30) 9.2.0`."
+msgstr ""
+
+msgid "stm32f042"
+msgstr ""
+
+msgid "247"
+msgstr ""
+
+msgid "328"
+msgstr ""
+
+msgid "558"
+msgstr ""
+
+msgid "STM32F103 step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the STM32F103:"
+msgstr ""
+
+msgid "stm32f103"
+msgstr ""
+
+msgid "347"
+msgstr ""
+
+msgid "372"
+msgstr ""
+
+msgid "600"
+msgstr ""
+
+msgid "71"
+msgstr ""
+
+msgid "288"
+msgstr ""
+
+msgid "STM32F4 step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the STM32F4:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `8d4a5c16` with gcc version `arm-"
+"none-eabi-gcc (Fedora 7.4.0-1.fc30) 7.4.0`. The STM32F407 results "
+"were obtained by running an STM32F407 binary on an STM32F446 (and "
+"thus using a 168Mhz clock)."
+msgstr ""
+
+msgid "stm32f446"
+msgstr ""
+
+msgid "757"
+msgstr ""
+
+msgid "761"
+msgstr ""
+
+msgid "767"
+msgstr ""
+
+msgid "51"
+msgstr ""
+
+msgid "226"
+msgstr ""
+
+msgid "stm32f407"
+msgstr ""
+
+msgid "709"
+msgstr ""
+
+msgid "714"
+msgstr ""
+
+msgid "729"
+msgstr ""
+
+msgid "52"
+msgstr ""
+
+msgid "LPC176x step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the LPC176x:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `8d4a5c16` with gcc version `arm-"
+"none-eabi-gcc (Fedora 7.4.0-1.fc30) 7.4.0`. The 120Mhz LPC1769 "
+"results were obtained by overclocking an LPC1768 to 120Mhz."
+msgstr ""
+
+msgid "lpc1768"
+msgstr ""
+
+msgid "448"
+msgstr ""
+
+msgid "450"
+msgstr ""
+
+msgid "523"
+msgstr ""
+
+msgid "56"
+msgstr ""
+
+msgid "240"
+msgstr ""
+
+msgid "lpc1769"
+msgstr ""
+
+msgid "526"
+msgstr ""
+
+msgid "545"
+msgstr ""
+
+msgid "SAMD21 step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the SAMD21:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `8d4a5c16` with gcc version `arm-"
+"none-eabi-gcc (Fedora 7.4.0-1.fc30) 7.4.0` on a SAMD21G18 micro-"
+"controller."
+msgstr ""
+
+msgid "samd21"
+msgstr ""
+
+msgid "277"
+msgstr ""
+
+msgid "410"
+msgstr ""
+
+msgid "664"
+msgstr ""
+
+msgid "83"
+msgstr ""
+
+msgid "321"
+msgstr ""
+
+msgid "SAMD51 step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on the SAMD51:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `524ebbc7` with gcc version `arm-"
+"none-eabi-gcc (Fedora 9.2.0-1.fc30) 9.2.0` on a SAMD51J19A micro-"
+"controller."
+msgstr ""
+
+msgid "samd51"
+msgstr ""
+
+msgid "516"
+msgstr ""
+
+msgid "631"
+msgstr ""
+
+msgid "1 stepper (200Mhz)"
+msgstr ""
+
+msgid "839"
+msgstr ""
+
+msgid "2 stepper (200Mhz)"
+msgstr ""
+
+msgid "838"
+msgstr ""
+
+msgid "3 stepper (200Mhz)"
+msgstr ""
+
+msgid "4 stepper (200Mhz)"
+msgstr ""
+
+msgid "5 stepper (200Mhz)"
+msgstr ""
+
+msgid "891"
+msgstr ""
+
+msgid "42"
+msgstr ""
+
+msgid "194"
+msgstr ""
+
+msgid "Linux MCU step rate benchmark"
+msgstr ""
+
+msgid "The following configuration sequence is used on a Raspberry Pi:"
+msgstr ""
+
+msgid ""
+"The test was last run on commit `db0fb5d5` with gcc version `gcc "
+"(Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516` on a Raspberry Pi 3 "
+"(revision a22082)."
+msgstr ""
+
+msgid "Linux (RPi3)"
+msgstr ""
+
+msgid "349"
+msgstr ""
+
+msgid "350"
+msgstr ""
+
+msgid "400"
+msgstr ""
+
+msgid "Command dispatch benchmark"
+msgstr ""
+
+msgid ""
+"The command dispatch benchmark tests how many \"dummy\" commands the "
+"micro-controller can process. It is primarily a test of the hardware "
+"communication mechanism. The test is run using the console.py tool "
+"(described in [Debugging.md](Debugging.md)). The following is cut-"
+"and-paste into the console.py terminal window:"
+msgstr ""
+
+msgid ""
+"When the test completes, determine the difference between the clocks "
+"reported in the two \"uptime\" response messages. The total number of"
+" commands per second is then `100000 * mcu_frequency / clock_diff`."
+msgstr ""
+
+msgid ""
+"Note that this test may saturate the USB/CPU capacity of a Raspberry "
+"Pi. If running on a Raspberry Pi, Beaglebone, or similar host "
+"computer then increase the delay (eg, `DELAY {clock + 20*freq} "
+"get_uptime`). Where applicable, the benchmarks below are with "
+"console.py running on a desktop class machine with the device "
+"connected via a high-speed hub."
+msgstr ""
+
+msgid "MCU"
+msgstr ""
+
+msgid "Rate"
+msgstr ""
+
+msgid "Build"
+msgstr ""
+
+msgid "Build compiler"
+msgstr ""
+
+msgid "stm32f042 (CAN)"
+msgstr ""
+
+msgid "18K"
+msgstr ""
+
+msgid "c105adc8"
+msgstr ""
+
+msgid "arm-none-eabi-gcc (GNU Tools 7-2018-q3-update) 7.3.1"
+msgstr ""
+
+msgid "atmega2560 (serial)"
+msgstr ""
+
+msgid "23K"
+msgstr ""
+
+msgid "b161a69e"
+msgstr ""
+
+msgid "avr-gcc (GCC) 4.8.1"
+msgstr ""
+
+msgid "sam3x8e (serial)"
+msgstr ""
+
+msgid "arm-none-eabi-gcc (Fedora 7.1.0-5.fc27) 7.1.0"
+msgstr ""
+
+msgid "at90usb1286 (USB)"
+msgstr ""
+
+msgid "75K"
+msgstr ""
+
+msgid "01d2183f"
+msgstr ""
+
+msgid "avr-gcc (GCC) 5.4.0"
+msgstr ""
+
+msgid "samd21 (USB)"
+msgstr ""
+
+msgid "223K"
+msgstr ""
+
+msgid "arm-none-eabi-gcc (Fedora 7.4.0-1.fc30) 7.4.0"
+msgstr ""
+
+msgid "pru (shared memory)"
+msgstr ""
+
+msgid "260K"
+msgstr ""
+
+msgid "c5968a08"
+msgstr ""
+
+msgid "pru-gcc (GCC) 8.0.0 20170530 (experimental)"
+msgstr ""
+
+msgid "stm32f103 (USB)"
+msgstr ""
+
+msgid "355K"
+msgstr ""
+
+msgid "sam3x8e (USB)"
+msgstr ""
+
+msgid "418K"
+msgstr ""
+
+msgid "lpc1768 (USB)"
+msgstr ""
+
+msgid "534K"
+msgstr ""
+
+msgid "lpc1769 (USB)"
+msgstr ""
+
+msgid "628K"
+msgstr ""
+
+msgid "sam4s8c (USB)"
+msgstr ""
+
+msgid "650K"
+msgstr ""
+
+msgid "8d4a5c16"
+msgstr ""
+
+msgid "samd51 (USB)"
+msgstr ""
+
+msgid "864K"
+msgstr ""
+
+msgid "stm32f446 (USB)"
+msgstr ""
+
+msgid "870K"
+msgstr ""
+
+msgid "Host Benchmarks"
+msgstr ""
+
+msgid ""
+"It is possible to run timing tests on the host software using the "
+"\"batch mode\" processing mechanism (described in "
+"[Debugging.md](Debugging.md)). This is typically done by choosing a "
+"large and complex G-Code file and timing how long it takes for the "
+"host software to process it. For example:"
+msgstr ""

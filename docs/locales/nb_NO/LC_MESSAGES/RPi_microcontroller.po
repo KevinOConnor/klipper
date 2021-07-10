@@ -1,0 +1,108 @@
+#
+msgid ""
+msgstr ""
+
+msgid ""
+"This document describes the process of running Klipper on a RPi and "
+"use the same RPi as secondary mcu."
+msgstr ""
+
+msgid "Why use RPi as a secondary MCU?"
+msgstr ""
+
+msgid ""
+"Often the MCUs dedicated to controlling 3D printers have a limited "
+"and pre-configured number of exposed pins to manage the main printing"
+" functions (thermal resistors, extruders, steppers ...). Using the "
+"RPi where Klipper is installed as a secondary MCU gives the "
+"possibility to directly use the GPIOs and the buses (i2c, spi) of the"
+" RPi inside klipper without using Octoprint plugins (if used) or "
+"external programs giving the ability to control everything within the"
+" print GCODE."
+msgstr ""
+
+msgid ""
+"**Warning**: If your platform is a *Beaglebone* and you have "
+"correctly followed the installation steps, the linux mcu is already "
+"installed and configured for your system."
+msgstr ""
+
+msgid "Install the rc script"
+msgstr ""
+
+msgid ""
+"If you want to use the host as a secondary MCU the klipper_mcu "
+"process must run before the klippy process."
+msgstr ""
+
+msgid "After installing Klipper, install the script. run:"
+msgstr ""
+
+msgid "Building the micro-controller code"
+msgstr ""
+
+msgid ""
+"To compile the Klipper micro-controller code, start by configuring it"
+" for the \"Linux process\":"
+msgstr ""
+
+msgid "To build and install the new micro-controller code, run:"
+msgstr ""
+
+msgid ""
+"If klippy.log reports a \"Permission denied\" error when attempting "
+"to connect to `/tmp/klipper_host_mcu` then you need to add your user "
+"to the tty group. The following command will add the \"pi\" user to "
+"the tty group:"
+msgstr ""
+
+msgid "Remaining configuration"
+msgstr ""
+
+msgid ""
+"Complete the installation by configuring Klipper secondary MCU "
+"following the instructions in [RaspberryPi sample "
+"config](../config/sample-raspberry-pi.cfg) and [Multi MCU sample "
+"config](../config/sample-multi-mcu.cfg)."
+msgstr ""
+
+msgid "Optional: Identify the correct gpiochip"
+msgstr ""
+
+msgid ""
+"On Rasperry and on many clones the pins exposed on the GPIO belong to"
+" the first gpiochip. They can therefore be used on klipper simply by "
+"referring them with the name `gpio0..n`. However, there are cases in "
+"which the exposed pins belong to gpiochips other than the first. For "
+"example in the case of some OrangePi models or if a Port Expander is "
+"used. In these cases it is useful to use the commands to access the "
+"*Linux GPIO character device* to verify the configuration."
+msgstr ""
+
+msgid ""
+"To install the *Linux GPIO character device - binary* on a debian "
+"based distro like octopi run:"
+msgstr ""
+
+msgid "To check available gpiochip run:"
+msgstr ""
+
+msgid "To check the pin number and the pin availability tun:"
+msgstr ""
+
+msgid ""
+"The chosen pin can thus be used within the configuration as "
+"`gpiochip<n>/gpio<o>` where **n** is the chip number as seen by the "
+"`gpiodetect` command and **o** is the line number seen by the` "
+"gpioinfo` command."
+msgstr ""
+
+msgid ""
+"***Warning:*** only gpio marked as `unused` can be used. It is not "
+"possible for a *line* to be used by multiple processes "
+"simultaneously."
+msgstr ""
+
+msgid ""
+"For example on a RPi 3B+ where klipper use the GPIO20 for a switch:"
+msgstr ""

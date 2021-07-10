@@ -1,0 +1,484 @@
+#
+msgid ""
+msgstr ""
+
+msgid ""
+"History of Klipper releases. Please see "
+"[installation](Installation.md) for information on installing "
+"Klipper."
+msgstr ""
+
+msgid "Klipper 0.9.0"
+msgstr ""
+
+msgid "Available on 20201020. Major changes in this release:"
+msgstr ""
+
+msgid ""
+"Support for \"Input Shaping\" - a mechanism to counteract printer "
+"resonance. It can reduce or eliminate \"ringing\" in prints."
+msgstr ""
+
+msgid ""
+"New \"Smooth Pressure Advance\" system. This implements \"Pressure "
+"Advance\" without introducing instantaneous velocity changes. It is "
+"also now possible to tune pressure advance using a \"Tuning Tower\" "
+"method."
+msgstr ""
+
+msgid ""
+"New \"webhooks\" API server. This provides a programmable JSON "
+"interface to Klipper."
+msgstr ""
+
+msgid ""
+"The LCD display and menu are now configurable using the Jinja2 "
+"template language."
+msgstr ""
+
+msgid ""
+"The TMC2208 stepper motor drivers can now be used in \"standalone\" "
+"mode with Klipper."
+msgstr ""
+
+msgid "Improved BL-Touch v3 support."
+msgstr ""
+
+msgid ""
+"Improved USB identification. Klipper now has its own USB "
+"identification code and micro-controllers can now report their unique"
+" serial numbers during USB identification."
+msgstr ""
+
+msgid "New kinematic support for \"Rotary Delta\" and \"CoreXZ\" printers."
+msgstr ""
+
+msgid ""
+"Micro-controller improvements: support for stm32f070, support for "
+"stm32f207, support for GPIO pins on \"Linux MCU\", stm32 \"HID "
+"bootloader\" support, Chitu bootloader support, MKS Robin bootloader "
+"support."
+msgstr ""
+
+msgid "Improved handling of Python \"garbage collection\" events."
+msgstr ""
+
+msgid ""
+"Many additional modules added: adc_scaled, adxl345, bme280, "
+"display_status, extruder_stepper, fan_generic, "
+"hall_filament_width_sensor, htu21d, homing_heaters, input_shaper, "
+"lm75, print_stats, resonance_tester, shaper_calibrate, query_adc, "
+"graph_accelerometer, graph_extruder, graph_motion, graph_shaper, "
+"graph_temp_sensor, whconsole"
+msgstr ""
+
+msgid "Several bug fixes and code cleanups."
+msgstr ""
+
+msgid "Klipper 0.9.1"
+msgstr ""
+
+msgid "Available on 20201028. Release containing only bug fixes."
+msgstr ""
+
+msgid "Klipper 0.8.0"
+msgstr ""
+
+msgid "Available on 20191021. Major changes in this release:"
+msgstr ""
+
+msgid ""
+"New G-Code command template support. G-Code in the config file is now"
+" evaluated with the Jinja2 template language."
+msgstr ""
+
+msgid "Improvements to Trinamic stepper drivers:"
+msgstr ""
+
+msgid "New support for TMC2209 and TMC5160 drivers."
+msgstr ""
+
+msgid ""
+"Improved DUMP_TMC, SET_TMC_CURRENT, and INIT_TMC G-Code commands."
+msgstr ""
+
+msgid "Improved support for TMC UART handling with an analog mux."
+msgstr ""
+
+msgid "Improved homing, probing, and bed leveling support:"
+msgstr ""
+
+msgid ""
+"New manual_probe, bed_screws, screws_tilt_adjust, skew_correction, "
+"safe_z_home modules added."
+msgstr ""
+
+msgid ""
+"Enhanced multi-sample probing with median, average, and retry logic."
+msgstr ""
+
+msgid ""
+"Improved documentation for BL-Touch, probe calibration, endstop "
+"calibration, delta calibration, sensorless homing, and endstop phase "
+"calibration."
+msgstr ""
+
+msgid "Improved homing support on a large Z axis."
+msgstr ""
+
+msgid "Many Klipper micro-controller improvements:"
+msgstr ""
+
+msgid "Klipper ported to: SAM3X8C, SAM4S8C, SAMD51, STM32F042, STM32F4"
+msgstr ""
+
+msgid "New USB CDC driver implementations on SAM3X, SAM4, STM32F4."
+msgstr ""
+
+msgid "Enhanced support for flashing Klipper over USB."
+msgstr ""
+
+msgid "Software SPI support."
+msgstr ""
+
+msgid "Greatly improved temperature filtering on the LPC176x."
+msgstr ""
+
+msgid ""
+"Early output pin settings can be configured in the micro-controller."
+msgstr ""
+
+msgid ""
+"New website with the Klipper documentation: http://klipper3d.org/"
+msgstr ""
+
+msgid "Klipper now has a logo."
+msgstr ""
+
+msgid "Experimental support for polar and \"cable winch\" kinematics."
+msgstr ""
+
+msgid "The config file can now include other config files."
+msgstr ""
+
+msgid ""
+"Many additional modules added: board_pins, controller_fan, "
+"delayed_gcode, dotstar, filament_switch_sensor, firmware_retraction, "
+"gcode_arcs, gcode_button, heater_generic, manual_stepper, mcp4018, "
+"mcp4728, neopixel, pause_resume, respond, temperature_sensor "
+"tsl1401cl_filament_width_sensor, tuning_tower"
+msgstr ""
+
+msgid ""
+"Many additional commands added: RESTORE_GCODE_STATE, "
+"SAVE_GCODE_STATE, SET_GCODE_VARIABLE, SET_HEATER_TEMPERATURE, "
+"SET_IDLE_TIMEOUT, SET_TEMPERATURE_FAN_TARGET"
+msgstr ""
+
+msgid "Klipper 0.7.0"
+msgstr ""
+
+msgid "Available on 20181220. Major changes in this release:"
+msgstr ""
+
+msgid "Klipper now supports \"mesh\" bed leveling"
+msgstr ""
+
+msgid ""
+"New support for \"enhanced\" delta calibration (calibrates print x/y "
+"dimensions on delta printers)"
+msgstr ""
+
+msgid ""
+"Support for run-time configuration of Trinamic stepper motor drivers "
+"(tmc2130, tmc2208, tmc2660)"
+msgstr ""
+
+msgid ""
+"Improved temperature sensor support: MAX6675, MAX31855, MAX31856, "
+"MAX31865, custom thermistors, common pt100 style sensors"
+msgstr ""
+
+msgid ""
+"Several new modules: temperature_fan, sx1509, force_move, mcp4451, "
+"z_tilt, quad_gantry_level, endstop_phase, bltouch"
+msgstr ""
+
+msgid ""
+"Several new commands added: SAVE_CONFIG, SET_PRESSURE_ADVANCE, "
+"SET_GCODE_OFFSET, SET_VELOCITY_LIMIT, STEPPER_BUZZ, TURN_OFF_HEATERS,"
+" M204, custom g-code macros"
+msgstr ""
+
+msgid "Expanded LCD display support:"
+msgstr ""
+
+msgid "Support for run-time menus"
+msgstr ""
+
+msgid "New display icons"
+msgstr ""
+
+msgid "Support for \"uc1701\" and \"ssd1306\" displays"
+msgstr ""
+
+msgid "Additional micro-controller support:"
+msgstr ""
+
+msgid ""
+"Klipper ported to: LPC176x (Smoothieboards), SAM4E8E (Duet2), SAMD21 "
+"(Arduino Zero), STM32F103 (\"Blue pill\" devices), atmega32u4"
+msgstr ""
+
+msgid ""
+"New Generic USB CDC driver implemented on AVR, LPC176x, SAMD21, and "
+"STM32F103"
+msgstr ""
+
+msgid "Performance improvements on ARM processors"
+msgstr ""
+
+msgid "The kinematics code was rewritten to use an \"iterative solver\""
+msgstr ""
+
+msgid "New automatic test cases for the Klipper host software"
+msgstr ""
+
+msgid "Many new example config files for common off-the-shelf printers"
+msgstr ""
+
+msgid ""
+"Documentation updates for bootloaders, benchmarking, micro-controller"
+" porting, config checks, pin mapping, slicer settings, packaging, and"
+" more"
+msgstr ""
+
+msgid "Several bug fixes and code cleanups"
+msgstr ""
+
+msgid "Klipper 0.6.0"
+msgstr ""
+
+msgid "Available on 20180331. Major changes in this release:"
+msgstr ""
+
+msgid "Enhanced heater and thermistor hardware failure checks"
+msgstr ""
+
+msgid "Support for Z probes"
+msgstr ""
+
+msgid ""
+"Initial support for automatic parameter calibration on deltas (via a "
+"new delta_calibrate command)"
+msgstr ""
+
+msgid ""
+"Initial support for bed tilt compensation (via bed_tilt_calibrate "
+"command)"
+msgstr ""
+
+msgid "Initial support for \"safe homing\" and homing overrides"
+msgstr ""
+
+msgid ""
+"Initial support for displaying status on RepRapDiscount style 2004 "
+"and 12864 displays"
+msgstr ""
+
+msgid "New multi-extruder improvements:"
+msgstr ""
+
+msgid "Support for shared heaters"
+msgstr ""
+
+msgid "Initial support for dual carriages"
+msgstr ""
+
+msgid "Support for configuring multiple steppers per axis (eg, dual Z)"
+msgstr ""
+
+msgid ""
+"Support for custom digital and pwm output pins (with a new SET_PIN "
+"command)"
+msgstr ""
+
+msgid ""
+"Initial support for a \"virtual sdcard\" that allows printing "
+"directly from Klipper (helps on machines too slow to run OctoPrint "
+"well)"
+msgstr ""
+
+msgid ""
+"Support for setting different arm lengths on each tower of a delta"
+msgstr ""
+
+msgid ""
+"Support for G-Code M220/M221 commands (speed factor override / "
+"extrude factor override)"
+msgstr ""
+
+msgid "Several documentation updates:"
+msgstr ""
+
+msgid "New multiple MCU config example"
+msgstr ""
+
+msgid "New bltouch sensor config example"
+msgstr ""
+
+msgid "New FAQ, config check, and G-Code documents"
+msgstr ""
+
+msgid ""
+"Initial support for continuous integration testing on all github "
+"commits"
+msgstr ""
+
+msgid "Klipper 0.5.0"
+msgstr ""
+
+msgid "Available on 20171025. Major changes in this release:"
+msgstr ""
+
+msgid "Support for printers with multiple extruders."
+msgstr ""
+
+msgid ""
+"Initial support for running on the Beaglebone PRU. Initial support "
+"for the Replicape board."
+msgstr ""
+
+msgid ""
+"Initial support for running the micro-controller code in a real-time "
+"Linux process."
+msgstr ""
+
+msgid ""
+"Support for multiple micro-controllers. (For example, one could "
+"control an extruder with one micro-controller and the rest of the "
+"printer with another.) Software clock synchronization is implemented "
+"to coordinate actions between micro-controllers."
+msgstr ""
+
+msgid ""
+"Stepper performance improvements (20Mhz AVRs up to 189K steps per "
+"second)."
+msgstr ""
+
+msgid ""
+"Support for controlling servos and support for defining nozzle "
+"cooling fans."
+msgstr ""
+
+msgid "Klipper 0.4.0"
+msgstr ""
+
+msgid "Available on 20170503. Major changes in this release:"
+msgstr ""
+
+msgid ""
+"Improved installation on Raspberry Pi machines. Most of the install "
+"is now scripted."
+msgstr ""
+
+msgid "Support for corexy kinematics"
+msgstr ""
+
+msgid ""
+"Documentation updates: New Kinematics document, new Pressure Advance "
+"tuning guide, new example config files, and more"
+msgstr ""
+
+msgid ""
+"Stepper performance improvements (20Mhz AVRs over 175K steps per "
+"second, Arduino Due over 460K)"
+msgstr ""
+
+msgid ""
+"Support for automatic micro-controller resets. Support for resets via"
+" toggling USB power on Raspberry Pi."
+msgstr ""
+
+msgid ""
+"The pressure advance algorithm now works with look-ahead to reduce "
+"pressure changes during cornering."
+msgstr ""
+
+msgid "Support for limiting the top speed of short zigzag moves"
+msgstr ""
+
+msgid "Support for AD595 sensors"
+msgstr ""
+
+msgid "Klipper 0.3.0"
+msgstr ""
+
+msgid "Available on 20161223. Major changes in this release:"
+msgstr ""
+
+msgid "Improved documentation"
+msgstr ""
+
+msgid "Support for robots with delta kinematics"
+msgstr ""
+
+msgid "Support for Arduino Due micro-controller (ARM cortex-M3)"
+msgstr ""
+
+msgid "Support for USB based AVR micro-controllers"
+msgstr ""
+
+msgid ""
+"Support for \"pressure advance\" algorithm - it reduces ooze during "
+"prints."
+msgstr ""
+
+msgid ""
+"New \"stepper phased based endstop\" feature - enables higher "
+"precision on endstop homing."
+msgstr ""
+
+msgid ""
+"Support for \"extended g-code\" commands such as \"help\", "
+"\"restart\", and \"status\"."
+msgstr ""
+
+msgid ""
+"Support for reloading the Klipper config and restarting the host "
+"software by issuing a \"restart\" command from the terminal."
+msgstr ""
+
+msgid ""
+"Stepper performance improvements (20Mhz AVRs up to 158K steps per "
+"second)."
+msgstr ""
+
+msgid ""
+"Improved error reporting. Most errors now shown via the terminal "
+"along with help on how to resolve."
+msgstr ""
+
+msgid "Klipper 0.2.0"
+msgstr ""
+
+msgid ""
+"Initial release of Klipper. Available on 20160525. Major features "
+"available in the initial release include:"
+msgstr ""
+
+msgid ""
+"Basic support for cartesian printers (steppers, extruder, heated bed,"
+" cooling fan)."
+msgstr ""
+
+msgid ""
+"Support for common g-code commands. Support for interfacing with "
+"OctoPrint."
+msgstr ""
+
+msgid "Acceleration and lookahead handling"
+msgstr ""
+
+msgid "Support for AVR micro-controllers via standard serial ports"
+msgstr ""

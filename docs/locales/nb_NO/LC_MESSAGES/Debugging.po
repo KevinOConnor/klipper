@@ -1,0 +1,187 @@
+#
+msgid ""
+msgstr ""
+
+msgid "This document describes some of the Klipper debugging tools."
+msgstr ""
+
+msgid "Translating gcode files to micro-controller commands"
+msgstr ""
+
+msgid ""
+"The Klippy host code can run in a batch mode to produce the low-level"
+" micro-controller commands associated with a gcode file. Inspecting "
+"these low-level commands is useful when trying to understand the "
+"actions of the low-level hardware. It can also be useful to compare "
+"the difference in micro-controller commands after a code change."
+msgstr ""
+
+msgid ""
+"To run Klippy in this batch mode, there is a one time step necessary "
+"to generate the micro-controller \"data dictionary\". This is done by"
+" compiling the micro-controller code to obtain the "
+"**out/klipper.dict** file:"
+msgstr ""
+
+msgid ""
+"Once the above is done it is possible to run Klipper in batch mode "
+"(see [installation](Installation.md) for the steps necessary to build"
+" the python virtual environment and a printer.cfg file):"
+msgstr ""
+
+msgid ""
+"The above will produce a file **test.serial** with the binary serial "
+"output. This output can be translated to readable text with:"
+msgstr ""
+
+msgid ""
+"The resulting file **test.txt** contains a human readable list of "
+"micro-controller commands."
+msgstr ""
+
+msgid ""
+"The batch mode disables certain response / request commands in order "
+"to function. As a result, there will be some differences between "
+"actual commands and the above output. The generated data is useful "
+"for testing and inspection; it is not useful for sending to a real "
+"micro-controller."
+msgstr ""
+
+msgid "Testing with simulavr"
+msgstr ""
+
+msgid ""
+"The [simulavr](http://www.nongnu.org/simulavr/) tool enables one to "
+"simulate an Atmel ATmega micro-controller. This section describes how"
+" one can run test gcode files through simulavr. It is recommended to "
+"run this on a desktop class machine (not a Raspberry Pi) as it does "
+"require significant cpu to run efficiently."
+msgstr ""
+
+msgid ""
+"To use simulavr, download the simulavr package and compile with "
+"python support:"
+msgstr ""
+
+msgid ""
+"Note that the build system may need to have some packages (such as "
+"swig) installed in order to build the python module. Make sure the "
+"file **src/python/_pysimulavr.so** is present after the above "
+"compilation."
+msgstr ""
+
+msgid "To compile Klipper for use in simulavr, run:"
+msgstr ""
+
+msgid ""
+"and compile the micro-controller software for an AVR atmega644p, set "
+"the MCU frequency to 20Mhz, and select SIMULAVR software emulation "
+"support. Then one can compile Klipper (run `make`) and then start the"
+" simulation with:"
+msgstr ""
+
+msgid ""
+"Then, with simulavr running in another window, one can run the "
+"following to read gcode from a file (eg, \"test.gcode\"), process it "
+"with Klippy, and send it to Klipper running in simulavr (see "
+"[installation](Installation.md) for the steps necessary to build the "
+"python virtual environment):"
+msgstr ""
+
+msgid "Using simulavr with gtkwave"
+msgstr ""
+
+msgid ""
+"One useful feature of simulavr is its ability to create signal wave "
+"generation files with the exact timing of events. To do this, follow "
+"the directions above, but run avrsim.py with a command-line like the "
+"following:"
+msgstr ""
+
+msgid ""
+"The above would create a file **avrsim.vcd** with information on each"
+" change to the GPIOs on PORTA and PORTB. This could then be viewed "
+"using gtkwave with:"
+msgstr ""
+
+msgid "Manually sending commands to the micro-controller"
+msgstr ""
+
+msgid ""
+"Normally, the host klippy.py process would be used to translate gcode"
+" commands to Klipper micro-controller commands. However, it's also "
+"possible to manually send these MCU commands (functions marked with "
+"the DECL_COMMAND() macro in the Klipper source code). To do so, run:"
+msgstr ""
+
+msgid ""
+"See the \"HELP\" command within the tool for more information on its "
+"functionality."
+msgstr ""
+
+msgid ""
+"Some command-line options are available. For more information run: "
+"`~/klippy-env/bin/python ./klippy/console.py --help`"
+msgstr ""
+
+msgid "Generating load graphs"
+msgstr ""
+
+msgid ""
+"The Klippy log file (/tmp/klippy.log) stores statistics on bandwidth,"
+" micro-controller load, and host buffer load. It can be useful to "
+"graph these statistics after a print."
+msgstr ""
+
+msgid ""
+"To generate a graph, a one time step is necessary to install the "
+"\"matplotlib\" package:"
+msgstr ""
+
+msgid "Then graphs can be produced with:"
+msgstr ""
+
+msgid "One can then view the resulting **loadgraph.png** file."
+msgstr ""
+
+msgid ""
+"Different graphs can be produced. For more information run: "
+"`~/klipper/scripts/graphstats.py --help`"
+msgstr ""
+
+msgid "Extracting information from the klippy.log file"
+msgstr ""
+
+msgid ""
+"The Klippy log file (/tmp/klippy.log) also contains debugging "
+"information. There is a logextract.py script that may be useful when "
+"analyzing a micro-controller shutdown or similar problem. It is "
+"typically run with something like:"
+msgstr ""
+
+msgid ""
+"The script will extract the printer config file and will extract MCU "
+"shutdown information. The information dumps from an MCU shutdown (if "
+"present) will be reordered by timestamp to assist in diagnosing cause"
+" and effect scenarios."
+msgstr ""
+
+msgid "Running the regression tests"
+msgstr ""
+
+msgid ""
+"The main Klipper GitHub repository uses \"github actions\" to run a "
+"series of regression tests. It can be useful to run some of these "
+"tests locally."
+msgstr ""
+
+msgid "The source code \"whitespace check\" can be run with:"
+msgstr ""
+
+msgid ""
+"The Klippy regression test suite requires \"data dictionaries\" from "
+"many platforms. The easiest way to obtain them is to [download them "
+"from github](https://github.com/KevinOConnor/klipper/issues/1438). "
+"Once the data dictionaries are downloaded, use the following to run "
+"the regression suite:"
+msgstr ""

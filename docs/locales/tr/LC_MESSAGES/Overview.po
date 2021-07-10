@@ -1,0 +1,227 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-05 10:49+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 3.3.6\n"
+
+#
+
+msgid ""
+"Welcome to the Klipper documentation. If new to Klipper, start with "
+"the [features](Features.md) and [installation](Installation.md) "
+"documents."
+msgstr ""
+
+msgid "Overview information"
+msgstr ""
+
+msgid ""
+"[Features](Features.md): A high-level list of features in Klipper."
+msgstr ""
+
+msgid "[FAQ](FAQ.md): Frequently asked questions."
+msgstr ""
+
+msgid "[Releases](Releases.md): The history of Klipper releases."
+msgstr ""
+
+msgid ""
+"[Config changes](Config_Changes.md): Recent software changes that may"
+" require users to update their printer config file."
+msgstr ""
+
+msgid ""
+"[Contact](Contact.md): Information on bug reporting and general "
+"communication with the Klipper developers."
+msgstr ""
+
+msgid "Configuration and Tuning Guides"
+msgstr ""
+
+msgid "[Installation](Installation.md): Guide to installing Klipper."
+msgstr ""
+
+msgid ""
+"[Config Reference](Config_Reference.md): Description of config "
+"parameters."
+msgstr ""
+
+msgid ""
+"[Rotation Distance](Rotation_Distance.md): Calculating the "
+"rotation_distance stepper parameter."
+msgstr ""
+
+msgid ""
+"[Config checks](Config_checks.md): Verify basic pin settings in the "
+"config file."
+msgstr ""
+
+msgid ""
+"[Bed level](Bed_Level.md): Information on \"bed leveling\" in "
+"Klipper."
+msgstr ""
+
+msgid ""
+"[Delta calibrate](Delta_Calibrate.md): Calibration of delta "
+"kinematics."
+msgstr ""
+
+msgid ""
+"[Probe calibrate](Probe_Calibrate.md): Calibration of automatic Z "
+"probes."
+msgstr ""
+
+msgid "[BL-Touch](BLTouch.md): Configure a \"BL-Touch\" Z probe."
+msgstr ""
+
+msgid ""
+"[Manual level](Manual_Level.md): Calibration of Z endstops (and "
+"similar)."
+msgstr ""
+
+msgid ""
+"[Bed Mesh](Bed_Mesh.md): Bed height correction based on XY locations."
+msgstr ""
+
+msgid ""
+"[Endstop phase](Endstop_Phase.md): Stepper assisted Z endstop "
+"positioning."
+msgstr ""
+
+msgid ""
+"[Resonance compensation](Resonance_Compensation.md): A tool to reduce"
+" ringing in prints."
+msgstr ""
+
+msgid ""
+"[Measuring resonances](Measuring_Resonances.md): Information on using"
+" adxl345 accelerometer hardware to measure resonance."
+msgstr ""
+
+msgid ""
+"[Pressure advance](Pressure_Advance.md): Calibrate extruder pressure."
+msgstr ""
+
+msgid "[Slicers](Slicers.md): Configure \"slicer\" software for Klipper."
+msgstr ""
+
+msgid ""
+"[Command Templates](Command_Templates.md): G-Code macros and "
+"conditional evaluation."
+msgstr ""
+
+msgid ""
+"[TMC Drivers](TMC_Drivers.md): Using Trinamic stepper motor drivers "
+"with Klipper."
+msgstr ""
+
+msgid ""
+"[Skew correction](skew_correction.md): Adjustments for axes not "
+"perfectly square."
+msgstr ""
+
+msgid ""
+"[PWM tools](Using_PWM_Tools.md): Guide on how to use PWM controlled "
+"tools such as lasers or spindles."
+msgstr ""
+
+msgid ""
+"[G-Codes](G-Codes.md): Information on commands supported by Klipper."
+msgstr ""
+
+msgid "Developer Documentation"
+msgstr ""
+
+msgid ""
+"[Code overview](Code_Overview.md): Developers should read this first."
+msgstr ""
+
+msgid ""
+"[Kinematics](Kinematics.md): Technical details on how Klipper "
+"implements motion."
+msgstr ""
+
+msgid ""
+"[Protocol](Protocol.md): Information on the low-level messaging "
+"protocol between host and micro-controller."
+msgstr ""
+
+msgid ""
+"[API Server](API_Server.md): Information on Klipper's command and "
+"control API."
+msgstr ""
+
+msgid ""
+"[MCU commands](MCU_Commands.md): A description of low-level commands "
+"implemented in the micro-controller software."
+msgstr ""
+
+msgid ""
+"[CAN bus protocol](CANBUS_protocol.md): Klipper CAN bus message "
+"format."
+msgstr ""
+
+msgid ""
+"[Debugging](Debugging.md): Information on how to test and debug "
+"Klipper."
+msgstr ""
+
+msgid ""
+"[Benchmarks](Benchmarks.md): Information on the Klipper benchmark "
+"method."
+msgstr ""
+
+msgid ""
+"[Contributing](CONTRIBUTING.md): Information on how to submit "
+"improvements to Klipper."
+msgstr ""
+
+msgid "[Packaging](Packaging.md): Information on building OS packages."
+msgstr ""
+
+msgid "Device Specific Documents"
+msgstr ""
+
+msgid ""
+"[Example configs](Example_Configs.md): Information on adding an "
+"example config file to Klipper."
+msgstr ""
+
+msgid ""
+"[SDCard Updates](SDCard_Updates.md): Flash a micro-controller by "
+"copying a binary to an sdcard in the micro-controller."
+msgstr ""
+
+msgid ""
+"[Raspberry Pi as Micro-controller](RPi_microcontroller.md): Details "
+"for controlling devices wired to the GPIO pins of a Raspberry Pi."
+msgstr ""
+
+msgid ""
+"[Beaglebone](beaglebone.md): Details for running Klipper on the "
+"Beaglebone PRU."
+msgstr ""
+
+msgid ""
+"[Bootloaders](Bootloaders.md): Developer information on micro-"
+"controller flashing."
+msgstr ""
+
+msgid ""
+"[CAN bus](CANBUS.md): Information on using CAN bus with Klipper."
+msgstr ""
+
+msgid ""
+"[TSL1401CL filament width sensor](TSL1401CL_Filament_Width_Sensor.md)"
+msgstr ""
+
+msgid "[Hall filament width sensor](HallFilamentWidthSensor.md)"
+msgstr ""

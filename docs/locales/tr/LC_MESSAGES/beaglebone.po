@@ -1,0 +1,103 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-05 10:47+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 3.3.6\n"
+
+#
+
+msgid ""
+"This document describes the process of running Klipper on a "
+"Beaglebone PRU."
+msgstr ""
+
+msgid "Building an OS image"
+msgstr ""
+
+msgid ""
+"Start by installing the [Debian 9.9 2019-08-03 4GB SD IoT] "
+"(https://beagleboard.org/latest-images) image. One may run the image "
+"from either a micro-SD card or from builtin eMMC. If using the eMMC, "
+"install it to eMMC now by following the instructions from the above "
+"link."
+msgstr ""
+
+msgid ""
+"Then ssh into the beaglebone machine (ssh debian@beaglebone -- "
+"password is \"temppwd\") and install Klipper by running the following"
+" commands:"
+msgstr ""
+
+msgid "Install Octoprint"
+msgstr ""
+
+msgid "One may then install Octoprint:"
+msgstr ""
+
+msgid "And setup OctoPrint to start at bootup:"
+msgstr ""
+
+msgid ""
+"It is necessary to modify OctoPrint's **/etc/default/octoprint** "
+"configuration file. One must change the OCTOPRINT_USER user to "
+"\"debian\", change NICELEVEL to 0, uncomment the BASEDIR, CONFIGFILE,"
+" and DAEMON settings and change the references from \"/home/pi/\" to "
+"\"/home/debian/\":"
+msgstr ""
+
+msgid "Then start the Octoprint service:"
+msgstr ""
+
+msgid ""
+"Make sure the octoprint web server is accessible - it should be at: "
+"[http://beaglebone:5000/](http://beaglebone:5000/)"
+msgstr ""
+
+msgid "Building the micro-controller code"
+msgstr ""
+
+msgid ""
+"To compile the Klipper micro-controller code, start by configuring it"
+" for the \"Beaglebone PRU\":"
+msgstr ""
+
+msgid "To build and install the new micro-controller code, run:"
+msgstr ""
+
+msgid ""
+"It is also necessary to compile and install the micro-controller code"
+" for a Linux host process. Run \"make menuconfig\" a second time and "
+"configure it for a \"Linux process\":"
+msgstr ""
+
+msgid "Then install this micro-controller code as well:"
+msgstr ""
+
+msgid "Remaining configuration"
+msgstr ""
+
+msgid ""
+"Complete the installation by configuring Klipper and Octoprint "
+"following the instructions in [the main installation "
+"document](Installation.md#configuring-klipper)."
+msgstr ""
+
+msgid "Printing on the Beaglebone"
+msgstr ""
+
+msgid ""
+"Unfortunately, the Beaglebone processor can sometimes struggle to run"
+" OctoPrint well. Print stalls have been known to occur on complex "
+"prints (the printer may move faster than OctoPrint can send movement "
+"commands). If this occurs, consider using the \"virtual_sdcard\" "
+"feature (see [config reference](Config_Reference.md#virtual_sdcard) "
+"for details) to print directly from Klipper."
+msgstr ""

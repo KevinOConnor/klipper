@@ -1,0 +1,116 @@
+#
+msgid ""
+msgstr ""
+
+msgid "This document describes Klipper's CAN bus support."
+msgstr ""
+
+msgid "Device Hardware"
+msgstr ""
+
+msgid ""
+"Klipper currently only supports CAN on stm32 chips. In addition, the "
+"micro-controller chip must support CAN and it must be on a board that"
+" has a CAN transceiver."
+msgstr ""
+
+msgid ""
+"To compile for CAN, run \"make menuconfig\" and select \"CAN bus\" as"
+" the communication interface. Finally, compile the micro-controller "
+"code and flash it to the target board."
+msgstr ""
+
+msgid "Host Hardware"
+msgstr ""
+
+msgid ""
+"In order to use a CAN bus, it is necessary to have a host adapter. "
+"There are currently two common options:"
+msgstr ""
+
+msgid ""
+"Use a [Waveshare Raspberry Pi CAN "
+"hat](https://www.waveshare.com/rs485-can-hat.htm) or one of its many "
+"clones."
+msgstr ""
+
+msgid ""
+"Use a USB CAN adapter (for example [https://hacker-"
+"gadgets.com/product/cantact-usb-can-adapter/](https://hacker-"
+"gadgets.com/product/cantact-usb-can-adapter/)). There are many "
+"different USB to CAN adapters available - when choosing one, we "
+"recommend verifying it can run the [candlelight "
+"firmware](https://github.com/candle-usb/candleLight_fw). "
+"(Unfortunately, we've found some USB adapters run defective firmware "
+"and are locked down, so verify before purchasing.)"
+msgstr ""
+
+msgid ""
+"It is also necessary to configure the host operating system to use "
+"the adapter. This is typically done by creating a new file named "
+"`/etc/network/interfaces.d/can0` with the following contents:"
+msgstr ""
+
+msgid ""
+"Note that the \"Raspberry Pi CAN hat\" also requires [changes to "
+"config.txt](https://www.waveshare.com/wiki/RS485_CAN_HAT)."
+msgstr ""
+
+msgid "Terminating Resistors"
+msgstr ""
+
+msgid ""
+"A CAN bus should have two 120 ohm resistors between the CANH and CANL"
+" wires. Ideally, one resistor located at each the end of the bus."
+msgstr ""
+
+msgid ""
+"Note that some devices have a builtin 120 ohm resistor (for example, "
+"the \"Waveshare Raspberry Pi CAN hat\" has a soldered on resistor "
+"that can not be easily removed). Some devices do not include a "
+"resistor at all. Other devices have a mechanism to select the "
+"resistor (typically by connecting a \"pin jumper\"). Be sure to check"
+" the schematics of all devices on the CAN bus to verify that there "
+"are two and only two 120 Ohm resistors on the bus."
+msgstr ""
+
+msgid ""
+"To test that the resistors are correct, one can remove power to the "
+"printer and use a multi-meter to check the resistance between the "
+"CANH and CANL wires - it should report ~60 ohms on a correctly wired "
+"CAN bus."
+msgstr ""
+
+msgid "Finding the canbus_uuid for new micro-controllers"
+msgstr ""
+
+msgid ""
+"Each micro-controller on the CAN bus is assigned a unique id based on"
+" the factory chip identifier encoded into each micro-controller. To "
+"find each micro-controller device id, make sure the hardware is "
+"powered and wired correctly, and then run:"
+msgstr ""
+
+msgid ""
+"If uninitialized CAN devices are detected the above command will "
+"report lines like the following:"
+msgstr ""
+
+msgid ""
+"Each device will have a unique identifier. In the above example, "
+"`11aa22bb33cc` is the micro-controller's \"canbus_uuid\"."
+msgstr ""
+
+msgid ""
+"Note that the `canbus_query.py` tool will only report uninitialized "
+"devices - if Klipper (or a similar tool) configures the device then "
+"it will no longer appear in the list."
+msgstr ""
+
+msgid "Configuring Klipper"
+msgstr ""
+
+msgid ""
+"Update the Klipper [mcu configuration](Config_Reference.md#mcu) to "
+"use the CAN bus to communicate with the device - for example:"
+msgstr ""

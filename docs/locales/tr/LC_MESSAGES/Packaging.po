@@ -1,0 +1,63 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-05 10:48+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 3.3.6\n"
+
+#
+
+msgid "Packaging klipper"
+msgstr ""
+
+msgid ""
+"Klipper is somewhat of a packaging anomaly among python programs, as "
+"it doesn't use setuptools to build and install. Some notes regarding "
+"how best to package it are as follows:"
+msgstr ""
+
+msgid "C modules"
+msgstr ""
+
+msgid ""
+"Klipper uses a C module to handle some kinematics calculations more "
+"quickly. This module needs to be compiled at packaging time to avoid "
+"introducing a runtime dependency on a compiler. To compile the C "
+"module, run `python2 klippy/chelper/__init__.py`."
+msgstr ""
+
+msgid "Compiling python code"
+msgstr ""
+
+msgid ""
+"Many distributions have a policy of compiling all python code before "
+"packaging to improve startup time. You can do this by running "
+"`python2 -m compileall klippy`."
+msgstr ""
+
+msgid "Versioning"
+msgstr ""
+
+msgid ""
+"If you are building a package of Klipper from git, it is usual "
+"practice not to ship a .git directory, so the versioning must be "
+"handled without git. To do this, use the script shipped in "
+"`scripts/make_version.py` which should be run as follows: `python2 "
+"scripts/make_version.py YOURDISTRONAME > klippy/.version`."
+msgstr ""
+
+msgid "Sample packaging script"
+msgstr ""
+
+msgid ""
+"klipper-git is packaged for Arch Linux, and has a PKGBUILD (package "
+"build script) available at "
+"https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=klipper-git."
+msgstr ""

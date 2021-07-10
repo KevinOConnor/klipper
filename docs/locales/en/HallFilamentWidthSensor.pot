@@ -1,0 +1,122 @@
+#
+msgid ""
+msgstr ""
+
+msgid ""
+"This document describes Filament Width Sensor host module. Hardware "
+"used for developing this host module is based on Two Hall liniar "
+"sensors (ss49e for example). Sensors in the body are located opposite"
+" sides. Principle of operation : two hall sensors work in "
+"differential mode, temperature drift same for sensor. Special "
+"temperature compensation not needed. You can find designs at "
+"[thingiverse.com](https://www.thingiverse.com/thing:4138933)"
+msgstr ""
+
+msgid ""
+"[Hall based filament width sensor assembly "
+"video](https://www.youtube.com/watch?v=TDO9tME8vp4)"
+msgstr ""
+
+msgid "How does it work?"
+msgstr ""
+
+msgid ""
+"Sensor generates two analog output based on calculated filament "
+"width. Sum of output voltage always equals to detected filament width"
+" . Host module monitors voltage changes and adjusts extrusion "
+"multiplier. I use aux2 connector on ramps-like board analog11 and "
+"analog12 pins. You can use different pins and differenr boards"
+msgstr ""
+
+msgid "Configuration"
+msgstr ""
+
+msgid "Commands"
+msgstr ""
+
+msgid ""
+"**QUERY_FILAMENT_WIDTH** - Return the current measured filament width"
+" as result"
+msgstr ""
+
+msgid ""
+"**RESET_FILAMENT_WIDTH_SENSOR** вЂ“ Clear all sensor readings. Can be"
+" used after filament change."
+msgstr ""
+
+msgid ""
+"**DISABLE_FILAMENT_WIDTH_SENSOR** вЂ“ Turn off the filament width "
+"sensor and stop using it to do flow control"
+msgstr ""
+
+msgid ""
+"**ENABLE_FILAMENT_WIDTH_SENSOR** - Turn on the filament width sensor "
+"and start using it to do flow control"
+msgstr ""
+
+msgid ""
+"**QUERY_RAW_FILAMENT_WIDTH** Return the current ADC channel values "
+"and RAW sensor value for calibration points"
+msgstr ""
+
+msgid "**ENABLE_FILAMENT_WIDTH_LOG** - Turn on diameter logging"
+msgstr ""
+
+msgid "**DISABLE_FILAMENT_WIDTH_LOG** - Turn off diameter logging"
+msgstr ""
+
+msgid "Menu variables"
+msgstr ""
+
+msgid ""
+"**hall_filament_width_sensor.Diameter** current measured filament "
+"width in mm"
+msgstr ""
+
+msgid ""
+"**hall_filament_width_sensor.Raw** current raw measured filament "
+"width in units"
+msgstr ""
+
+msgid "**hall_filament_width_sensor.is_active** Sensor on or off"
+msgstr ""
+
+msgid "Template for menu variables"
+msgstr ""
+
+msgid "Calibration procedure"
+msgstr ""
+
+msgid ""
+"Insert first calibration rod (1.5 mm size) get first raw sensor value"
+msgstr ""
+
+msgid ""
+"To get raw sensor value you can use menu item or "
+"**QUERY_RAW_FILAMENT_WIDTH** command in terminal"
+msgstr ""
+
+msgid ""
+"Insert second calibration rod (2.0 mm size) get second raw sensor "
+"value"
+msgstr ""
+
+msgid "Save raw values in config"
+msgstr ""
+
+msgid "How to enable sensor"
+msgstr ""
+
+msgid ""
+"After power on by default sensor disabled. Enable sensor in start "
+"g-code by command **ENABLE_FILAMENT_WIDTH_SENSOR** or change enable "
+"parameter in config"
+msgstr ""
+
+msgid "Logging"
+msgstr ""
+
+msgid ""
+"After power on by default diameter Logging disabled. Data to log "
+"added on every measurement interval (10 mm by default)"
+msgstr ""

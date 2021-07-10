@@ -1,0 +1,36 @@
+#
+msgid ""
+msgstr ""
+
+msgid "Contributing to Klipper"
+msgstr ""
+
+msgid ""
+"Thank you for contributing to Klipper! Please take a moment to read "
+"this document."
+msgstr ""
+
+msgid "Creating a new issue"
+msgstr ""
+
+msgid ""
+"Please see the [contact page](Contact.md) for information on creating"
+" an issue."
+msgstr ""
+
+msgid "Submitting a pull request"
+msgstr ""
+
+msgid ""
+"Contributions of Code and documentation are managed through github "
+"pull requests. Each commit should have a commit message formatted "
+"similar to the following:"
+msgstr ""
+
+msgid ""
+"It is important to have a \"Signed-off-by\" line on each commit - it "
+"certifies that you agree to the [developer certificate of "
+"origin](developer-certificate-of-origin). It must contain your real "
+"name (sorry, no pseudonyms or anonymous contributions) and contain a "
+"current email address."
+msgstr ""

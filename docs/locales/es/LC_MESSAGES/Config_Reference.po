@@ -1,0 +1,1360 @@
+#
+msgid ""
+msgstr ""
+
+msgid ""
+"This document is a reference for options available in the Klipper "
+"config file."
+msgstr ""
+
+msgid ""
+"The descriptions in this document are formatted so that it is "
+"possible to cut-and-paste them into a printer config file. See the "
+"[installation document](Installation.md) for information on setting "
+"up Klipper and choosing an initial config file."
+msgstr ""
+
+msgid "Micro-controller configuration"
+msgstr ""
+
+msgid "Format of micro-controller pin names"
+msgstr ""
+
+msgid ""
+"Many config options require the name of a micro-controller pin. "
+"Klipper uses the hardware names for these pins - for example `PA4`."
+msgstr ""
+
+msgid ""
+"Pin names may be preceded by `!` to indicate that a reverse polarity "
+"should be used (eg, trigger on low instead of high)."
+msgstr ""
+
+msgid ""
+"Input pins may be preceded by `^` to indicate that a hardware pull-up"
+" resistor should be enabled for the pin. If the micro-controller "
+"supports pull-down resistors then an input pin may alternatively be "
+"preceded by `~`."
+msgstr ""
+
+msgid ""
+"Note, some config sections may \"create\" additional pins. Where this"
+" occurs, the config section defining the pins must be listed in the "
+"config file before any sections using those pins."
+msgstr ""
+
+msgid "[mcu]"
+msgstr ""
+
+msgid "Configuration of the primary micro-controller."
+msgstr ""
+
+msgid "[mcu my_extra_mcu]"
+msgstr ""
+
+msgid ""
+"Additional micro-controllers (one may define any number of sections "
+"with an \"mcu\" prefix). Additional micro-controllers introduce "
+"additional pins that may be configured as heaters, steppers, fans, "
+"etc.. For example, if an \"[mcu extra_mcu]\" section is introduced, "
+"then pins such as \"extra_mcu:ar9\" may then be used elsewhere in the"
+" config (where \"ar9\" is a hardware pin name or alias name on the "
+"given mcu)."
+msgstr ""
+
+msgid "Common kinematic settings"
+msgstr ""
+
+msgid "[printer]"
+msgstr ""
+
+msgid "The printer section controls high level printer settings."
+msgstr ""
+
+msgid "[stepper]"
+msgstr ""
+
+msgid ""
+"Stepper motor definitions. Different printer types (as specified by "
+"the \"kinematics\" option in the [printer] config section) require "
+"different names for the stepper (eg, `stepper_x` vs `stepper_a`). "
+"Below are common stepper definitions."
+msgstr ""
+
+msgid ""
+"See the [rotation distance document](Rotation_Distance.md) for "
+"information on calculating the `rotation_distance` parameter."
+msgstr ""
+
+msgid "Cartesian Kinematics"
+msgstr ""
+
+msgid ""
+"See [example-cartesian.cfg](../config/example-cartesian.cfg) for an "
+"example cartesian kinematics config file."
+msgstr ""
+
+msgid ""
+"Only parameters specific to cartesian printers are described here - "
+"see [common kinematic settings](#common-kinematic-settings) for "
+"available parameters."
+msgstr ""
+
+msgid "Linear Delta Kinematics"
+msgstr ""
+
+msgid ""
+"See [example-delta.cfg](../config/example-delta.cfg) for an example "
+"linear delta kinematics config file. See the [delta calibrate "
+"guide](Delta_Calibrate.md) for information on calibration."
+msgstr ""
+
+msgid ""
+"Only parameters specific to linear delta printers are described here "
+"- see [common kinematic settings](#common-kinematic-settings) for "
+"available parameters."
+msgstr ""
+
+msgid "CoreXY Kinematics"
+msgstr ""
+
+msgid ""
+"See [example-corexy.cfg](../config/example-corexy.cfg) for an example"
+" corexy (and h-bot) kinematics file."
+msgstr ""
+
+msgid ""
+"Only parameters specific to corexy printers are described here - see "
+"[common kinematic settings](#common-kinematic-settings) for available"
+" parameters."
+msgstr ""
+
+msgid "CoreXZ Kinematics"
+msgstr ""
+
+msgid ""
+"See [example-corexz.cfg](../config/example-corexz.cfg) for an example"
+" corexz kinematics config file."
+msgstr ""
+
+msgid ""
+"Only parameters specific to corexz printers are described here - see "
+"[common kinematic settings](#common-kinematic-settings) for available"
+" parameters."
+msgstr ""
+
+msgid "Polar Kinematics"
+msgstr ""
+
+msgid ""
+"See [example-polar.cfg](../config/example-polar.cfg) for an example "
+"polar kinematics config file."
+msgstr ""
+
+msgid ""
+"Only parameters specific to polar printers are described here - see "
+"[common kinematic settings](#common-kinematic-settings) for available"
+" parameters."
+msgstr ""
+
+msgid ""
+"POLAR KINEMATICS ARE A WORK IN PROGRESS. Moves around the `0,0` "
+"position are known to not work properly."
+msgstr ""
+
+msgid "Rotary delta Kinematics"
+msgstr ""
+
+msgid ""
+"See [example-rotary-delta.cfg](../config/example-rotary-delta.cfg) "
+"for an example rotary delta kinematics config file."
+msgstr ""
+
+msgid ""
+"Only parameters specific to rotary delta printers are described here "
+"- see [common kinematic settings](#common-kinematic-settings) for "
+"available parameters."
+msgstr ""
+
+msgid ""
+"ROTARY DELTA KINEMATICS ARE A WORK IN PROGRESS. Homing moves may "
+"timeout and some boundary checks are not implemented."
+msgstr ""
+
+msgid "Cable winch Kinematics"
+msgstr ""
+
+msgid ""
+"See the [example-winch.cfg](../config/example-winch.cfg) for an "
+"example cable winch kinematics config file."
+msgstr ""
+
+msgid ""
+"Only parameters specific to cable winch printers are described here -"
+" see [common kinematic settings](#common-kinematic-settings) for "
+"available parameters."
+msgstr ""
+
+msgid ""
+"CABLE WINCH SUPPORT IS EXPERIMENTAL. Homing is not implemented on "
+"cable winch kinematics. In order to home the printer, manually send "
+"movement commands until the toolhead is at 0,0,0 and then issue a "
+"`G28` command."
+msgstr ""
+
+msgid "None Kinematics"
+msgstr ""
+
+msgid ""
+"It is possible to define a special \"none\" kinematics to disable "
+"kinematic support in Klipper. This may be useful for controlling "
+"devices that are not typical 3d-printers or for debugging purposes."
+msgstr ""
+
+msgid "Common extruder and heated bed support"
+msgstr ""
+
+msgid "[extruder]"
+msgstr ""
+
+msgid ""
+"The extruder section is used to describe both the stepper controlling"
+" the printer extruder and the heater parameters for the nozzle. See "
+"the [pressure advance guide](Pressure_Advance.md) for information on "
+"tuning pressure advance."
+msgstr ""
+
+msgid "[heater_bed]"
+msgstr ""
+
+msgid ""
+"The heater_bed section describes a heated bed. It uses the same "
+"heater settings described in the \"extruder\" section."
+msgstr ""
+
+msgid "Bed level support"
+msgstr ""
+
+msgid "[bed_mesh]"
+msgstr ""
+
+msgid ""
+"Mesh Bed Leveling. One may define a bed_mesh config section to enable"
+" move transformations that offset the z axis based on a mesh "
+"generated from probed points. When using a probe to home the z-axis, "
+"it is recommended to define a safe_z_home section in printer.cfg to "
+"home toward the center of the print area."
+msgstr ""
+
+msgid ""
+"See the [bed mesh guide](Bed_Mesh.md) and [command "
+"reference](G-Codes.md#mesh-bed-leveling) for additional information."
+msgstr ""
+
+msgid "Visual Examples:"
+msgstr ""
+
+msgid "[bed_tilt]"
+msgstr ""
+
+msgid ""
+"Bed tilt compensation. One may define a bed_tilt config section to "
+"enable move transformations that account for a tilted bed. Note that "
+"bed_mesh and bed_tilt are incompatible; both cannot be defined."
+msgstr ""
+
+msgid ""
+"See the [command reference](G-Codes.md#bed-tilt) for additional "
+"information."
+msgstr ""
+
+msgid "[bed_screws]"
+msgstr ""
+
+msgid ""
+"Tool to help adjust bed leveling screws. One may define a "
+"[bed_screws] config section to enable a BED_SCREWS_ADJUST g-code "
+"command."
+msgstr ""
+
+msgid ""
+"See the [leveling guide](Manual_Level.md#adjusting-bed-leveling-"
+"screws) and [command reference](G-Codes.md#bed-screws-helper) for "
+"additional information."
+msgstr ""
+
+msgid "[screws_tilt_adjust]"
+msgstr ""
+
+msgid ""
+"Tool to help adjust bed screws tilt using Z probe. One may define a "
+"screws_tilt_adjust config section to enable a SCREWS_TILT_CALCULATE "
+"g-code command."
+msgstr ""
+
+msgid ""
+"See the [leveling guide](Manual_Level.md#adjusting-bed-leveling-"
+"screws-using-the-bed-probe) and [command reference](G-Codes.md#bed-"
+"screws-tilt-adjust-helper) for additional information."
+msgstr ""
+
+msgid "[z_tilt]"
+msgstr ""
+
+msgid ""
+"Multiple Z stepper tilt adjustment. This feature enables independent "
+"adjustment of multiple z steppers (see the \"stepper_z1\" section) to"
+" adjust for tilt. If this section is present then a Z_TILT_ADJUST "
+"extended [G-Code command](G-Codes.md#z-tilt) becomes available."
+msgstr ""
+
+msgid "[quad_gantry_level]"
+msgstr ""
+
+msgid ""
+"Moving gantry leveling using 4 independently controlled Z motors. "
+"Corrects hyperbolic parabola effects (potato chip) on moving gantry "
+"which is more flexible. WARNING: Using this on a moving bed may lead "
+"to undesirable results. If this section is present then a "
+"QUAD_GANTRY_LEVEL extended G-Code command becomes available. This "
+"routine assumes the following Z motor configuration:"
+msgstr ""
+
+msgid "Where x is the (0,0) point on the bed"
+msgstr ""
+
+msgid "[skew_correction]"
+msgstr ""
+
+msgid ""
+"Printer Skew Correction. It is possible to use software to correct "
+"printer skew across 3 planes, xy, xz, yz. This is done by printing a "
+"calibration model along a plane and measuring three lengths. Due to "
+"the nature of skew correction these lengths are set via gcode. See "
+"[skew correction](skew_correction.md) and [command "
+"reference](G-Codes.md#skew-correction) for details."
+msgstr ""
+
+msgid "Customized homing"
+msgstr ""
+
+msgid "[safe_z_home]"
+msgstr ""
+
+msgid ""
+"Safe Z homing. One may use this mechanism to home the Z axis at a "
+"specific XY coordinate. This is useful if the toolhead, for example "
+"has to move to the center of the bed before Z can be homed."
+msgstr ""
+
+msgid "[homing_override]"
+msgstr ""
+
+msgid ""
+"Homing override. One may use this mechanism to run a series of g-code"
+" commands in place of a G28 found in the normal g-code input. This "
+"may be useful on printers that require a specific procedure to home "
+"the machine."
+msgstr ""
+
+msgid "[endstop_phase]"
+msgstr ""
+
+msgid ""
+"Stepper phase adjusted endstops. To use this feature, define a config"
+" section with an \"endstop_phase\" prefix followed by the name of the"
+" corresponding stepper config section (for example, \"[endstop_phase "
+"stepper_z]\"). This feature can improve the accuracy of endstop "
+"switches. Add a bare \"[endstop_phase]\" declaration to enable the "
+"ENDSTOP_PHASE_CALIBRATE command."
+msgstr ""
+
+msgid ""
+"See the [endstop phases guide](Endstop_Phase.md) and [command "
+"reference](G-Codes.md#endstop-adjustments-by-stepper-phase) for "
+"additional information."
+msgstr ""
+
+msgid "G-Code macros and events"
+msgstr ""
+
+msgid "[gcode_macro]"
+msgstr ""
+
+msgid ""
+"G-Code macros (one may define any number of sections with a "
+"\"gcode_macro\" prefix). See the [command template "
+"guide](Command_Templates.md) for more information."
+msgstr ""
+
+msgid "[delayed_gcode]"
+msgstr ""
+
+msgid ""
+"Execute a gcode on a set delay. See the [command template "
+"guide](Command_Templates.md#delayed-gcodes) and [command "
+"reference](G-Codes.md#delayed-gcode) for more information."
+msgstr ""
+
+msgid "[save_variables]"
+msgstr ""
+
+msgid ""
+"Support saving variables to disk so that they are retained across "
+"restarts. See [command templates](Command_Templates.md#save-"
+"variables-to-disk) and [G-Code reference](G-Codes.md#save-variables) "
+"for further information."
+msgstr ""
+
+msgid "[idle_timeout]"
+msgstr ""
+
+msgid ""
+"Idle timeout. An idle timeout is automatically enabled - add an "
+"explicit idle_timeout config section to change the default settings."
+msgstr ""
+
+msgid "Optional G-Code features"
+msgstr ""
+
+msgid "[virtual_sdcard]"
+msgstr ""
+
+msgid ""
+"A virtual sdcard may be useful if the host machine is not fast enough"
+" to run OctoPrint well. It allows the Klipper host software to "
+"directly print gcode files stored in a directory on the host using "
+"standard sdcard G-Code commands (eg, M24)."
+msgstr ""
+
+msgid "[force_move]"
+msgstr ""
+
+msgid ""
+"Support manually moving stepper motors for diagnostic purposes. Note,"
+" using this feature may place the printer in an invalid state - see "
+"the [command reference](G-Codes.md#force-movement) for important "
+"details."
+msgstr ""
+
+msgid "[pause_resume]"
+msgstr ""
+
+msgid ""
+"Pause/Resume functionality with support of position capture and "
+"restore. See the [command reference](G-Codes.md#pause-resume) for "
+"more information."
+msgstr ""
+
+msgid "[firmware_retraction]"
+msgstr ""
+
+msgid ""
+"Firmware filament retraction. This enables G10 (retract) and G11 "
+"(unretract) GCODE commands issued by many slicers. The parameters "
+"below provide startup defaults, although the values can be adjusted "
+"via the SET_RETRACTION [command](G-Codes.md#firmware-retraction)), "
+"allowing per-filament settings and runtime tuning."
+msgstr ""
+
+msgid "[gcode_arcs]"
+msgstr ""
+
+msgid "Support for gcode arc (G2/G3) commands."
+msgstr ""
+
+msgid "[respond]"
+msgstr ""
+
+msgid ""
+"Enable the \"M118\" and \"RESPOND\" extended "
+"[commands](G-Codes.md#send-message-respond-to-host)."
+msgstr ""
+
+msgid "Resonance compensation"
+msgstr ""
+
+msgid "[input_shaper]"
+msgstr ""
+
+msgid ""
+"Enables [resonance compensation](Resonance_Compensation.md). Also see"
+" the [command reference](G-Codes.md#resonance-compensation)."
+msgstr ""
+
+msgid "[adxl345]"
+msgstr ""
+
+msgid ""
+"Support for ADXL345 accelerometers. This support allows one to query "
+"accelerometer measurements from the sensor. This enables an "
+"ACCELEROMETER_MEASURE command (see "
+"[G-Codes](G-Codes.md#adxl345-accelerometer-commands) for more "
+"information). The default chip name is \"default\", but one may "
+"specify an explicit name (eg, [adxl345 my_chip_name])."
+msgstr ""
+
+msgid "[resonance_tester]"
+msgstr ""
+
+msgid ""
+"Support for resonance testing and automatic input shaper calibration."
+" In order to use most of the functionality of this module, additional"
+" software dependencies must be installed; refer to [Measuring "
+"Resonances](Measuring_Resonances.md) and the [command "
+"reference](G-Codes.md#resonance-testing-commands) for more "
+"information. See the [Max smoothing](Measuring_Resonances.md#max-"
+"smoothing) section of the measuring resonances guide for more "
+"information on `max_smoothing` parameter and its use."
+msgstr ""
+
+msgid "Config file helpers"
+msgstr ""
+
+msgid "[board_pins]"
+msgstr ""
+
+msgid ""
+"Board pin aliases (one may define any number of sections with a "
+"\"board_pins\" prefix). Use this to define aliases for the pins on a "
+"micro-controller."
+msgstr ""
+
+msgid "[include]"
+msgstr ""
+
+msgid ""
+"Include file support. One may include additional config file from the"
+" main printer config file. Wildcards may also be used (eg, "
+"\"configs/*.cfg\")."
+msgstr ""
+
+msgid "Bed probing hardware"
+msgstr ""
+
+msgid "[probe]"
+msgstr ""
+
+msgid ""
+"Z height probe. One may define this section to enable Z height "
+"probing hardware. When this section is enabled, PROBE and QUERY_PROBE"
+" extended [g-code commands](G-Codes.md#probe) become available. Also,"
+" see the [probe calibrate guide](Probe_Calibrate.md). The probe "
+"section also creates a virtual \"probe:z_virtual_endstop\" pin. One "
+"may set the stepper_z endstop_pin to this virtual pin on cartesian "
+"style printers that use the probe in place of a z endstop. If using "
+"\"probe:z_virtual_endstop\" then do not define a position_endstop in "
+"the stepper_z config section."
+msgstr ""
+
+msgid "[bltouch]"
+msgstr ""
+
+msgid ""
+"BLTouch probe. One may define this section (instead of a probe "
+"section) to enable a BLTouch probe. See [BL-Touch guide](BLTouch.md) "
+"and [command reference](G-Codes.md#bltouch) for further information. "
+"A virtual \"probe:z_virtual_endstop\" pin is also created (see the "
+"\"probe\" section for the details)."
+msgstr ""
+
+msgid "Additional stepper motors and extruders"
+msgstr ""
+
+msgid "[stepper_z1]"
+msgstr ""
+
+msgid ""
+"Multi-stepper axes. On a cartesian style printer, the stepper "
+"controlling a given axis may have additional config blocks defining "
+"steppers that should be stepped in concert with the primary stepper. "
+"One may define any number of sections with a numeric suffix starting "
+"at 1 (for example, \"stepper_z1\", \"stepper_z2\", etc.)."
+msgstr ""
+
+msgid "[extruder1]"
+msgstr ""
+
+msgid ""
+"In a multi-extruder printer add an additional extruder section for "
+"each additional extruder. The additional extruder sections should be "
+"named \"extruder1\", \"extruder2\", \"extruder3\", and so on. See the"
+" \"extruder\" section for a description of available parameters."
+msgstr ""
+
+msgid ""
+"See [sample-multi-extruder.cfg](../config/sample-multi-extruder.cfg) "
+"for an example configuration."
+msgstr ""
+
+msgid "[dual_carriage]"
+msgstr ""
+
+msgid ""
+"Support for cartesian printers with dual carriages on a single axis. "
+"The active carriage is set via the SET_DUAL_CARRIAGE extended g-code "
+"command. The \"SET_DUAL_CARRIAGE CARRIAGE=1\" command will activate "
+"the carriage defined in this section (CARRIAGE=0 will return "
+"activation to the primary carriage). Dual carriage support is "
+"typically combined with extra extruders - the SET_DUAL_CARRIAGE "
+"command is often called at the same time as the ACTIVATE_EXTRUDER "
+"command. Be sure to park the carriages during deactivation."
+msgstr ""
+
+msgid ""
+"See [sample-idex.cfg](../config/sample-idex.cfg) for an example "
+"configuration."
+msgstr ""
+
+msgid "[extruder_stepper]"
+msgstr ""
+
+msgid ""
+"Support for additional steppers synchronized to the movement of an "
+"extruder (one may define any number of sections with an "
+"\"extruder_stepper\" prefix)."
+msgstr ""
+
+msgid ""
+"See the [command reference](G-Codes.md#extruder-stepper-commands) for"
+" more information."
+msgstr ""
+
+msgid "[manual_stepper]"
+msgstr ""
+
+msgid ""
+"Manual steppers (one may define any number of sections with a "
+"\"manual_stepper\" prefix). These are steppers that are controlled by"
+" the MANUAL_STEPPER g-code command. For example: \"MANUAL_STEPPER "
+"STEPPER=my_stepper MOVE=10 SPEED=5\". See "
+"[G-Codes](G-Codes.md#manual-stepper-commands) file for a description "
+"of the MANUAL_STEPPER command. The steppers are not connected to the "
+"normal printer kinematics."
+msgstr ""
+
+msgid "Custom heaters and sensors"
+msgstr ""
+
+msgid "[verify_heater]"
+msgstr ""
+
+msgid ""
+"Heater and temperature sensor verification. Heater verification is "
+"automatically enabled for each heater that is configured on the "
+"printer. Use verify_heater sections to change the default settings."
+msgstr ""
+
+msgid "[homing_heaters]"
+msgstr ""
+
+msgid "Tool to disable heaters when homing or probing an axis."
+msgstr ""
+
+msgid "[thermistor]"
+msgstr ""
+
+msgid ""
+"Custom thermistors (one may define any number of sections with a "
+"\"thermistor\" prefix). A custom thermistor may be used in the "
+"sensor_type field of a heater config section. (For example, if one "
+"defines a \"[thermistor my_thermistor]\" section then one may use a "
+"\"sensor_type: my_thermistor\" when defining a heater.) Be sure to "
+"place the thermistor section in the config file above its first use "
+"in a heater section."
+msgstr ""
+
+msgid "[adc_temperature]"
+msgstr ""
+
+msgid ""
+"Custom ADC temperature sensors (one may define any number of sections"
+" with an \"adc_temperature\" prefix). This allows one to define a "
+"custom temperature sensor that measures a voltage on an Analog to "
+"Digital Converter (ADC) pin and uses linear interpolation between a "
+"set of configured temperature/voltage (or temperature/resistance) "
+"measurements to determine the temperature. The resulting sensor can "
+"be used as a sensor_type in a heater section. (For example, if one "
+"defines a \"[adc_temperature my_sensor]\" section then one may use a "
+"\"sensor_type: my_sensor\" when defining a heater.) Be sure to place "
+"the sensor section in the config file above its first use in a heater"
+" section."
+msgstr ""
+
+msgid "[heater_generic]"
+msgstr ""
+
+msgid ""
+"Generic heaters (one may define any number of sections with a "
+"\"heater_generic\" prefix). These heaters behave similarly to "
+"standard heaters (extruders, heated beds). Use the "
+"SET_HEATER_TEMPERATURE command (see [G-Codes](G-Codes.md) for "
+"details) to set the target temperature."
+msgstr ""
+
+msgid "[temperature_sensor]"
+msgstr ""
+
+msgid ""
+"Generic temperature sensors. One can define any number of additional "
+"temperature sensors that are reported via the M105 command."
+msgstr ""
+
+msgid "Temperature sensors"
+msgstr ""
+
+msgid ""
+"Klipper includes definitions for many types of temperature sensors. "
+"These sensors may be used in any config section that requires a "
+"temperature sensor (such as an `[extruder]` or `[heated_bed]` "
+"section)."
+msgstr ""
+
+msgid "Common thermistors"
+msgstr ""
+
+msgid ""
+"Common thermistors. The following parameters are available in heater "
+"sections that use one of these sensors."
+msgstr ""
+
+msgid "Common temperature amplifiers"
+msgstr ""
+
+msgid ""
+"Common temperature amplifiers. The following parameters are available"
+" in heater sections that use one of these sensors."
+msgstr ""
+
+msgid "Directly connected PT1000 sensor"
+msgstr ""
+
+msgid ""
+"Directly connected PT1000 sensor. The following parameters are "
+"available in heater sections that use one of these sensors."
+msgstr ""
+
+msgid "MAXxxxxx temperature sensors"
+msgstr ""
+
+msgid ""
+"MAXxxxxx serial peripheral interface (SPI) temperature based sensors."
+" The following parameters are available in heater sections that use "
+"one of these sensor types."
+msgstr ""
+
+msgid "BMP280/BME280/BME680 temperature sensor"
+msgstr ""
+
+msgid ""
+"BMP280/BME280/BME680 two wire interface (I2C) environmental sensors. "
+"Note that thoose sensors aee not intended for use with extruders and "
+"heater beds, but rather for monitoring ambient temperature (C), "
+"pressure (hPa), relative humidity and in case of the BME680 gas "
+"level. See [sample-macros.cfg](../config/sample-macros.cfg) for a "
+"gcode_macro that may be used to report pressure and humidity in "
+"addition to temperature."
+msgstr ""
+
+msgid "HTU21D sensor"
+msgstr ""
+
+msgid ""
+"HTU21D family two wire interface (I2C) environmental sensor. Note "
+"that this sensor is not intended for use with extruders and heater "
+"beds, but rather for monitoring ambient temperature (C) and relative "
+"humidity. See [sample-macros.cfg](../config/sample-macros.cfg) for a "
+"gcode_macro that may be used to report humidity in addition to "
+"temperature."
+msgstr ""
+
+msgid "LM75 temperature sensor"
+msgstr ""
+
+msgid ""
+"LM75/LM75A two wire (I2C) connected temperature sensors. These "
+"sensors have range up to 125 C, so are usable for e.g. chamber "
+"temperature monitoring. They can also function as simple fan/heater "
+"controllers."
+msgstr ""
+
+msgid "Builtin micro-controller temperature sensor"
+msgstr ""
+
+msgid ""
+"The atsam, atsamd, and stm32 micro-controllers contain an internal "
+"temperature sensor. One can use the \"temperature_mcu\" sensor to "
+"monitor these temperatures."
+msgstr ""
+
+msgid "Host temperature sensor"
+msgstr ""
+
+msgid ""
+"Temperature from the machine (eg Raspberry Pi) running the host "
+"software."
+msgstr ""
+
+msgid "DS18B20 temperature sensor"
+msgstr ""
+
+msgid ""
+"DS18B20 is a 1-wire (w1) digital temperature sensor. Note that this "
+"sensor is not intended for use with extruders and heater beds, but "
+"rather for monitoring ambient temperature (C). These sensors have "
+"range up to 125 C, so are usable for e.g. chamber temperature "
+"monitoring. They can also function as simple fan/heater controllers. "
+"DS18B20 sensors are only supported on the \"host mcu\", e.g. the "
+"Raspberry Pi. The w1-gpio Linux kernel module must be installed."
+msgstr ""
+
+msgid "Fans"
+msgstr ""
+
+msgid "[fan]"
+msgstr ""
+
+msgid "Print cooling fan."
+msgstr ""
+
+msgid "[heater_fan]"
+msgstr ""
+
+msgid ""
+"Heater cooling fans (one may define any number of sections with a "
+"\"heater_fan\" prefix). A \"heater fan\" is a fan that will be "
+"enabled whenever its associated heater is active. By default, a "
+"heater_fan has a shutdown_speed equal to max_power."
+msgstr ""
+
+msgid "[controller_fan]"
+msgstr ""
+
+msgid ""
+"Controller cooling fan (one may define any number of sections with a "
+"\"controller_fan\" prefix). A \"controller fan\" is a fan that will "
+"be enabled whenever its associated heater or any configured stepper "
+"driver is active. The fan will stop whenever an idle_timeout is "
+"reached to ensure no overheating will occur after deactivating a "
+"watched component."
+msgstr ""
+
+msgid "[temperature_fan]"
+msgstr ""
+
+msgid ""
+"Temperature-triggered cooling fans (one may define any number of "
+"sections with a \"temperature_fan\" prefix). A \"temperature fan\" is"
+" a fan that will be enabled whenever its associated sensor is above a"
+" set temperature. By default, a temperature_fan has a shutdown_speed "
+"equal to max_power."
+msgstr ""
+
+msgid ""
+"See the [command reference](G-Codes.md#temperature-fan-commands) for "
+"additional information."
+msgstr ""
+
+msgid "[fan_generic]"
+msgstr ""
+
+msgid ""
+"Manually controlled fan (one may define any number of sections with a"
+" \"fan_generic\" prefix). The speed of a manually controlled fan is "
+"set with the SET_FAN_SPEED [gcode command](G-Codes.md#manually-"
+"controlled-fans-commands)."
+msgstr ""
+
+msgid "Additional servos, LEDs, buttons, and other pins"
+msgstr ""
+
+msgid "[servo]"
+msgstr ""
+
+msgid ""
+"Servos (one may define any number of sections with a \"servo\" "
+"prefix). The servos may be controlled using the SET_SERVO [g-code "
+"command](G-Codes.md#servo-commands). For example: SET_SERVO "
+"SERVO=my_servo ANGLE=180"
+msgstr ""
+
+msgid "[neopixel]"
+msgstr ""
+
+msgid ""
+"Neopixel (aka WS2812) LED support (one may define any number of "
+"sections with a \"neopixel\" prefix). One may set the LED color via "
+"\"SET_LED LED=my_neopixel RED=0.1 GREEN=0.1 BLUE=0.1\" type extended "
+"[g-code commands](G-Codes.md#neopixel-and-dotstar-commands)."
+msgstr ""
+
+msgid "[dotstar]"
+msgstr ""
+
+msgid ""
+"Dotstar (aka APA102) LED support (one may define any number of "
+"sections with a \"dotstar\" prefix). One may set the LED color via "
+"\"SET_LED LED=my_dotstar RED=0.1 GREEN=0.1 BLUE=0.1\" type extended "
+"[g-code commands](G-Codes.md#neopixel-and-dotstar-commands)."
+msgstr ""
+
+msgid "[PCA9533]"
+msgstr ""
+
+msgid "PCA9533 LED support. The PCA9533 is used on the mightyboard."
+msgstr ""
+
+msgid "[gcode_button]"
+msgstr ""
+
+msgid ""
+"Execute gcode when a button is pressed or released (or when a pin "
+"changes state). You can check the state of the button by using "
+"`QUERY_BUTTON button=my_gcode_button`."
+msgstr ""
+
+msgid "[output_pin]"
+msgstr ""
+
+msgid ""
+"Run-time configurable output pins (one may define any number of "
+"sections with an \"output_pin\" prefix). Pins configured here will be"
+" setup as output pins and one may modify them at run-time using "
+"\"SET_PIN PIN=my_pin VALUE=.1\" type extended [g-code "
+"commands](G-Codes.md#custom-pin-commands)."
+msgstr ""
+
+msgid "[static_digital_output]"
+msgstr ""
+
+msgid ""
+"Statically configured digital output pins (one may define any number "
+"of sections with a \"static_digital_output\" prefix). Pins configured"
+" here will be setup as a GPIO output during MCU configuration. They "
+"can not be changed at run-time."
+msgstr ""
+
+msgid "[multi_pin]"
+msgstr ""
+
+msgid ""
+"Multiple pin outputs (one may define any number of sections with a "
+"\"multi_pin\" prefix). A multi_pin output creates an internal pin "
+"alias that can modify multiple output pins each time the alias pin is"
+" set. For example, one could define a \"[multi_pin my_fan]\" object "
+"containing two pins and then set \"pin=multi_pin:my_fan\" in the "
+"\"[fan]\" section - on each fan change both output pins would be "
+"updated. These aliases may not be used with stepper motor pins."
+msgstr ""
+
+msgid "TMC stepper driver configuration"
+msgstr ""
+
+msgid ""
+"Configuration of Trinamic stepper motor drivers in UART/SPI mode. "
+"Additional information is in the [TMC Drivers guide](TMC_Drivers.md) "
+"and in the [command reference](G-Codes.md#tmc-stepper-drivers)."
+msgstr ""
+
+msgid "[tmc2130]"
+msgstr ""
+
+msgid ""
+"Configure a TMC2130 stepper motor driver via SPI bus. To use this "
+"feature, define a config section with a \"tmc2130\" prefix followed "
+"by the name of the corresponding stepper config section (for example,"
+" \"[tmc2130 stepper_x]\")."
+msgstr ""
+
+msgid "[tmc2208]"
+msgstr ""
+
+msgid ""
+"Configure a TMC2208 (or TMC2224) stepper motor driver via single wire"
+" UART. To use this feature, define a config section with a "
+"\"tmc2208\" prefix followed by the name of the corresponding stepper "
+"config section (for example, \"[tmc2208 stepper_x]\")."
+msgstr ""
+
+msgid "[tmc2209]"
+msgstr ""
+
+msgid ""
+"Configure a TMC2209 stepper motor driver via single wire UART. To use"
+" this feature, define a config section with a \"tmc2209\" prefix "
+"followed by the name of the corresponding stepper config section (for"
+" example, \"[tmc2209 stepper_x]\")."
+msgstr ""
+
+msgid "[tmc2660]"
+msgstr ""
+
+msgid ""
+"Configure a TMC2660 stepper motor driver via SPI bus. To use this "
+"feature, define a config section with a tmc2660 prefix followed by "
+"the name of the corresponding stepper config section (for example, "
+"\"[tmc2660 stepper_x]\")."
+msgstr ""
+
+msgid "[tmc5160]"
+msgstr ""
+
+msgid ""
+"Configure a TMC5160 stepper motor driver via SPI bus. To use this "
+"feature, define a config section with a \"tmc5160\" prefix followed "
+"by the name of the corresponding stepper config section (for example,"
+" \"[tmc5160 stepper_x]\")."
+msgstr ""
+
+msgid "Run-time stepper motor current configuration"
+msgstr ""
+
+msgid "[ad5206]"
+msgstr ""
+
+msgid ""
+"Statically configured AD5206 digipots connected via SPI bus (one may "
+"define any number of sections with an \"ad5206\" prefix)."
+msgstr ""
+
+msgid "[mcp4451]"
+msgstr ""
+
+msgid ""
+"Statically configured MCP4451 digipot connected via I2C bus (one may "
+"define any number of sections with an \"mcp4451\" prefix)."
+msgstr ""
+
+msgid "[mcp4728]"
+msgstr ""
+
+msgid ""
+"Statically configured MCP4728 digital-to-analog converter connected "
+"via I2C bus (one may define any number of sections with an "
+"\"mcp4728\" prefix)."
+msgstr ""
+
+msgid "[mcp4018]"
+msgstr ""
+
+msgid ""
+"Statically configured MCP4018 digipot connected via two gpio \"bit "
+"banging\" pins (one may define any number of sections with an "
+"\"mcp4018\" prefix)."
+msgstr ""
+
+msgid "Display support"
+msgstr ""
+
+msgid "[display]"
+msgstr ""
+
+msgid "Support for a display attached to the micro-controller."
+msgstr ""
+
+msgid "hd44780 display"
+msgstr ""
+
+msgid ""
+"Information on configuring hd44780 displays (which is used in "
+"\"RepRapDiscount 2004 Smart Controller\" type displays)."
+msgstr ""
+
+msgid "hd44780_spi display"
+msgstr ""
+
+msgid ""
+"Information on configuring an hd44780_spi display - a 20x04 display "
+"controlled via a hardware \"shift register\" (which is used in "
+"mightyboard based printers)."
+msgstr ""
+
+msgid "st7920 display"
+msgstr ""
+
+msgid ""
+"Information on configuring st7920 displays (which is used in "
+"\"RepRapDiscount 12864 Full Graphic Smart Controller\" type "
+"displays)."
+msgstr ""
+
+msgid "emulated_st7920 display"
+msgstr ""
+
+msgid ""
+"Information on configuring an emulated st7920 display - found in some"
+" \"2.4 inch touchscreen devices\" and similar."
+msgstr ""
+
+msgid "uc1701 display"
+msgstr ""
+
+msgid ""
+"Information on configuring uc1701 displays (which is used in \"MKS "
+"Mini 12864\" type displays)."
+msgstr ""
+
+msgid "ssd1306 and sh1106 displays"
+msgstr ""
+
+msgid "Information on configuring ssd1306 and sh1106 displays."
+msgstr ""
+
+msgid "[display_data]"
+msgstr ""
+
+msgid ""
+"Support for displaying custom data on an lcd screen. One may create "
+"any number of display groups and any number of data items under those"
+" groups. The display will show all the data items for a given group "
+"if the display_group option in the [display] section is set to the "
+"given group name."
+msgstr ""
+
+msgid ""
+"A [default set of display "
+"groups](../klippy/extras/display/display.cfg) are automatically "
+"created. One can replace or extend these display_data items by "
+"overriding the defaults in the main printer.cfg config file."
+msgstr ""
+
+msgid "[display_template]"
+msgstr ""
+
+msgid ""
+"Display data text \"macros\" (one may define any number of sections "
+"with a display_template prefix). This feature allows one to reduce "
+"repetitive definitions in display_data sections. One may use the "
+"builtin render() function in display_data sections to evaluate a "
+"template. For example, if one were to define [display_template "
+"my_template] then one could use `{ render('my_template') }` in a "
+"display_data section."
+msgstr ""
+
+msgid "[display_glyph]"
+msgstr ""
+
+msgid ""
+"Display a custom glyph on displays that support it. The given name "
+"will be assigned the given display data which can then be referenced "
+"in the display templates by their name surrounded by two \"tilde\" "
+"symbols i.e. `~my_display_glyph~`"
+msgstr ""
+
+msgid ""
+"See [sample-glyphs.cfg](../config/sample-glyphs.cfg) for some "
+"examples."
+msgstr ""
+
+msgid "[display my_extra_display]"
+msgstr ""
+
+msgid ""
+"If a primary [display] section has been defined in printer.cfg as "
+"shown above it is possible to define multiple auxiliary displays. "
+"Note that auxiliary displays do not currently support menu "
+"functionality, thus they do not support the \"menu\" options or "
+"button configuration."
+msgstr ""
+
+msgid "[menu]"
+msgstr ""
+
+msgid "Customizable lcd display menus."
+msgstr ""
+
+msgid ""
+"A [default set of menus](../klippy/extras/display/menu.cfg) are "
+"automatically created. One can replace or extend the menu by "
+"overriding the defaults in the main printer.cfg config file."
+msgstr ""
+
+msgid "Available options in menu Jinja2 template context:"
+msgstr ""
+
+msgid "Read-only attributes for menu element:"
+msgstr ""
+
+msgid "menu.width - element width (number of display columns)"
+msgstr ""
+
+msgid "menu.ns - element namespace"
+msgstr ""
+
+msgid "menu.event - name of the event that triggered the script"
+msgstr ""
+
+msgid ""
+"menu.input - input value, only available in input script context"
+msgstr ""
+
+msgid "List of actions for menu element:"
+msgstr ""
+
+msgid ""
+"menu.back(force, update): will execute menu back command, optional "
+"boolean parameters <force> and <update>."
+msgstr ""
+
+msgid ""
+"When <force> is set True then it will also stop editing. Default "
+"value is False"
+msgstr ""
+
+msgid ""
+"When <update> is set False then parent container items are not "
+"updated. Default value is True"
+msgstr ""
+
+msgid ""
+"menu.exit(force) - will execute menu exit command, optional boolean "
+"parameter <force> default value False"
+msgstr ""
+
+msgid "Filament sensors"
+msgstr ""
+
+msgid "[filament_switch_sensor]"
+msgstr ""
+
+msgid ""
+"Filament Switch Sensor. Support for filament insert and runout "
+"detection using a switch sensor, such as an endstop switch."
+msgstr ""
+
+msgid ""
+"See the [command reference](G-Codes.md#filament-sensor) for more "
+"information."
+msgstr ""
+
+msgid "[filament_motion_sensor]"
+msgstr ""
+
+msgid ""
+"Filament Motion Sensor. Support for filament insert and runout "
+"detection using an encoder that toggles the output pin during "
+"filament movement through the sensor."
+msgstr ""
+
+msgid "[tsl1401cl_filament_width_sensor]"
+msgstr ""
+
+msgid ""
+"TSLl401CL Based Filament Width Sensor. See the "
+"[guide](TSL1401CL_Filament_Width_Sensor.md) for more information."
+msgstr ""
+
+msgid "[hall_filament_width_sensor]"
+msgstr ""
+
+msgid ""
+"Hall filament width sensor (see [Hall Filament Width "
+"Sensor](HallFilamentWidthSensor.md))."
+msgstr ""
+
+msgid "Board specific hardware support"
+msgstr ""
+
+msgid "[sx1509]"
+msgstr ""
+
+msgid ""
+"Configure an SX1509 I2C to GPIO expander. Due to the delay incurred "
+"by I2C communication you should NOT use SX1509 pins as stepper "
+"enable, step or dir pins or any other pin that requires fast bit-"
+"banging. They are best used as static or gcode controlled digital "
+"outputs or hardware-pwm pins for e.g. fans. One may define any number"
+" of sections with an \"sx1509\" prefix. Each expander provides a set "
+"of 16 pins (sx1509_my_sx1509:PIN_0 to sx1509_my_sx1509:PIN_15) which "
+"can be used in the printer configuration."
+msgstr ""
+
+msgid ""
+"See the [generic-duet2-duex.cfg](../config/generic-duet2-duex.cfg) "
+"file for an example."
+msgstr ""
+
+msgid "[samd_sercom]"
+msgstr ""
+
+msgid ""
+"SAMD SERCOM configuration to specify which pins to use on a given "
+"SERCOM. One may define one section with the \"samd_sercom\" prefix "
+"per SERCOM available. Each SERCOM must be configured prior to using "
+"it as SPI or I2C peripheral. Place this config section above any "
+"other section that makes use of SPI or I2C buses."
+msgstr ""
+
+msgid "[adc_scaled]"
+msgstr ""
+
+msgid ""
+"Duet2 Maestro analog scaling by vref and vssa readings. Defining an "
+"adc_scaled section enables virtual adc pins (such as \"my_name:PB0\")"
+" that are automatically adjusted by the board's vref and vssa "
+"monitoring pins. Be sure to define this config section above any "
+"config sections that use one these virtual pins."
+msgstr ""
+
+msgid ""
+"See the [generic-duet2-maestro.cfg](../config/generic-"
+"duet2-maestro.cfg) file for an example."
+msgstr ""
+
+msgid "[replicape]"
+msgstr ""
+
+msgid ""
+"Replicape support - see the [beaglebone guide](beaglebone.md) and the"
+" [generic-replicape.cfg](../config/generic-replicape.cfg) file for an"
+" example."
+msgstr ""
+
+msgid "Common bus parameters"
+msgstr ""
+
+msgid "Common SPI settings"
+msgstr ""
+
+msgid ""
+"The following parameters are generally available for devices using an"
+" SPI bus."
+msgstr ""
+
+msgid "Common I2C settings"
+msgstr ""
+
+msgid ""
+"The following parameters are generally available for devices using an"
+" I2C bus."
+msgstr ""
+
+msgid "Other Custom Modules"
+msgstr ""
+
+msgid "[palette2]"
+msgstr ""
+
+msgid ""
+"Palette 2 multimaterial support - provides a tighter integration "
+"supporting Palette 2 devices in connected mode."
+msgstr ""
+
+msgid ""
+"This modules also requires `[virtual_sdcard]` and `[pause_resume]` "
+"for full functionality."
+msgstr ""
+
+msgid ""
+"If you use this module, do not use the Palette 2 plugin for Octoprint"
+" as they will conflict, and 1 will fail to initialize properly likely"
+" aborting your print."
+msgstr ""
+
+msgid ""
+"If you use Octoprint and stream gcode over the serial port instead of"
+" printing from virtual_sd, then remo **M1** and **M0** from *Pausing "
+"commands* in *Settings > Serial Connection > Firmware & protocol* "
+"will prevent the need to start print on the Palette 2 and unpausing "
+"in Octoprint for your print to begin."
+msgstr ""
