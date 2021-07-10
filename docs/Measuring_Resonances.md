@@ -65,29 +65,29 @@ the system that may damage the electronics.
 
 ## Software installation
 
-Note that resonance measurements and shaper auto-calibration require additional
-software dependencies not installed by default. First, you will have to run on
-your Raspberry Pi the following command:
+Because setting up the software for auto-calibration takes significant
+time and resources, it is not installed by default. Run the following
+script to setup `numpy` and `matplotlib` to get started:
 ```
-~/klippy-env/bin/pip install -v numpy
+~/klipper/scripts/setup-shaper-calibrate.sh
 ```
-to install `numpy` package. Note that, depending on the performance of the
+Note that, depending on the performance of the
 CPU, it may take *a lot* of time, up to 10-20 minutes. Be patient and wait
 for the completion of the installation. On some occasions, if the board has
-too little RAM, the installation may fail and you will need to enable swap.
+too little RAM, the installation may fail, and you will need to
+[enable swap](https://nebl.io/neblio-university/enabling-increasing-raspberry-pi-swap/).
 
-Next, run the following commands to install the additional dependencies:
-```
-sudo apt update
-sudo apt install python-numpy python-matplotlib
-```
+## Hardware Configuration
+You can connect your ADXL345 to any spi bus supported by Klipper. Regular printer
+control boards, dedicated boards, and the Raspberry Pi mcu are all options that have
+their own advantages and disadvantages.
 
-Afterwards, check and follow the instructions in the
-[RPi Microcontroller document](RPi_microcontroller.md) to setup the
-"linux mcu" on the Raspberry Pi.
-
-Make sure the Linux SPI driver is enabled by running `sudo
-raspi-config` and enabling SPI under the "Interfacing options" menu.
+### Raspberry Pi MCU
+The reccomended way to connect the sensor to the printer in a permenant installation
+is to connect it directly to the SPI bus on the Raspberry Pi. Check and follow the
+instructions in the [RPi Microcontroller document](RPi_microcontroller.md) to setup the
+"linux mcu" on the Raspberry Pi. Make sure the Linux SPI driver is enabled by running
+`sudo raspi-config` and enabling SPI under the "Interfacing options" menu.
 
 Add the following to the printer.cfg file:
 ```
@@ -102,6 +102,38 @@ accel_chip: adxl345
 probe_points:
     100,100,20  # an example
 ```
+
+### Primary MCU
+Add the following to the printer.cfg file:
+```
+[adxl345]
+cs_pin: AB0 # The MCU pin connected to the CS pin on your sensor
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    100,100,20  # an example
+```
+
+### Secondary MCU
+If you want to avoid rewireing your printer to install your sensor permenantly,
+you can use a second mcu such as an Uno or 8-bit board
+
+To use an Uno, add the following to the printer.cfg file:
+```
+[mcu arduino]
+serial: /dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_8523535303735111F150-if00
+
+[adxl345]
+cs_pin: arduino:PB2
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    100,100,20  # an example
+```
+For more information, refer to the [extra mcu documentation](config_reference.md#mcu-my_extra_mcu)
+
 It is advised to start with 1 probe point, in the middle of the print bed,
 slightly above it.
 
@@ -250,7 +282,7 @@ script or `SHAPER_CALIBRATE` command tries not to exacerbate the smoothing,
 but at the same time they try to minimize the resulting vibrations.
 Sometimes they can make a sub-optimal choice of the shaper frequency, or
 maybe you simply prefer to have less smoothing in parts at the expense of
-a larger remaining vibrations. In these cases, you can request to limit
+larger remaining vibrations. In these cases, you can request to limit
 the maximum smoothing from the input shaper.
 
 Let's consider the following results from the automatic tuning:
@@ -283,7 +315,7 @@ shaper smoothing using the following command:
 ```
 ~/klipper/scripts/calibrate_shaper.py /tmp/resonances_x_*.csv -o /tmp/shaper_calibrate_x.png --max_smoothing=0.2
 ```
-which limits the smoothing to 0.2 score. Now you can get the following result:
+which limits the smoothing to a score of 0.2. Now you can get the following result:
 
 ![Resonances](img/calibrate-x-max-smoothing.png)
 ```
@@ -331,7 +363,7 @@ using `SHAPER_CALIBRATE` Klipper command in the future, it will use the stored
 
 Since the input shaper can create some smoothing in parts, especially at high
 accelerations, you will still need to choose the `max_accel` value that
-does not create too much smoothing in the printed parts. A calibration script
+does not create too much smoothing in the printed parts. The calibration script
 provides an estimate for `max_accel` parameter that should not create too much
 smoothing. Note that the `max_accel` as displayed by the calibration script is
 only a theoretical maximum at which the respective shaper is still able to work
@@ -524,7 +556,7 @@ some advanced tuning of the input shapers, for example:
     second time in order to detect axes cross-resonances and attempt to cancel
     them with input shapers.
   * Running `TEST_RESONANCES AXIS=Y OUTPUT=raw_data` twice on a bed slinger with
-    a glass bed and a magnetic surfaces (which is lighter) to find the input
+    a glass bed and a magnetic surface (which is lighter) to find the input
     shaper parameters that work well for any print surface configuration.
   * Combining the resonance data from multiple test points.
   * Combining the resonance data from 2 axis (e.g. on a bed slinger printer

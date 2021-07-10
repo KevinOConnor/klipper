@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# Script to extract config and shutdown information file a klippy.log file
+# Script to extract config and shutdown information from a klippy.log file
 #
 # Copyright (C) 2017  Kevin O'Connor <kevin@koconnor.net>
 #
