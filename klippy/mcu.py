@@ -24,7 +24,6 @@ class MCU_trsync:
         self._cmd_queue = mcu.alloc_command_queue()
         self._trsync_start_cmd = self._trsync_set_timeout_cmd = None
         self._trsync_trigger_cmd = self._trsync_query_cmd = None
-        self._stepper_stop_cmd = None
         self._trigger_completion = None
         self._home_end_clock = None
         mcu.register_config_callback(self._build_config)
@@ -61,8 +60,6 @@ class MCU_trsync:
             "trsync_trigger oid=%c reason=%c",
             "trsync_state oid=%c can_trigger=%c trigger_reason=%c clock=%u",
             oid=self._oid, cq=self._cmd_queue)
-        self._stepper_stop_cmd = mcu.lookup_command(
-            "stepper_stop_on_trigger oid=%c trsync_oid=%c", cq=self._cmd_queue)
         # Create trdispatch_mcu object
         set_timeout_tag = mcu.lookup_command_tag(
             "trsync_set_timeout oid=%c clock=%u")
@@ -109,7 +106,7 @@ class MCU_trsync:
         self._trsync_start_cmd.send([self._oid, clock, report_ticks,
                                      self.REASON_COMMS_TIMEOUT], reqclock=clock)
         for s in self._steppers:
-            self._stepper_stop_cmd.send([s.get_oid(), self._oid])
+            s.stop_on_trigger(self._oid, self._cmd_queue)
         self._trsync_set_timeout_cmd.send([self._oid, expire_clock],
                                           reqclock=expire_clock)
     def set_home_end_time(self, home_end_time):
@@ -483,9 +480,11 @@ class CommandWrapper:
         if cmd_queue is None:
             cmd_queue = serial.get_default_command_queue()
         self._cmd_queue = cmd_queue
-    def send(self, data=(), minclock=0, reqclock=0):
+    def send(self, data=(), minclock=0, reqclock=0, cq=None):
         cmd = self._cmd.encode(data)
-        self._serial.raw_send(cmd, minclock, reqclock, self._cmd_queue)
+        if cq is None:
+            cq = self._cmd_queue
+        self._serial.raw_send(cmd, minclock, reqclock, cq)
 
 class MCU:
     error = error

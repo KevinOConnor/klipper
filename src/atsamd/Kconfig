@@ -13,6 +13,7 @@ config ATSAMD_SELECT
     select HAVE_GPIO_BITBANGING
     select HAVE_STRICT_TIMING
     select HAVE_CHIPID
+    select HAVE_SERVO_STEPPER if MACH_SAMD21
 
 config HAVE_SERCOM
     depends on HAVE_GPIO_I2C || HAVE_GPIO_SPI
