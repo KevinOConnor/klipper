@@ -157,7 +157,20 @@ class GCodeDispatch:
     # Parse input into commands
     args_r = re.compile('([A-Z_]+|[A-Z*/])')
     def _process_commands(self, commands, need_ack=True):
-        for line in commands:
+        # Commands will be treated as a stack in order to allow exec callbacks to add new commands
+        # to the top of the stack.
+        commands.reverse()
+        while commands:
+            for cb in self.printer.event_handlers.get("gcode:command_exec", []):
+                # Grab the next command to be executed. This is done on each loop in case a cb
+                # removes the current next command.
+                cb_commands = [commands.pop().strip()]
+                cb(commands=cb_commands)
+                # Put the resulting list of commands onto the stack. If the cb did nothing then
+                # this will just contain the original line.
+                cb_commands.reverse()
+                commands.extend(cb_commands)
+            line = commands.pop()
             # Ignore comments and leading/trailing spaces
             line = origline = line.strip()
             cpos = line.find(';')
