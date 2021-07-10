@@ -2206,6 +2206,36 @@ sensor_type: lm75
 #   0.5.
 ```
 
+## DHT11/DHT22/AM2302/SHT71 temp sensor
+
+DHT11/DHT22/AM2302/SHT71 serial environmental sensors.
+Note that these sensors are not intended for use with extruders and
+heater beds, but rather for monitoring ambient temperature (C),
+and relative humidity.  Update time is every 20 seconds.
+See [sample-macros.cfg](../config/sample-macros.cfg) for a gcode_macro
+that may be used to report humidity in addition to temperature.
+
+```
+sensor_type: DHT22
+temp_path:
+#   The path to the device temperature file (in_temp_input).
+#   This is set when the device tree overlay is configured per
+#   https://www.raspberrypi.org/forums/viewtopic.php?t=98543
+#   on a Raspberry Pi computer.
+humidity_path:
+#   The path to the device relative humidity file (in_relativehumidity_input).
+#   This is set when the device tree overlay is configured per
+#   https://www.raspberrypi.org/forums/viewtopic.php?t=98543
+#   on a Raspberry Pi computer.
+#min_temp:
+#max_temp:
+#   See the "extruder" section for the definition of the above
+#   parameters.
+#gcode_id:
+#   See the "heater_generic" section for the definition of this
+#   parameter.
+```
+
 ## Builtin micro-controller temperature sensor
 
 The atsam, atsamd, and stm32 micro-controllers contain an internal

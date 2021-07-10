@@ -272,11 +272,14 @@ The following information is available in
 [bme280 config_section_name](Config_Reference.md#bmp280bme280bme680-temperature-sensor),
 [htu21d config_section_name](Config_Reference.md#htu21d-sensor),
 [lm75 config_section_name](Config_Reference.md#lm75-temperature-sensor),
+[temperature_host config_section_name](Config_Reference.md#host-temperature-sensor),
 and
-[temperature_host config_section_name](Config_Reference.md#host-temperature-sensor)
+[dht22 config_section_name](Config_Reference.md#dht11dht22am2302sht71-temp-sensor)
 objects:
 - `temperature`: The last read temperature from the sensor.
-- `humidity`, `pressure`, `gas`: The last read values from the sensor
+- `humidity`: The last read humidity from the sensor
+  (only on bme280, htu21d, lm75, and dht22 sensors).
+- `pressure`, `gas`: The last read values from the sensor
   (only on bme280, htu21d, and lm75 sensors).
 
 # temperature_fan
