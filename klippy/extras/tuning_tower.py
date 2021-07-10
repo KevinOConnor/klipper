@@ -28,8 +28,14 @@ class TuningTower:
         command = gcmd.get('COMMAND')
         parameter = gcmd.get('PARAMETER')
         self.start = gcmd.get_float('START', 0.)
-        self.factor = gcmd.get_float('FACTOR')
+        self.factor = gcmd.get_float('FACTOR', 0.)
         self.band = gcmd.get_float('BAND', 0., minval=0.)
+        self.step = gcmd.get_float('STEP', 0.)
+        self.skip = gcmd.get_float('SKIP', 0., minval=0.)
+        if self.factor and self.step:
+            raise gcmd.error("Cannot specify both FACTOR and STEP")
+        if self.step and not self.band:
+            raise gcmd.error("Must specify BAND when using STEP")
         # Enable test mode
         if self.gcode.is_traditional_gcode(command):
             self.command_fmt = "%s %s%%.9f" % (command, parameter)
@@ -47,6 +53,10 @@ class TuningTower:
         self.last_position = list(pos)
         return pos
     def calc_value(self, z):
+        if self.skip:
+            z = max(0., z - self.skip)
+        if self.step:
+            return self.start + self.step * math.floor(z / self.band)
         if self.band:
             z = (math.floor(z / self.band) + .5) * self.band
         return self.start + z * self.factor

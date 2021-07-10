@@ -207,13 +207,32 @@ The following standard commands are supported:
   MANUAL_PROBE command for details on the parameters and the
   additional commands available while the tool is active.
 - `TUNING_TOWER COMMAND=<command> PARAMETER=<name> START=<value>
-  FACTOR=<value> [BAND=<value>]`: A tool for tuning a parameter on
-  each Z height during a print. The tool will run the given COMMAND
-  with the given PARAMETER assigned to the value using the formula
-  `value = start + factor * z_height`. If BAND is provided then the
-  adjustment will only be made every BAND millimeters of z height - in
-  that case the formula used is `value = start + factor *
-  ((floor(z_height / band) + .5) * band)`.
+  FACTOR=<value>|STEP=<value> [BAND=<value>] [SKIP=<value>]`: A tool for tuning
+  a parameter on each Z height during a print. The tool will run the given
+  `COMMAND` with the given `PARAMETER` assigned to a value that varies with `Z`
+  according to a formula. Use `FACTOR` if you will use a ruler or calipers to
+  measure the Z height of the optimum value, or `STEP` if the tuning tower
+  model has bands of discrete values as is common with temperature
+  towers. If `SKIP=<value>` is specified, the tuning process doesn't begin until
+  Z height `<value>` is reached, and below that the value will be set to
+  `START`;  in this case, the `z_height` used in the formulas below
+  is actually `max(z - skip, 0)`. There are three possible combinations of
+  options:
+  - `FACTOR`: The value changes at a rate of `factor` per millimeter.
+    The formula used is
+    `value = start + factor * z_height`.
+    You can plug the optimum Z height directly into the formula to
+    determine the optimum parameter value.
+  - `FACTOR` and `BAND`: The value changes at an average rate of `factor` per
+    millimeter, but in discrete bands where the adjustment will only be made
+    every `BAND` millimeters of Z height.
+    The formula used is
+    `value = start + factor * ((floor(z_height / band) + .5) * band)`.
+  - `STEP` and `BAND`: The value changes by `STEP` every `BAND` millimeters.
+    The formula used is
+    `value = start + step * floor(z_height / band)`.
+    You can simply count bands or read tuning tower labels to determine the
+    optimum value.
 - `SET_DISPLAY_GROUP [DISPLAY=<display>] GROUP=<group>`: Set the
   active display group of an lcd display. This allows to define
   multiple display data groups in the config,
