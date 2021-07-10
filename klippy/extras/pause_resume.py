@@ -33,6 +33,8 @@ class PauseResume:
     def handle_connect(self):
         self.v_sd = self.printer.lookup_object('virtual_sdcard', None)
     def _handle_cancel_request(self, web_request):
+        # We try to interrupt gracefully currently blocking operations
+        self.printer.invoke_interrupt()
         self.gcode.run_script("CANCEL_PRINT")
     def _handle_pause_request(self, web_request):
         self.gcode.run_script("PAUSE")

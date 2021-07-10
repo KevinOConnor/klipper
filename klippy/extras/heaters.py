@@ -233,7 +233,10 @@ class PrinterHeaters:
         self.available_heaters = []
         self.available_sensors = []
         self.has_started = False
+        self.is_waiting = False
         self.printer.register_event_handler("klippy:ready", self._handle_ready)
+        self.printer.register_event_handler("klippy:interrupt",
+                                            self._handle_interrupt)
         self.printer.register_event_handler("gcode:request_restart",
                                             self.turn_off_all_heaters)
         # Register commands
@@ -287,7 +290,8 @@ class PrinterHeaters:
         self.gcode_id_to_sensor[gcode_id] = psensor
     def get_status(self, eventtime):
         return {'available_heaters': self.available_heaters,
-                'available_sensors': self.available_sensors}
+                'available_sensors': self.available_sensors,
+                'waiting': self.is_waiting}
     def turn_off_all_heaters(self, print_time=0.):
         for heater in self.heaters.values():
             heater.set_temp(0.)
@@ -297,6 +301,7 @@ class PrinterHeaters:
     # G-Code M105 temperature reporting
     def _handle_ready(self):
         self.has_started = True
+        self.is_waiting = False
     def _get_temp(self, eventtime):
         # Tn:XXX /YYY B:XXX /YYY
         out = []
@@ -314,6 +319,9 @@ class PrinterHeaters:
         did_ack = gcmd.ack(msg)
         if not did_ack:
             gcmd.respond_raw(msg)
+    def _handle_interrupt(self):
+        # Mark current waiting loop as no longer allowed to wait
+        self.is_waiting = False
     def _wait_for_temperature(self, heater):
         # Helper to wait on heater.check_busy() and report M105 temperatures
         if self.printer.get_start_args().get('debugoutput') is not None:
@@ -322,10 +330,19 @@ class PrinterHeaters:
         gcode = self.printer.lookup_object("gcode")
         reactor = self.printer.get_reactor()
         eventtime = reactor.monotonic()
-        while not self.printer.is_shutdown() and heater.check_busy(eventtime):
-            print_time = toolhead.get_last_move_time()
-            gcode.respond_raw(self._get_temp(eventtime))
-            eventtime = reactor.pause(eventtime + 1.)
+        try:
+            self.is_waiting = True
+            while not self.printer.is_shutdown() and \
+                heater.check_busy(eventtime):
+                if not self.is_waiting:
+                    raise gcode.error(
+                        "Heaters temperature wait got interrupted")
+                print_time = toolhead.get_last_move_time()
+                gcode.respond_raw(self._get_temp(eventtime))
+                eventtime = reactor.pause(eventtime + 1.)
+        finally:
+            self.is_waiting = False
+
     def set_temperature(self, heater, temp, wait=False):
         toolhead = self.printer.lookup_object('toolhead')
         toolhead.register_lookahead_callback((lambda pt: None))
@@ -351,13 +368,20 @@ class PrinterHeaters:
         toolhead = self.printer.lookup_object("toolhead")
         reactor = self.printer.get_reactor()
         eventtime = reactor.monotonic()
-        while not self.printer.is_shutdown():
-            temp, target = sensor.get_temp(eventtime)
-            if temp >= min_temp and temp <= max_temp:
-                return
-            print_time = toolhead.get_last_move_time()
-            gcmd.respond_raw(self._get_temp(eventtime))
-            eventtime = reactor.pause(eventtime + 1.)
+        try:
+            self.is_waiting = True
+            while not self.printer.is_shutdown():
+                if not self.is_waiting:
+                    raise gcmd.error(
+                        "Heaters temperature wait got interrupted")
+                temp, target = sensor.get_temp(eventtime)
+                if temp >= min_temp and temp <= max_temp:
+                    return
+                print_time = toolhead.get_last_move_time()
+                gcmd.respond_raw(self._get_temp(eventtime))
+                eventtime = reactor.pause(eventtime + 1.)
+        finally:
+            self.is_waiting = False
 
 def load_config(config):
     return PrinterHeaters(config)

@@ -280,6 +280,9 @@ The following may also be useful:
     have completed successfully. It indicates the printer is
     transitioning to a state ready to handle normal operations. Do not
     raise an error in this callback.
+  * klippy:interrupt - This event is generated when an interruption of
+    a blocking command is requested (ex. wait on heaters). This is today
+    used by a `CANCEL_PRINT` to quickly interrupt a currently running print.
 * If there is an error in the user's config, be sure to raise it
   during the `load_config()` or "connect event" phases. Use either
   `raise config.error("my error")` or `raise printer.config_error("my

@@ -226,6 +226,15 @@ class Printer:
             logging.info(info)
         if self.bglogger is not None:
             self.bglogger.set_rollover_info(name, info)
+    def invoke_interrupt(self):
+        if self.in_shutdown_state:
+            return
+        logging.error("Trying to gracefully interrupt blocking operations")
+        for cb in self.event_handlers.get("klippy:interrupt", []):
+            try:
+                cb()
+            except:
+                logging.exception("Exception during shutdown handler")
     def invoke_shutdown(self, msg):
         if self.in_shutdown_state:
             return
