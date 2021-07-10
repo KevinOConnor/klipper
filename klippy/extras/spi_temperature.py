@@ -4,7 +4,7 @@
 # Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import math
+import logging, math
 from . import bus
 
 
@@ -15,14 +15,17 @@ from . import bus
 REPORT_TIME = 0.300
 
 class SensorBase:
-    def __init__(self, config, chip_type, config_cmd=None, spi_mode=1):
+    def __init__(self, config, chip_type, config_cmd=None,
+                 spi_mode=1, consecutive_fault_limit=0):
         self.printer = config.get_printer()
         self.chip_type = chip_type
         self._callback = None
         self.min_sample_value = self.max_sample_value = 0
         self._report_clock = 0
+        self.consecutive_fault_limit = consecutive_fault_limit
         self.spi = bus.MCU_SPI_from_config(
             config, spi_mode, pin_option="sensor_pin", default_speed=4000000)
+        self.config_cmd = config_cmd
         if config_cmd is not None:
             self.spi.spi_send(config_cmd)
         self.mcu = mcu = self.spi.get_mcu()
@@ -41,8 +44,10 @@ class SensorBase:
         return REPORT_TIME
     def _build_config(self):
         self.mcu.add_config_cmd(
-            "config_thermocouple oid=%u spi_oid=%u thermocouple_type=%s" % (
-                self.oid, self.spi.get_oid(), self.chip_type))
+            "config_thermocouple oid=%u spi_oid=%u thermocouple_type=%s "
+            "consecutive_fault_limit=%u" % (
+                self.oid, self.spi.get_oid(), self.chip_type,
+                self.consecutive_fault_limit))
         clock = self.mcu.get_query_slot(self.oid)
         self._report_clock = self.mcu.seconds_to_clock(REPORT_TIME)
         self.mcu.add_config_cmd(
@@ -51,7 +56,12 @@ class SensorBase:
                 self.oid, clock, self._report_clock,
                 self.min_sample_value, self.max_sample_value), is_init=True)
     def _handle_spi_response(self, params):
-        temp = self.calc_temp(params['value'], params['fault'])
+        consecutive_faults = 0
+        if 'consecutive_faults' in params:
+            consecutive_faults = params['consecutive_faults']
+
+        temp = self.calc_temp(params['value'], consecutive_faults,
+                              params['fault'])
         next_clock      = self.mcu.clock32_to_clock64(params['next_clock'])
         last_read_clock = next_clock - self._report_clock
         last_read_time  = self.mcu.clock_to_print_time(last_read_clock)
@@ -120,7 +130,7 @@ class MAX31856(SensorBase):
     def __init__(self, config):
         SensorBase.__init__(self, config, "MAX31856",
                             self.build_spi_init(config))
-    def calc_temp(self, adc, fault):
+    def calc_temp(self, adc, consecutive_faults, fault):
         if fault & MAX31856_FAULT_CJRANGE:
             self.fault("Max31856: Cold Junction Range Fault")
         if fault & MAX31856_FAULT_TCRANGE:
@@ -192,7 +202,7 @@ MAX31855_MULT = 0.25
 class MAX31855(SensorBase):
     def __init__(self, config):
         SensorBase.__init__(self, config, "MAX31855", spi_mode=0)
-    def calc_temp(self, adc, fault):
+    def calc_temp(self, adc, consecutive_faults, fault):
         if adc & 0x1:
             self.fault("MAX31855 : Open Circuit")
         if adc & 0x2:
@@ -221,7 +231,7 @@ MAX6675_MULT = 0.25
 class MAX6675(SensorBase):
     def __init__(self, config):
         SensorBase.__init__(self, config, "MAX6675", spi_mode=0)
-    def calc_temp(self, adc, fault):
+    def calc_temp(self, adc, consecutive_faults, fault):
         if adc & 0x02:
             self.fault("Max6675 : Device ID error")
         if adc & 0x04:
@@ -277,24 +287,47 @@ class MAX31865(SensorBase):
         rtd_reference_r = config.getfloat('rtd_reference_r', 430., above=0.)
         adc_to_resist = rtd_reference_r / float(MAX31865_ADC_MAX)
         self.adc_to_resist_div_nominal = adc_to_resist / rtd_nominal_r
+        self.last_temp = None
+        consecutive_fault_limit = \
+            config.getint('rtd_consecutive_fault_limit', 0)
+        logging.info("Max31865: allowing {} faults"
+            .format(consecutive_fault_limit))
         SensorBase.__init__(self, config, "MAX31865",
-                            self.build_spi_init(config))
-    def calc_temp(self, adc, fault):
+                            self.build_spi_init(config),
+                            consecutive_fault_limit=consecutive_fault_limit)
+    def calc_temp(self, adc, consecutive_faults, fault):
+        fault_msg = None
         if fault & 0x80:
-            self.fault("Max31865 RTD input is disconnected")
+            fault_msg = "RTD input is disconnected"
         if fault & 0x40:
-            self.fault("Max31865 RTD input is shorted")
+            fault_msg = "RTD input is shorted"
         if fault & 0x20:
-            self.fault(
-                "Max31865 VREF- is greater than 0.85 * VBIAS, FORCE- open")
+            fault_msg = "VREF- is greater than 0.85 * VBIAS, FORCE- open"
         if fault & 0x10:
-            self.fault("Max31865 VREF- is less than 0.85 * VBIAS, FORCE- open")
+            fault_msg = "VREF- is less than 0.85 * VBIAS, FORCE- open"
         if fault & 0x08:
-            self.fault("Max31865 VRTD- is less than 0.85 * VBIAS, FORCE- open")
+            fault_msg = "VRTD- is less than 0.85 * VBIAS, FORCE- open"
         if fault & 0x04:
-            self.fault("Max31865 Overvoltage or undervoltage fault")
+            fault_msg = "Overvoltage or undervoltage fault"
         if fault & 0x03:
-            self.fault("Max31865 Unspecified error")
+            fault_msg = "Unspecified error"
+
+        if fault_msg:
+            if consecutive_faults > self.consecutive_fault_limit:
+                logging.warn("Max31865: out of recoverable faults, raising: {}"
+                             .format(fault_msg))
+                self.fault("Max31865: {}".format(fault_msg))
+
+            # Reinitialize the sensor with the initial configuration command
+            self.spi.spi_send(self.config_cmd)
+            logging.info("Max31865: recovered from fault (consecutive_faults="
+                         "{}, consecutive_fault_limit={}): {}"
+                         .format(consecutive_faults,
+                                 self.consecutive_fault_limit, fault_msg))
+
+            # Recoverable failure, return last known temperature
+            return self.last_temp
+
         adc = adc >> 1 # remove fault bit
         R_div_nominal = adc * self.adc_to_resist_div_nominal
         # Resistance (relative to rtd_nominal_r) is calculated using:
@@ -303,6 +336,7 @@ class MAX31865(SensorBase):
         #  temp = (-b +- sqrt(b**2 - 4ac)) / 2a
         discriminant = math.sqrt(CVD_A**2 - 4. * CVD_B * (1. - R_div_nominal))
         temp = (-CVD_A + discriminant) / (2. * CVD_B)
+        self.last_temp = temp
         return temp
     def calc_adc(self, temp):
         # Calculate relative resistance via Callendar-Van Dusen formula:

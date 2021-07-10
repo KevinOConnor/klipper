@@ -2125,6 +2125,17 @@ sensor_pin:
 #   The above parameters control the sensor parameters of MAX31865
 #   chips. The defaults for each parameter are next to the parameter
 #   name in the above list.
+#rtd_consecutive_fault_limit: 0
+#   The above paramter controls Klipper's retry behavior when
+#   handling faults raised by the MAX31865. When set to a value
+#   greater than 0, Klipper will ignore consecutive failures up
+#   to the limit, each time resetting the MAX31865 with initial
+#   configuration parameters. A successful measurement resets
+#   this counter. This can help with sensors in noisy electrical
+#   environments. Only set this if you're having problems with
+#   sporadic firmware shutdowns due to thermocouple failures, and
+#   do not set this too high (e.x. <= 5-10). Setting this too high
+#   could lead to thermal runaway.
 ```
 
 ## BMP280/BME280/BME680 temperature sensor
