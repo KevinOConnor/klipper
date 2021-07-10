@@ -3222,6 +3222,9 @@ lcd_type:
 #   Name of the main menu section to show when clicking the encoder
 #   on the home screen. The defaults is __main, and this shows the
 #   the default menus as defined in klippy/extras/display/menu.cfg
+#menu_root_long_click:
+#   Name of the main menu section to show when the encoder is long
+#   clicked on the home screen. The defaults is to use menu_root.
 #menu_reverse_navigation:
 #   When enabled it will reverse up and down directions for list
 #   navigation. The default is False. This parameter is optional.
