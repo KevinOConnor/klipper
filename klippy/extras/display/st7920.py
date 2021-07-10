@@ -60,6 +60,7 @@ class DisplayBase:
                     self.send([fb_id + chip_pos])
                 self.send(new_data[pos:pos+count], is_data=True)
             old_data[:] = new_data
+        return True
     def init(self):
         cmds = [0x24, # Enter extended mode
                 0x40, # Clear vertical scroll address

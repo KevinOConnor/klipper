@@ -7,3 +7,5 @@ pyserial==3.4
 greenlet==0.4.15
 Jinja2==2.11.3
 python-can==3.3.4
+Pillow==5.4.1
+numpy==1.16.2

@@ -6,18 +6,21 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging, os, ast
-from . import hd44780, hd44780_spi, st7920, uc1701, menu
+from . import hd44780, hd44780_spi, st7920, uc1701, menu, st7789v
 
 # Normal time between each screen redraw
 REDRAW_TIME = 0.500
 # Minimum time between screen redraws
 REDRAW_MIN_TIME = 0.100
+# Minimum time between calls to flush() that did not have time to complete
+INCOMPLETE_FLUSH_MIN_TIME = 0.075
 
 LCD_chips = {
     'st7920': st7920.ST7920, 'emulated_st7920': st7920.EmulatedST7920,
     'hd44780': hd44780.HD44780, 'uc1701': uc1701.UC1701,
     'ssd1306': uc1701.SSD1306, 'sh1106': uc1701.SH1106,
-    'hd44780_spi': hd44780_spi.hd44780_spi
+    'hd44780_spi': hd44780_spi.hd44780_spi,
+    'st7789v': st7789v.ST7789V
 }
 
 # Storage of [display_template my_template] config sections
@@ -200,19 +203,22 @@ class PrinterLCD:
             self.redraw_request_pending = False
             self.redraw_time = eventtime + REDRAW_MIN_TIME
         self.lcd_chip.clear()
-        # update menu component
-        if self.menu is not None:
-            ret = self.menu.screen_update_event(eventtime)
-            if ret:
-                self.lcd_chip.flush()
-                return eventtime + REDRAW_TIME
-        # Update normal display
         try:
-            self.show_data_group.show(self, self.display_templates, eventtime)
+            # Render the menu if running
+            menu_rendered = False
+            if self.menu is not None:
+                menu_rendered = self.menu.screen_update_event(eventtime)
+            # Otherwise render the normal display
+            if not menu_rendered:
+                self.show_data_group.show(
+                    self, self.display_templates, eventtime)
         except:
             logging.exception("Error during display screen update")
-        self.lcd_chip.flush()
-        return eventtime + REDRAW_TIME
+        if not self.lcd_chip.flush():
+            # The flush did not have time to complete.
+            return eventtime + INCOMPLETE_FLUSH_MIN_TIME
+        else:
+            return eventtime + REDRAW_TIME
     def request_redraw(self):
         if self.redraw_request_pending:
             return

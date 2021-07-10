@@ -78,6 +78,7 @@ class hd44780_spi:
                 self.send([fb_id + chip_pos])
                 self.send(new_data[pos:pos+count], is_data=True)
             old_data[:] = new_data
+        return True
     def init(self):
         curtime = self.printer.get_reactor().monotonic()
         print_time = self.mcu.estimated_print_time(curtime)

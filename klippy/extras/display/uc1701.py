@@ -50,6 +50,7 @@ class DisplayBase:
                 # Send Data
                 self.send(new_data[col_pos:col_pos+count], is_data=True)
             old_data[:] = new_data
+        return True
     def _swizzle_bits(self, data):
         # Convert from "rows of pixels" format to "columns of pixels"
         top = bot = 0

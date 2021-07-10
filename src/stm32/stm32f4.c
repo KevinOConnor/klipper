@@ -24,10 +24,14 @@ enable_pclock(uint32_t periph_base)
         uint32_t pos = (periph_base - APB1PERIPH_BASE) / 0x400;
         RCC->APB1ENR |= (1<<pos);
         RCC->APB1ENR;
+        RCC->APB1RSTR |= (1<<pos);
+        RCC->APB1RSTR &= ~(1<<pos);
     } else if (periph_base < AHB1PERIPH_BASE) {
         uint32_t pos = (periph_base - APB2PERIPH_BASE) / 0x400;
         RCC->APB2ENR |= (1<<pos);
         RCC->APB2ENR;
+        RCC->APB2RSTR |= (1<<pos);
+        RCC->APB2RSTR &= ~(1<<pos);
     } else if (periph_base < AHB2PERIPH_BASE) {
         uint32_t pos = (periph_base - AHB1PERIPH_BASE) / 0x400;
         RCC->AHB1ENR |= (1<<pos);
