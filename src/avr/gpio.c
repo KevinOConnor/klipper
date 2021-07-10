@@ -12,6 +12,8 @@
 #include "pgm.h" // PROGMEM
 #include "sched.h" // sched_shutdown
 
+#include "bed_timer.c"
+
 #ifdef PINA
 DECL_ENUMERATION_RANGE("pin", "PA0", GPIO('A', 0), 8);
 #endif
@@ -64,6 +66,10 @@ void
 gpio_out_reset(struct gpio_out g, uint8_t val)
 {
     irqstatus_t flag = irq_save();
+    if (g.regs == &PING && g.bit == (1<<PG5)) {
+        timer0_stop(val);
+    }
+
     g.regs->out = val ? (g.regs->out | g.bit) : (g.regs->out & ~g.bit);
     g.regs->mode |= g.bit;
     irq_restore(flag);
@@ -85,7 +91,13 @@ void
 gpio_out_write(struct gpio_out g, uint8_t val)
 {
     irqstatus_t flag = irq_save();
-    g.regs->out = val ? (g.regs->out | g.bit) : (g.regs->out & ~g.bit);
+
+    if (g.regs == &PING && g.bit == (1<<PG5)) {
+        timer0_restart(val);
+    } else {
+        g.regs->out = val ? (g.regs->out | g.bit) : (g.regs->out & ~g.bit);
+    }
+
     irq_restore(flag);
 }
 
