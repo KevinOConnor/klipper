@@ -50,7 +50,16 @@ make menuconfig
 ```
 
 Select the appropriate micro-controller and review any other options
-provided. Once configured, run:
+provided.
+
+Once configured, clean up after the configuration script (important!):
+
+```
+make clean
+```
+
+Then build the firmware:
+
 
 ```
 make
