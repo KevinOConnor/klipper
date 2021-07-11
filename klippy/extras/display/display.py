@@ -12,6 +12,7 @@ from . import hd44780, hd44780_spi, st7920, uc1701, menu
 REDRAW_TIME = 0.500
 # Minimum time between screen redraws
 REDRAW_MIN_TIME = 0.100
+BRIGHTNESS_CHANGE_DELAY = 0.1
 
 LCD_chips = {
     'st7920': st7920.ST7920, 'emulated_st7920': st7920.EmulatedST7920,
@@ -107,6 +108,27 @@ class PrinterLCD:
         self.show_data_group = self.display_data_groups.get(dgroup)
         if self.show_data_group is None:
             raise config.error("Unknown display_data group '%s'" % (dgroup,))
+        # Brightness control
+        self.dim_value = config.getfloat(
+            'dim_value', 0.1, minval=0., maxval=1.0)
+        self.bright_value = config.getfloat(
+            'bright_value', 0.7, minval=self.dim_value, maxval=1.0)
+        self.dim_timeout = config.getfloat('dim_timeout', 10., above=0.)
+        self.dim_update_timer = self.reactor.register_timer(
+            self.dim_brightness_event)
+
+        self.mcu_brightness_pin = None
+        brightness_pin = config.get('brightness_pin', None)
+        if brightness_pin:
+            ppins = self.printer.lookup_object('pins')
+            self.mcu_brightness_pin = ppins.setup_pin('pwm', brightness_pin)
+            cycle_time = config.getfloat(
+                'brightness_cycle_time', 0.001, above=0.)
+            hardware_pwm = config.getboolean('brightness_hardware_pwm', True)
+            self.mcu_brightness_pin.setup_max_duration(0.)
+            self.mcu_brightness_pin.setup_cycle_time(cycle_time, hardware_pwm)
+            self.mcu_brightness_pin.setup_start_value(
+                self.dim_value, self.dim_value)
         # Screen updating
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
         self.screen_update_timer = self.reactor.register_timer(
@@ -194,6 +216,13 @@ class PrinterLCD:
         self.lcd_chip.init()
         # Start screen update timer
         self.reactor.update_timer(self.screen_update_timer, self.reactor.NOW)
+    # Brightness dim
+    def dim_brightness_event(self, eventtime):
+        systime = self.reactor.monotonic()
+        pt = self.mcu_brightness_pin.get_mcu().estimated_print_time(
+            systime + BRIGHTNESS_CHANGE_DELAY)
+        self.mcu_brightness_pin.set_pwm(pt, self.dim_value)
+        return self.reactor.NEVER
     # Screen updating
     def screen_update_event(self, eventtime):
         if self.redraw_request_pending:
@@ -218,6 +247,14 @@ class PrinterLCD:
             return
         self.redraw_request_pending = True
         self.reactor.update_timer(self.screen_update_timer, self.redraw_time)
+
+        if self.mcu_brightness_pin:
+            systime = self.reactor.monotonic()
+            pt = self.mcu_brightness_pin.get_mcu().estimated_print_time(
+                systime + BRIGHTNESS_CHANGE_DELAY)
+            self.mcu_brightness_pin.set_pwm(pt, self.bright_value)
+            self.reactor.update_timer(
+                self.dim_update_timer, systime + self.dim_timeout)
     def draw_text(self, row, col, mixed_text, eventtime):
         pos = col
         for i, text in enumerate(mixed_text.split('~')):
