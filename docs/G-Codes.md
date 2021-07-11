@@ -220,6 +220,8 @@ The following standard commands are supported:
   e.g. `[display_data <group> <elementname>]` and switch between them
   using this extended gcode command. If DISPLAY is not specified it
   defaults to "display" (the primary display).
+- `MENU_SHOW ITEM=<item> [ROOT=0|1]`: Show a menu item on top of currently
+  shown menu. If `ROOT=1` is specified it will replace a current tree.
 - `SET_IDLE_TIMEOUT [TIMEOUT=<timeout>]`:  Allows the user to set the
   idle timeout (in seconds).
 - `RESTART`: This will cause the host software to reload its config

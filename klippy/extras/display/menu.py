@@ -698,7 +698,9 @@ class MenuManager:
         self.gcode_queue = []
         self.context = {}
         self.root = None
+        self.root_long_click = None
         self._root = config.get('menu_root', '__main')
+        self._root_long_click = config.get('menu_root_long_click', self._root)
         self.cols, self.rows = self.display.get_dimensions()
         self.timeout = config.getint('menu_timeout', 0)
         self.timer = 0
@@ -710,6 +712,9 @@ class MenuManager:
         # register itself for printer callbacks
         self.printer.add_object('menu', self)
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
+        # register gcode
+        self.gcode.register_command("MENU_SHOW", self.cmd_MENU_SHOW,
+                                    desc=self.cmd_MENU_SHOW_help)
         # register for key events
         menu_keys.MenuKeys(config, self.key_event)
         # Load local config file in same directory as current module
@@ -718,6 +723,9 @@ class MenuManager:
         self.load_menuitems(config)
         # Load menu root
         self.root = self.lookup_menuitem(self._root)
+        # Load long click menu
+        if self._root_long_click != self._root:
+            self.root_long_click = self.lookup_menuitem(self._root_long_click)
         # send init event
         self.send_event('init', self)
 
@@ -743,24 +751,24 @@ class MenuManager:
     def send_event(self, event, *args):
         return self.printer.send_event("menu:" + str(event), *args)
 
+    cmd_MENU_SHOW_help = "Show menu on a screen"
+    def cmd_MENU_SHOW(self, gcmd):
+        menuitem = self.lookup_menuitem(gcmd.get('ITEM'))
+
+        if self.is_running() and not gcmd.get_int('ROOT', 0):
+            self.stack_push(menuitem)
+        else:
+            curtime = self.printer.get_reactor().monotonic()
+            self.stack_root(menuitem, curtime)
+
     def is_running(self):
         return self.running
 
-    def begin(self, eventtime):
-        self.menustack = []
-        self.timer = 0
-        if isinstance(self.root, MenuContainer):
-            # send begin event
-            self.send_event('begin', self)
-            self.update_context(eventtime)
-            if isinstance(self.root, MenuContainer):
-                self.root.init_selection()
-            self.stack_push(self.root)
-            self.running = True
-            return
-        elif self.root is not None:
-            logging.error("Invalid root, menu stopped!")
-        self.running = False
+    def begin(self, eventtime, event):
+        if event == 'long_click' and self.root_long_click != None:
+            self.stack_root(self.root_long_click, eventtime)
+        else:
+            self.stack_root(self.root, eventtime)
 
     def get_status(self, eventtime):
         return {
@@ -793,6 +801,27 @@ class MenuManager:
             'exit': self._action_exit
         }
 
+    def stack_root(self, container, eventtime):
+        top = self.stack_peek()
+        if top is not None:
+            if isinstance(top, MenuList):
+                top.run_script('leave')
+
+        self.menustack = []
+
+        if isinstance(container, MenuContainer):
+            # send begin event
+            self.send_event('begin', self)
+            self.update_context(eventtime)
+            if isinstance(container, MenuContainer):
+                container.init_selection()
+            self.stack_push(container)
+            self.running = True
+            return
+        elif self.root is not None:
+            logging.error("Invalid root, menu stopped!")
+        self.running = False
+
     def stack_push(self, container):
         if not isinstance(container, MenuContainer):
             raise error("Wrong type, expected MenuContainer")
@@ -806,6 +835,7 @@ class MenuManager:
         if not container.is_editing():
             container.update_items()
             container.init_selection()
+        self.timer = 0
         self.menustack.append(container)
 
     def stack_pop(self, update=True):
@@ -1023,7 +1053,7 @@ class MenuManager:
             self.press(event)
         else:
             # lets start and populate the menu items
-            self.begin(eventtime)
+            self.begin(eventtime, event)
 
     def key_event(self, key, eventtime):
         if key == 'click':
