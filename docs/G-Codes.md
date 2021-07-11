@@ -159,6 +159,9 @@ The following standard commands are supported:
 - `TEMPERATURE_WAIT SENSOR=<config_name> [MINIMUM=<target>] [MAXIMUM=<target>]`:
   Wait until the given temperature sensor is at or above the supplied
   MINIMUM and/or at or below the supplied MAXIMUM.
+    - `MAX_SLOPE=<target>` Wait until the given temperature sensor's rate of
+    temperature change is at or below the supplied MAX_SLOPE in degrees per
+    minute.
 - `SET_VELOCITY_LIMIT [VELOCITY=<value>] [ACCEL=<value>]
   [ACCEL_TO_DECEL=<value>] [SQUARE_CORNER_VELOCITY=<value>]`: Modify
   the printer's velocity limits.
