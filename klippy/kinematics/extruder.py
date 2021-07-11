@@ -18,6 +18,7 @@ class PrinterExtruder:
         else:
             self.heater = pheaters.lookup_heater(shared_heater)
         self.stepper = stepper.PrinterStepper(config)
+        self.synced_steppers = set()
         self.nozzle_diameter = config.getfloat('nozzle_diameter', above=0.)
         filament_diameter = config.getfloat(
             'filament_diameter', minval=self.nozzle_diameter)
@@ -89,6 +90,8 @@ class PrinterExtruder:
         self.extruder_set_smooth_time(self.sk_extruder, new_smooth_time)
         self.pressure_advance = pressure_advance
         self.pressure_advance_smooth_time = smooth_time
+        for stepper in self.synced_steppers:
+            self.sync_stepper(stepper)
     def get_status(self, eventtime):
         return dict(self.heater.get_status(eventtime),
                     can_extrude=self.heater.can_extrude,
@@ -99,11 +102,20 @@ class PrinterExtruder:
     def get_heater(self):
         return self.heater
     def sync_stepper(self, stepper):
+        self.synced_steppers.add(stepper)
         toolhead = self.printer.lookup_object('toolhead')
         toolhead.flush_step_generation()
         epos = self.stepper.get_commanded_position()
+        sk = stepper.get_stepper_kinematics()
+        if self.pressure_advance == 0:
+            smooth_time = 0.
+        else:
+            smooth_time = self.pressure_advance_smooth_time
+        self.extruder_set_smooth_time(sk, smooth_time)
         stepper.set_position([epos, 0., 0.])
         stepper.set_trapq(self.trapq)
+    def unsync_stepper(self, stepper):
+        self.synced_steppers.discard(stepper)
     def stats(self, eventtime):
         return self.heater.stats(eventtime)
     def check_move(self, move):

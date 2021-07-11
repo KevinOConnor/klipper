@@ -130,6 +130,8 @@ class MCU_stepper:
         self.set_trapq(self._trapq)
         self._set_mcu_position(mcu_pos)
         return old_sk
+    def get_stepper_kinematics(self):
+        return self._stepper_kinematics
     def note_homing_end(self, did_trigger=False):
         ffi_main, ffi_lib = chelper.get_ffi()
         ret = ffi_lib.stepcompress_reset(self._stepqueue, 0)
