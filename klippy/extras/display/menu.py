@@ -346,9 +346,15 @@ class MenuContainer(MenuElement):
         self.send_event('populate', self)
 
     def update_items(self):
+        selected_item = self.selected_item()
+
         _a = [(item, name) for item, name in self._allitems
-              if item.is_enabled()]
+            if item.is_enabled() or item == selected_item]
         self._items, self._names = zip(*_a) or ([], [])
+
+        # ensure that prior item is selected
+        if selected_item:
+            self.select_item(selected_item)
 
     # select methods
     def init_selection(self):
@@ -597,6 +603,10 @@ class MenuList(MenuContainer):
         self._viewport_top = 0
         #  add back as first item
         self.insert_item(self._itemBack, 0)
+
+    def heartbeat(self, eventtime):
+        super(MenuList, self).heartbeat(eventtime)
+        self.update_items()
 
     def draw_container(self, nrows, eventtime):
         display = self.manager.display
