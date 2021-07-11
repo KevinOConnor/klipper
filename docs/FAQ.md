@@ -71,6 +71,14 @@ Follow the directions in the
 "[Where's my serial port?](#wheres-my-serial-port)" section to prevent
 this from occurring.
 
+### My micro-controller is wired to UART0 pins and refuses to flash.
+
+You likely need to add `dtoverlay=disable_bt` to `/boot/config.txt`. Raspberry
+pi reuses UART0 for the bluetooth host chip, so the serial port will show up as
+`/dev/AMA0` but be flooded with garbage until bluetooth is disabled. UART0 is
+not recommended in general, but works reliably with this fix if your system
+requires it.
+
 ### The "make flash" command doesn't work
 
 The code attempts to flash the device using the most common method for
