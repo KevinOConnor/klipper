@@ -213,3 +213,12 @@ command_set_digital_out(uint32_t *args)
     gpio_out_setup(args[0], args[1]);
 }
 DECL_COMMAND(command_set_digital_out, "set_digital_out pin=%u value=%c");
+
+void
+command_read_digital_in(uint32_t *args)
+{
+    struct gpio_in n = gpio_in_setup(args[0], args[1]);
+    uint8_t val = gpio_in_read(n);
+    sendf("read_digital_in_value pin=%u value=%c", args[0], val);
+}
+DECL_COMMAND(command_read_digital_in, "read_digital_in pin=%u pull_up=%c");

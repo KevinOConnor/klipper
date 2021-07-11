@@ -3911,6 +3911,47 @@ host_mcu:
 #   (True sets CFG5 high, False sets it low). The default is True.
 ```
 
+## [safe_power my_mcu_safe_power]
+
+Stepper Driver Anti-SNAFU Protection.
+
+Some micro-controllers have protection against incorrect plugged
+stepper drivers.
+Applying this section to the config file will let Klipper check the
+correct orientation of configured stepper drivers.
+If incorrect orientation then Klipper raise an error with message like this:
+"[stepper_z] driver is backward!"
+If the message appears then turn off the printer before any attempt on
+resolving the issue.
+
+If one may use TMC drivers the safe_power section have to be before
+any TMC sections in printer.cfg. It will check and raise config error if any
+TMC section is before the safe_power section.
+
+**WARNING: Using this on micro-controllers without a Stepper Driver Anti-SNAFU
+Protection may lead to undesirable results.**
+
+See the [generic-bigtreetech-skr-2.cfg](../config/generic-bigtreetech-skr-2.cfg)
+file for an example.
+
+```
+[safe_power my_mcu_safe_power]
+pin:
+#   Control pin of driver/heater/fan power supply
+```
+
+## [safe_power my_extra_mcu_safe_power]
+
+Additional micro-controllers with Stepper Driver Anti-SNAFU Protection
+(one may define any number of sections
+with an "safe_power" prefix). Additional micro-controllers may introduce
+additional safe power pin.
+
+```
+[safe_power my_extra_mcu_safe_power]
+# See the "safe_power" section for configuration parameters.
+```
+
 # Other Custom Modules
 
 ## [palette2]
