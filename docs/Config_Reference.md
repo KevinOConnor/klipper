@@ -3228,6 +3228,11 @@ lcd_type:
 #encoder_pins:
 #   The pins connected to encoder. 2 pins must be provided when using
 #   encoder. This parameter must be provided when using menu.
+#steps_per_detent:
+#   The steps per detent defines if your are dealing with a half-stepping
+#   encoder or a full stepping encoder. Allowed values are 4 (half-stepping) or
+#   2 (full stepping)
+#   The default is 2.
 #click_pin:
 #   The pin connected to 'enter' button or encoder 'click'. This
 #   parameter must be provided when using menu. The presence of an

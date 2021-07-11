@@ -17,6 +17,8 @@ class MenuKeys:
         buttons = self.printer.load_object(config, "buttons")
         # Register rotary encoder
         encoder_pins = config.get('encoder_pins', None)
+        self.encoder_steps_per_detent = config.getchoice(
+            'encoder_steps_per_detent', {'2': 2, '4': 4}, '2')
         if encoder_pins is not None:
             try:
                 pin1, pin2 = encoder_pins.split(',')
@@ -24,7 +26,8 @@ class MenuKeys:
                 raise config.error("Unable to parse encoder_pins")
             buttons.register_rotary_encoder(pin1.strip(), pin2.strip(),
                                             self.encoder_cw_callback,
-                                            self.encoder_ccw_callback)
+                                            self.encoder_ccw_callback,
+                                            self.encoder_steps_per_detent)
         self.encoder_fast_rate = config.getfloat('encoder_fast_rate',
                                                  .030, above=0.)
         self.last_encoder_cw_eventtime = 0
