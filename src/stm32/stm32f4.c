@@ -124,20 +124,42 @@ enable_clock_stm32f20x(void)
 {
 #if CONFIG_MACH_STM32F207
     uint32_t pll_base = 1000000, pll_freq = CONFIG_CLOCK_FREQ * 2, pllcfgr;
+    __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
+
     if (!CONFIG_STM32_CLOCK_REF_INTERNAL) {
         // Configure 120Mhz PLL from external crystal (HSE)
         uint32_t div = CONFIG_CLOCK_REF_FREQ / pll_base;
-        RCC->CR |= RCC_CR_HSEON;
+        RCC->CR |= RCC_CR_HSEON;  // Enable HSE
         pllcfgr = RCC_PLLCFGR_PLLSRC_HSE | (div << RCC_PLLCFGR_PLLM_Pos);
+
+        /* Wait till HSE is ready and if Time out is reached exit */
+        do
+        {
+          HSEStatus = RCC->CR & RCC_CR_HSERDY;
+          StartUpCounter++;
+        } while((HSEStatus == 0) && (StartUpCounter != 0x0500));
+
+
     } else {
         // Configure 120Mhz PLL from internal 16Mhz oscillator (HSI)
         uint32_t div = 16000000 / pll_base;
         pllcfgr = RCC_PLLCFGR_PLLSRC_HSI | (div << RCC_PLLCFGR_PLLM_Pos);
     }
+
+    RCC->CFGR |= RCC_CFGR_PPRE1_DIV4 | RCC_CFGR_PPRE2_DIV4 | RCC_CFGR_HPRE_DIV1;
+
     RCC->PLLCFGR = (pllcfgr | ((pll_freq/pll_base) << RCC_PLLCFGR_PLLN_Pos)
                     | (0 << RCC_PLLCFGR_PLLP_Pos)
                     | ((pll_freq/FREQ_USB) << RCC_PLLCFGR_PLLQ_Pos));
     RCC->CR |= RCC_CR_PLLON;
+
+    // Wait for PLL lock
+    while (!(RCC->CR & RCC_CR_PLLRDY))
+        ;
+
+    // Set flash latency
+    FLASH->ACR = (FLASH_ACR_LATENCY_3WS | FLASH_ACR_ICEN | FLASH_ACR_DCEN
+                  | FLASH_ACR_PRFTEN);
 #endif
 }
 
@@ -159,10 +181,25 @@ enable_clock_stm32f40x(void)
         uint32_t div = 16000000 / pll_base;
         pllcfgr = RCC_PLLCFGR_PLLSRC_HSI | (div << RCC_PLLCFGR_PLLM_Pos);
     }
+    // Switch system clock to PLL
+#if CONFIG_MACH_STM32F401
+    RCC->CFGR = RCC_CFGR_PPRE1_DIV2 | RCC_CFGR_PPRE2_DIV2;
+#else
+    RCC->CFGR = RCC_CFGR_PPRE1_DIV4 | RCC_CFGR_PPRE2_DIV4;
+#endif
+
     RCC->PLLCFGR = (pllcfgr | ((pll_freq/pll_base) << RCC_PLLCFGR_PLLN_Pos)
                     | (((pllp >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos)
                     | ((pll_freq/FREQ_USB) << RCC_PLLCFGR_PLLQ_Pos));
     RCC->CR |= RCC_CR_PLLON;
+
+    // Wait for PLL lock
+    while (!(RCC->CR & RCC_CR_PLLRDY))
+        ;
+
+    // Set flash latency
+    FLASH->ACR = (FLASH_ACR_LATENCY_5WS | FLASH_ACR_ICEN | FLASH_ACR_DCEN
+                  | FLASH_ACR_PRFTEN);
 #endif
 }
 
@@ -181,6 +218,7 @@ enable_clock_stm32f446(void)
         uint32_t div = 16000000 / pll_base;
         pllcfgr = RCC_PLLCFGR_PLLSRC_HSI | (div << RCC_PLLCFGR_PLLM_Pos);
     }
+    RCC->CFGR = RCC_CFGR_PPRE1_DIV4 | RCC_CFGR_PPRE2_DIV4;
     RCC->PLLCFGR = (pllcfgr | ((pll_freq/pll_base) << RCC_PLLCFGR_PLLN_Pos)
                     | (0 << RCC_PLLCFGR_PLLP_Pos)
                     | ((pll_freq/FREQ_USB) << RCC_PLLCFGR_PLLQ_Pos)
@@ -212,6 +250,14 @@ enable_clock_stm32f446(void)
 
         RCC->DCKCFGR2 = RCC_DCKCFGR2_CK48MSEL;
     }
+
+    // Wait for PLL lock
+    while (!(RCC->CR & RCC_CR_PLLRDY))
+        ;
+
+    // Set flash latency
+    FLASH->ACR = (FLASH_ACR_LATENCY_5WS | FLASH_ACR_ICEN | FLASH_ACR_DCEN
+                  | FLASH_ACR_PRFTEN);
 #endif
 }
 
@@ -228,37 +274,38 @@ clock_setup(void)
     else
         enable_clock_stm32f446();
 
-    // Set flash latency
-    FLASH->ACR = (FLASH_ACR_LATENCY_5WS | FLASH_ACR_ICEN | FLASH_ACR_DCEN
-                  | FLASH_ACR_PRFTEN);
-
-    // Wait for PLL lock
-    while (!(RCC->CR & RCC_CR_PLLRDY))
-        ;
-
     // Switch system clock to PLL
-    if (FREQ_PERIPH_DIV == 2)
-        RCC->CFGR = RCC_CFGR_PPRE1_DIV2 | RCC_CFGR_PPRE2_DIV2 | RCC_CFGR_SW_PLL;
-    else
-        RCC->CFGR = RCC_CFGR_PPRE1_DIV4 | RCC_CFGR_PPRE2_DIV4 | RCC_CFGR_SW_PLL;
+    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
+    RCC->CFGR |= RCC_CFGR_SW_PLL;
+
     while ((RCC->CFGR & RCC_CFGR_SWS_Msk) != RCC_CFGR_SWS_PLL)
         ;
+}
+
+void
+earlyBoot(void)
+{
+    // Enable Watchdog and USB
+    RCC->APB1ENR |= RCC_APB1ENR_WWDGEN | RCC_APB1ENR_PWREN;
+    RCC->AHB2ENR |= RCC_AHB2RSTR_OTGFSRST;
 }
 
 // Main entry point - called from armcm_boot.c:ResetHandler()
 void
 armcm_main(void)
 {
+#if !CONFIG_MACH_STM32F207
     if (CONFIG_USBSERIAL && *(uint64_t*)USB_BOOT_FLAG_ADDR == USB_BOOT_FLAG) {
         *(uint64_t*)USB_BOOT_FLAG_ADDR = 0;
         uint32_t *sysbase = (uint32_t*)0x1fff0000;
         asm volatile("mov sp, %0\n bx %1"
                      : : "r"(sysbase[0]), "r"(sysbase[1]));
     }
+#endif
+    earlyBoot();
 
     // Run SystemInit() and then restore VTOR
     SystemInit();
-    SCB->VTOR = (uint32_t)VectorTable;
 
     clock_setup();
 
