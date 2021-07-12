@@ -17,6 +17,7 @@ DICTIONARY atmega2560.dict
 CONFIG ../../config/generic-einsy-rambo.cfg
 CONFIG ../../config/generic-fysetc-f6.cfg
 CONFIG ../../config/generic-gt2560.cfg
+CONFIG ../../config/generic-gt2560v3.cfg
 CONFIG ../../config/generic-mini-rambo.cfg
 CONFIG ../../config/generic-rambo.cfg
 CONFIG ../../config/generic-ramps.cfg
@@ -34,6 +35,7 @@ CONFIG ../../config/printer-creality-cr20-pro-2019.cfg
 CONFIG ../../config/printer-creality-ender5plus-2019.cfg
 CONFIG ../../config/printer-eryone-thinker-series-v2-2020.cfg
 CONFIG ../../config/printer-flashforge-creator-pro-2018.cfg
+CONFIG ../../config/printer-geeetech-a20.cfg
 CONFIG ../../config/printer-hiprecy-leo-2019.cfg
 CONFIG ../../config/printer-longer-lk4-pro-2019.cfg
 CONFIG ../../config/printer-lulzbot-mini1-2016.cfg
