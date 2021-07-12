@@ -266,7 +266,7 @@ class PrinterHeaters:
     def setup_sensor(self, config):
         modules = ["thermistor", "adc_temperature", "spi_temperature",
                    "bme280", "htu21d", "lm75", "temperature_host",
-                   "temperature_mcu", "ds18b20"]
+                   "temperature_mcu", "ds18b20", "sensor_any"]
 
         for module_name in modules:
             self.printer.load_object(config, module_name)

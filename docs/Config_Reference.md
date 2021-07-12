@@ -2252,6 +2252,20 @@ sensor_type: temperature_host
 #   system file on a Raspberry Pi computer.
 ```
 
+## Any temperature sensor
+
+Temperature via URL-JSON source or any file (improved version).
+
+```
+sensor_type: sensor_any
+#sensor_path:
+#   URL or file path to the file that contains the temperature
+#conversion_factor:
+#   if specified, factor to multiply (temperature) with
+#json_path:
+#   if specificed, with e.g. ["Status"]["TEMPERATURE"]["Value"]
+#   sets the correct position in the JSON data for your temperature
+
 ## DS18B20 temperature sensor
 
 DS18B20 is a 1-wire (w1) digital temperature sensor. Note that this sensor is not intended for use with extruders and heater beds, but rather for monitoring ambient temperature (C). These sensors have range up to 125 C, so are usable for e.g. chamber temperature monitoring. They can also function as simple fan/heater controllers. DS18B20 sensors are only supported on the "host mcu", e.g. the Raspberry Pi. The w1-gpio Linux kernel module must be installed.
