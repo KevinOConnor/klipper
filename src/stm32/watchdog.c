@@ -21,5 +21,8 @@ watchdog_init(void)
     IWDG->PR = 0;
     IWDG->RLR = 0x0FFF; // 410-512ms timeout (depending on stm32 chip)
     IWDG->KR = 0xCCCC;
+#ifndef CONFIG_MACH_STM32F1
+    DBGMCU->APB1FZ |= 0x1000; // stop the watchdog with debug.
+#endif
 }
 DECL_INIT(watchdog_init);
