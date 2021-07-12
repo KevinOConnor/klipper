@@ -2409,6 +2409,12 @@ watched component.
 #   associated with. If a comma separated list of heater names is
 #   provided here, then the fan will be enabled when any of the given
 #   heaters are enabled. The default is "extruder".
+#temperature_sensors:
+#   A comma separated list of "temperature_sensor:target_temperature".
+#   When any of the defined temperature_sensors reaches it target, the
+#   fan will be enabled aswell.
+#   For Example, "pi: 60" would enable the fan when the temperature_sensor
+#   "pi" reaches 60 degrees.
 ```
 
 ## [temperature_fan]

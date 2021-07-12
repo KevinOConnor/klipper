@@ -814,3 +814,14 @@ Palette prints work by embedding special OCodes (Omega Codes)
 in the GCode file:
 - `O1`...`O32`: These codes are read from the GCode stream and processed
   by this module and passed to the Palette 2 device.
+
+
+## Controller Fan Commands
+
+The following command is available when a
+[controller_fan config section](Config_Reference.md#controller_fan) with
+addition temperature_sensors is enabled:
+- `SET_CONTROLLER_FAN_TARGET temperature_sensor=<temperature_sensor_name>
+  [target=<target_temperature>]`: Sets the target temperature for a
+  controller_fan. If a target is not supplied, it is set to the
+  specified temperature in the config file.
