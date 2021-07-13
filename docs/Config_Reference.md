@@ -1105,6 +1105,51 @@ the nature of skew correction these lengths are set via gcode. See
 [skew_correction]
 ```
 
+## [frame_expansion_compensation]
+
+Compensate for vertical toolhead movement caused by thermal expansion of the
+frame in real-time using a temperature probe coupled to a vertical member.
+E.g. A glass bead thermistor suspended halfway down the central channel of an
+2020 aluminum extrusion.
+
+See also: [extended g-code commands](G-Codes.md#Frame-Expansion-Compensation).
+
+```
+[frame_expansion_compensation]
+#coeff:
+#   Coefficient of linear expansion for the frame material [μm/m·°C].
+#   E.g. 23.4 μm/m·°C for Misumi A6N01SS-T5 6005A-T5 aluminum alloy.
+#frame_z_length:
+#   Total length of vertical extrusions [mm].
+#gantry_factor:
+#   Relationship between gantry expansion and toolhead Z movement.
+#   Examples:
+#      if 1mm expansion moves toolhead up 1mm, gantry_factor: 1.0
+#      if 1mm expansion moves toolhead up 0.5mm, gantry_factor: 0.5
+#      if 1mm expansion moves toolhead down 1mm, gantry_factor: -1.0
+#   The default is 1.0.
+#max_comp_z:
+#   Disables compensation above this Z height [mm]. The last computed correction
+#   will remain applied until the toolhead moves below the specified Z position
+#   again. The default is 0.0mm (always on).
+#max_z_offset:
+#   Maximum absolute compensation that can be applied to the Z axis [mm]. The
+#   default is 99999999.0mm (unlimited).
+#sensor_type:
+#sensor_pin:
+#min_temp:
+#max_temp:
+#   See the "extruder" section for the definition of the above
+#   parameters.
+#gcode_id:
+#   See the "heater_generic" section for the definition of this
+#   parameter.
+z_stepper:
+#   The Z stepper motor linked with the Z endstop, as written in printer.cfg.
+#   Used for triggering reference temperature measurement. Usually 'stepper_z'
+#   unless otherwise defined.
+```
+
 # Customized homing
 
 ## [safe_z_home]
