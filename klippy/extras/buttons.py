@@ -227,7 +227,8 @@ class PrinterButtons:
         mcu = mcu_name = None
         pin_params_list = []
         for pin in pins:
-            pin_params = ppins.lookup_pin(pin, can_invert=True, can_pullup=True)
+            pin_params = ppins.lookup_pin(
+                pin, can_invert=True, can_pullup=True, share_type='endstop')
             if mcu is not None and pin_params['chip'] != mcu:
                 raise ppins.error("button pins must be on same mcu")
             mcu = pin_params['chip']

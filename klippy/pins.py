@@ -253,10 +253,11 @@ class PrinterPins:
         pin_params['share_type'] = share_type
         self.active_pins[share_name] = pin_params
         return pin_params
-    def setup_pin(self, pin_type, pin_desc):
+    def setup_pin(self, pin_type, pin_desc, share_type=None):
         can_invert = pin_type in ['endstop', 'digital_out', 'pwm']
         can_pullup = pin_type in ['endstop']
-        pin_params = self.lookup_pin(pin_desc, can_invert, can_pullup)
+        pin_params = self.lookup_pin(
+            pin_desc, can_invert, can_pullup, share_type)
         return pin_params['chip'].setup_pin(pin_type, pin_params)
     def reset_pin_sharing(self, pin_params):
         share_name = "%s:%s" % (pin_params['chip_name'], pin_params['pin'])
